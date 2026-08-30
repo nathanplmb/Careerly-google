@@ -1,0 +1,1 @@
+function e(e){let t=(e instanceof Error?e.message:String(e??``)).replace(/^Error:\s*/i,``).trim();return!t||t.length>200||/fetch|network|failed to/i.test(t)?`L'analyse IA a échoué. Vérifiez votre connexion puis réessayez.`:t}export{e as t};

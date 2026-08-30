@@ -4,9 +4,17 @@ let _ai: GoogleGenAI | null = null;
 
 export function getGeminiClient(): GoogleGenAI {
   if (!_ai) {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey =
+      process.env.GEMINI_API_KEY ||
+      process.env.VITE_GEMINI_API_KEY ||
+      (typeof import.meta !== "undefined" &&
+        (import.meta as unknown as { env?: { VITE_GEMINI_API_KEY?: string } })
+          .env?.VITE_GEMINI_API_KEY);
+    if (!apiKey) {
+      throw new Error("Clé AI manquante. Veuillez configurer GEMINI_API_KEY.");
+    }
     _ai = new GoogleGenAI({
-      apiKey: apiKey || "",
+      apiKey,
       httpOptions: {
         headers: {
           "User-Agent": "aistudio-build",
@@ -17,8 +25,13 @@ export function getGeminiClient(): GoogleGenAI {
   return _ai;
 }
 
-export const GEMINI_MODEL = "gemini-2.5-flash";
-export const GEMINI_FALLBACK_MODELS = ["gemini-2.5-flash", "gemini-2.5-pro"];
+export const GEMINI_MODEL = "gemini-3.7-flash";
+export const GEMINI_FALLBACK_MODELS = [
+  "gemini-3.7-flash",
+  "gemini-flash-latest",
+  "gemini-3.1-pro-preview",
+  "gemini-3.1-flash-lite",
+];
 
 /** Nettoie et extrait un JSON valide à partir de la réponse Gemini */
 export function extraireJsonPropre<T>(texte: string): T {
@@ -64,7 +77,7 @@ export async function appelerGeminiSecurise(options: {
   responseMimeType?: string;
 }): Promise<string> {
   const ai = getGeminiClient();
-  const modeles = [GEMINI_MODEL, "gemini-2.5-pro", "gemini-2.0-flash"];
+  const modeles = GEMINI_FALLBACK_MODELS;
   let dernierErreur: unknown = null;
 
   for (const model of modeles) {
