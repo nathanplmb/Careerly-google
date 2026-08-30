@@ -1,0 +1,1 @@
+ALTER TABLE public.profils ADD COLUMN IF NOT EXISTS cv_structure jsonb;

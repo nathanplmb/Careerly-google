@@ -1,0 +1,6 @@
+{
+  "name": "Careerly",
+  "description": "Pilotez vos candidatures de stage et d'emploi avec suivi intelligent, matching de compétences et organisation de carrière.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
