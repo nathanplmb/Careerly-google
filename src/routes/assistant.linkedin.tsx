@@ -22,13 +22,13 @@ import { texteErreurIA } from "@/lib/ai-erreurs";
 export const Route = createFileRoute("/assistant/linkedin")({
   head: () => ({
     meta: [
-      { title: "LinkedIn Assistant — Careerly AI Hub" },
+      { title: "LinkedIn Assistant — NACORA AI Hub" },
       {
         name: "description",
         content:
           "Générez vos notes d'invitation, messages de suivi et accroche de profil LinkedIn à partir de votre profil réel.",
       },
-      { property: "og:title", content: "LinkedIn Assistant — Careerly AI Hub" },
+      { property: "og:title", content: "LinkedIn Assistant — NACORA AI Hub" },
       {
         property: "og:description",
         content:
@@ -112,7 +112,7 @@ function LinkedinPage() {
 
   return (
     <AppShell
-      eyebrow="Careerly AI Hub"
+      eyebrow="NACORA AI Hub"
       title="LinkedIn Assistant"
       subtitle="Invitations réseau, messages d'approche et accroche de profil"
       headerExtra={

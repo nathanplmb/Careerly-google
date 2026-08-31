@@ -35,13 +35,13 @@ import { texteErreurIA } from "@/lib/ai-erreurs";
 export const Route = createFileRoute("/assistant/interview")({
   head: () => ({
     meta: [
-      { title: "Interview Coach — Careerly AI Hub" },
+      { title: "Interview Coach — NACORA AI Hub" },
       {
         name: "description",
         content:
           "Préparez vos entretiens : questions probables, pistes de réponse STAR, arguments clés et questions à poser au recruteur.",
       },
-      { property: "og:title", content: "Interview Coach — Careerly AI Hub" },
+      { property: "og:title", content: "Interview Coach — NACORA AI Hub" },
       {
         property: "og:description",
         content:
@@ -125,7 +125,7 @@ function InterviewPage() {
 
   return (
     <AppShell
-      eyebrow="Careerly AI Hub"
+      eyebrow="NACORA AI Hub"
       title="Interview Coach"
       subtitle="Simulation d'entretien, trames STAR et questions au recruteur"
       headerExtra={

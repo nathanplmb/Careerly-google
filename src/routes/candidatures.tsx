@@ -62,17 +62,17 @@ export const Route = createFileRoute("/candidatures")({
   }),
   head: () => ({
     meta: [
-      { title: "Mes candidatures — Careerly" },
+      { title: "Mes candidatures — NACORA" },
       {
         name: "description",
         content:
           "Toutes vos candidatures dans un tableau filtrable et triable : statut, relances, deadlines et match IA.",
       },
-      { property: "og:title", content: "Mes candidatures — Careerly" },
+      { property: "og:title", content: "Mes candidatures — NACORA" },
       {
         property: "og:description",
         content:
-          "Filtrez, triez et mettez à jour vos candidatures en un clic avec Careerly.",
+          "Filtrez, triez et mettez à jour vos candidatures en un clic avec NACORA.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

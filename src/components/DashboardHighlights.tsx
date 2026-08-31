@@ -237,7 +237,7 @@ export function AiBar({
         </span>
         <div>
           <p className="text-[15px] font-bold">
-            Careerly AI <span className="text-primary">✦</span>
+            NACORA AI <span className="text-primary">✦</span>
           </p>
           <p className="text-[12.5px] text-muted-foreground">
             Votre copilote intelligent pour décrocher le bon poste.

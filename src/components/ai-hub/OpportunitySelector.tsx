@@ -90,7 +90,7 @@ export function OpportunitySelector({
           <p className="mt-1 text-xs text-muted-foreground">
             {search
               ? "Essayez une autre recherche ou créez une nouvelle opportunité."
-              : "Ajoutez votre première opportunité pour utiliser toutes les capacités de Careerly AI."}
+              : "Ajoutez votre première opportunité pour utiliser toutes les capacités de NACORA AI."}
           </p>
           <Button
             onClick={onCreateNew}

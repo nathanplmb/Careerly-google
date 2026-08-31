@@ -44,17 +44,17 @@ import {
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Tableau de bord — Careerly" },
+      { title: "Tableau de bord — NACORA" },
       {
         name: "description",
         content:
           "Votre copilote de recherche de stage : brief quotidien, relances, deadlines et match IA en un coup d'œil.",
       },
-      { property: "og:title", content: "Tableau de bord — Careerly" },
+      { property: "og:title", content: "Tableau de bord — NACORA" },
       {
         property: "og:description",
         content:
-          "Brief quotidien, relances, deadlines et match IA : tout votre suivi de candidatures dans Careerly.",
+          "Brief quotidien, relances, deadlines et match IA : tout votre suivi de candidatures dans NACORA.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

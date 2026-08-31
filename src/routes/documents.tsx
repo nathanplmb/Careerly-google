@@ -22,13 +22,13 @@ import { texteErreurIA } from "@/lib/ai-erreurs";
 export const Route = createFileRoute("/documents")({
   head: () => ({
     meta: [
-      { title: "Documents — Careerly" },
+      { title: "Documents — NACORA" },
       {
         name: "description",
         content:
           "Générez et conservez vos lettres de motivation personnalisées pour chaque offre suivie.",
       },
-      { property: "og:title", content: "Documents — Careerly" },
+      { property: "og:title", content: "Documents — NACORA" },
       {
         property: "og:description",
         content:

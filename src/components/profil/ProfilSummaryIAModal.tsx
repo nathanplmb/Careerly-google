@@ -88,7 +88,7 @@ export function ProfilSummaryIAModal({
               </span>
               <div>
                 <DialogTitle className="text-xl font-bold text-foreground">
-                  Ce que Careerly sait de moi
+                  Ce que NACORA sait de moi
                 </DialogTitle>
                 <DialogDescription className="text-xs text-muted-foreground">
                   La vision stratégique synthétisée par l'IA à partir de
@@ -122,7 +122,7 @@ export function ProfilSummaryIAModal({
                 Aucune synthèse générée pour le moment
               </h4>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Cliquez sur le bouton ci-dessous pour laisser Careerly analyser
+                Cliquez sur le bouton ci-dessous pour laisser NACORA analyser
                 vos études, expériences, compétences et critères afin d'établir
                 votre diagnostic de positionnement.
               </p>

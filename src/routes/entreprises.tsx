@@ -27,13 +27,13 @@ import { STATUTS, type Candidature } from "@/lib/candidatures";
 export const Route = createFileRoute("/entreprises")({
   head: () => ({
     meta: [
-      { title: "Entreprises — Careerly" },
+      { title: "Entreprises — NACORA" },
       {
         name: "description",
         content:
           "Toutes les entreprises que vous ciblez : candidatures, contacts associés, meilleur match IA et avancement.",
       },
-      { property: "og:title", content: "Entreprises — Careerly" },
+      { property: "og:title", content: "Entreprises — NACORA" },
       {
         property: "og:description",
         content:

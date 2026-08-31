@@ -24,13 +24,13 @@ import type { Candidature } from "@/lib/candidatures";
 export const Route = createFileRoute("/assistant/match")({
   head: () => ({
     meta: [
-      { title: "Match IA — Careerly AI Hub" },
+      { title: "Match IA — NACORA AI Hub" },
       {
         name: "description",
         content:
           "Classement IA de vos offres : score de correspondance, points forts, vigilance et compétences à renforcer.",
       },
-      { property: "og:title", content: "Match IA — Careerly AI Hub" },
+      { property: "og:title", content: "Match IA — NACORA AI Hub" },
       {
         property: "og:description",
         content:
@@ -123,7 +123,7 @@ function MatchPage() {
 
   return (
     <AppShell
-      eyebrow="Careerly AI Hub"
+      eyebrow="NACORA AI Hub"
       title="Match IA & Compatibilité"
       subtitle={`Score moyen de ${moyenne}% sur ${items.length} opportunité(s)`}
       headerExtra={

@@ -64,7 +64,7 @@ const OUTILS: {
   {
     label: "Connecter une IA (MCP)",
     badge: "Passerelle",
-    desc: "Reliez Claude, ChatGPT ou Cursor directement à vos données Careerly en temps réel.",
+    desc: "Reliez Claude, ChatGPT ou Cursor directement à vos données NACORA en temps réel.",
     to: "/assistant/connect",
     icon: Plug,
     gradient:

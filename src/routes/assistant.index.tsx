@@ -37,16 +37,16 @@ export const Route = createFileRoute("/assistant/")({
     meta: [
       {
         title:
-          "Careerly AI — Votre copilote pour décrocher votre prochaine opportunité",
+          "NACORA AI — Votre copilote pour décrocher votre prochaine opportunité",
       },
       {
         name: "description",
         content:
-          "Intelligence artificielle unifiée de Careerly : analysez une offre, calculez votre Match IA, adaptez votre CV, rédigez vos e-mails et préparez vos entretiens.",
+          "Intelligence artificielle unifiée de NACORA : analysez une offre, calculez votre Match IA, adaptez votre CV, rédigez vos e-mails et préparez vos entretiens.",
       },
       {
         property: "og:title",
-        content: "Careerly AI — Copilote Unifié",
+        content: "NACORA AI — Copilote Unifié",
       },
       {
         property: "og:description",

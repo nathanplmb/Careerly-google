@@ -29,17 +29,17 @@ export const Route = createFileRoute("/assistant/connect")({
   component: ConnectPage,
   head: () => ({
     meta: [
-      { title: "Connecter une IA — Careerly" },
+      { title: "Connecter une IA — NACORA" },
       {
         name: "description",
         content:
-          "Connectez ChatGPT, Claude ou un autre assistant IA à votre compte Careerly via MCP.",
+          "Connectez ChatGPT, Claude ou un autre assistant IA à votre compte NACORA via MCP.",
       },
-      { property: "og:title", content: "Connecter une IA à Careerly" },
+      { property: "og:title", content: "Connecter une IA à NACORA" },
       {
         property: "og:description",
         content:
-          "Guide pas à pas pour relier Claude, ChatGPT ou Cursor à vos données Careerly.",
+          "Guide pas à pas pour relier Claude, ChatGPT ou Cursor à vos données NACORA.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -172,7 +172,7 @@ function ConnectPage() {
     if (!mcpUrl) return "";
     const params = new URLSearchParams({
       modal: "add-custom-connector",
-      connectorName: "Careerly",
+      connectorName: "NACORA",
       connectorUrl: mcpUrl,
     });
     return `https://claude.ai/customize/connectors?${params.toString()}`;
@@ -185,7 +185,7 @@ function ConnectPage() {
     <AppShell
       eyebrow="AI Studio"
       title="Connecter une IA"
-      subtitle="Liez ChatGPT, Claude ou Cursor à votre compte Careerly en quelques clics."
+      subtitle="Liez ChatGPT, Claude ou Cursor à votre compte NACORA en quelques clics."
     >
       <div className="mx-auto max-w-3xl space-y-6">
         {/* Header card */}
@@ -196,7 +196,7 @@ function ConnectPage() {
                 <Sparkles className="size-5 text-primary" />
               </span>
               <div>
-                <CardTitle className="text-lg">Serveur MCP Careerly</CardTitle>
+                <CardTitle className="text-lg">Serveur MCP NACORA</CardTitle>
                 <CardDescription>
                   Votre assistant peut lire et mettre à jour vos candidatures,
                   contacts et profil.

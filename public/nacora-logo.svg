@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 350 80">
+  <defs>
+    <linearGradient id="nacora-logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a855f7" />
+      <stop offset="100%" stop-color="#7c3aed" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(0, 0)">
+    <circle cx="40" cy="40" r="30" stroke="url(#nacora-logo-grad)" stroke-width="6.5" fill="none" />
+    <circle cx="40" cy="40" r="12.5" fill="url(#nacora-logo-grad)" />
+    <circle cx="61" cy="19" r="7.5" fill="url(#nacora-logo-grad)" />
+  </g>
+  <g transform="translate(90, 0)">
+    <path d="M 5 58 V 22 L 32 58 V 22" stroke="url(#nacora-logo-grad)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    <path d="M 44 58 L 60 22 L 76 58 M 49 47 H 71" stroke="url(#nacora-logo-grad)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    <path d="M 120 29 C 114 22 98 22 92 29 C 83 38 83 42 92 51 C 98 58 114 58 120 51" stroke="url(#nacora-logo-grad)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    <circle cx="148" cy="40" r="18" stroke="url(#nacora-logo-grad)" stroke-width="6" fill="none" />
+    <circle cx="148" cy="40" r="5" fill="url(#nacora-logo-grad)" />
+    <path d="M 182 58 V 22 H 204 C 216 22 216 40 204 40 H 182 M 200 40 L 216 58" stroke="url(#nacora-logo-grad)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    <path d="M 228 58 L 244 22 L 260 58 M 233 47 H 255" stroke="url(#nacora-logo-grad)" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  </g>
+</svg>

@@ -37,13 +37,13 @@ const TONS_COLONNE = [
 export const Route = createFileRoute("/opportunites")({
   head: () => ({
     meta: [
-      { title: "Opportunités — Careerly" },
+      { title: "Opportunités — NACORA" },
       {
         name: "description",
         content:
           "Votre pipeline d'opportunités en colonnes : à postuler, envoyées, relancées, entretiens et réponses.",
       },
-      { property: "og:title", content: "Opportunités — Careerly" },
+      { property: "og:title", content: "Opportunités — NACORA" },
       {
         property: "og:description",
         content:

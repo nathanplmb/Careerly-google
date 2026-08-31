@@ -18,13 +18,13 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/calendrier")({
   head: () => ({
     meta: [
-      { title: "Calendrier — Careerly" },
+      { title: "Calendrier — NACORA" },
       {
         name: "description",
         content:
           "Toutes vos échéances de recherche de stage : dates limites, relances à faire et entretiens à venir.",
       },
-      { property: "og:title", content: "Calendrier — Careerly" },
+      { property: "og:title", content: "Calendrier — NACORA" },
       {
         property: "og:description",
         content:

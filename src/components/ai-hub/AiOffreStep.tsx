@@ -155,7 +155,7 @@ export function AiOffreStep({
         profilRecherche: offreData.profilRecherche || undefined,
         secteur: offreData.secteur || undefined,
         contactNom: offreData.contactRecruteur || undefined,
-        notes: `Importé via Careerly AI Hub le ${new Date().toLocaleDateString("fr-FR")}`,
+        notes: `Importé via NACORA AI Hub le ${new Date().toLocaleDateString("fr-FR")}`,
         creeLe: new Date().toISOString(),
       };
       await save(nouvelle);

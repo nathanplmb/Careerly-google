@@ -45,30 +45,39 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   }, [error]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
+      <div className="max-w-md w-full text-center space-y-4 p-6 rounded-2xl border border-purple-500/20 bg-card/80 backdrop-blur-xl shadow-xl">
+        <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-purple-500/10 text-purple-400">
+          ⚠️
+        </div>
+        <h1 className="text-lg font-bold tracking-tight text-foreground">
+          Chargement de la page
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back
-          home.
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          Un souci temporaire est survenu lors du chargement des composants.
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
+
+        {error?.message && (
+          <div className="p-3 text-left rounded-lg bg-red-500/10 border border-red-500/20 text-[11px] font-mono text-red-300 break-words max-h-32 overflow-y-auto">
+            {error.message}
+          </div>
+        )}
+
+        <div className="pt-2 flex flex-col sm:flex-row justify-center gap-2">
           <button
             onClick={() => {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center rounded-xl bg-purple-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-purple-500"
           >
-            Try again
+            Réessayer
           </button>
           <a
             href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            className="inline-flex items-center justify-center rounded-xl border border-border bg-card px-4 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-accent"
           >
-            Go home
+            Retour au tableau de bord
           </a>
         </div>
       </div>
@@ -82,15 +91,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       meta: [
         { charSet: "utf-8" },
         { name: "viewport", content: "width=device-width, initial-scale=1" },
-        { title: "Careerly — pilotez vos candidatures de stage avec l'IA" },
+        { title: "NACORA — Pilotez vos candidatures et votre carrière avec l'IA" },
         {
           name: "description",
           content:
-            "Careerly centralise vos candidatures, relances et entretiens, avec un match IA et un brief quotidien.",
+            "NACORA centralise vos candidatures, relances et entretiens, avec un match IA et un brief quotidien.",
         },
         {
           property: "og:title",
-          content: "Careerly — votre command center carrière",
+          content: "NACORA — Votre copilote carrière intelligent",
         },
         {
           property: "og:description",

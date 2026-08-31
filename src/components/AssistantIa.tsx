@@ -151,7 +151,7 @@ export function AssistantIa() {
             <p className="text-sm text-muted-foreground">
               Collez n'importe quoi (annonce, e-mail, notes, liste
               d'entreprises, message LinkedIn) : l'IA en sort les candidatures,
-              les contacts et les échéances, et les range dans Careerly.
+              les contacts et les échéances, et les range dans NACORA.
             </p>
           </div>
         </div>
@@ -247,7 +247,7 @@ export function AssistantIa() {
           <div className="flex flex-wrap gap-2">
             <Button onClick={enregistrer} disabled={enregistre}>
               {enregistre ? <Loader2 className="animate-spin" /> : <Sparkles />}
-              Ranger dans Careerly
+              Ranger dans NACORA
             </Button>
             <Button
               variant="outline"

@@ -33,13 +33,13 @@ import type { Candidature } from "@/lib/candidatures";
 export const Route = createFileRoute("/contacts")({
   head: () => ({
     meta: [
-      { title: "Contacts — Careerly" },
+      { title: "Contacts — NACORA" },
       {
         name: "description",
         content:
           "Gérez vos recruteurs, RH, managers et anciens élèves, suivez vos échanges et rédigez vos relances avec l'IA.",
       },
-      { property: "og:title", content: "Contacts — Careerly" },
+      { property: "og:title", content: "Contacts — NACORA" },
       {
         property: "og:description",
         content:

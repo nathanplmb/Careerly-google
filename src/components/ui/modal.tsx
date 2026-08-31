@@ -27,7 +27,7 @@ type Props = {
   bodyClassName?: string;
 };
 
-/** Fenêtre centrale Careerly : en-tête fixe, contenu défilant, actions en bas. */
+/** Fenêtre centrale NACORA : en-tête fixe, contenu défilant, actions en bas. */
 export function CenterModal({
   open,
   onOpenChange,

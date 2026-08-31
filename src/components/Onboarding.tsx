@@ -21,9 +21,9 @@ type Etape = {
 
 const ETAPES: Etape[] = [
   {
-    titre: "Bienvenue sur Careerly 👋",
+    titre: "Bienvenue sur NACORA 👋",
     texte:
-      "Careerly est votre copilote de recherche de stage ou d'alternance : un seul endroit pour suivre vos candidatures, vos relances et vos entretiens.",
+      "NACORA est votre copilote de recherche de stage ou d'alternance : un seul endroit pour suivre vos candidatures, vos relances et vos entretiens.",
     points: [
       "Toutes vos candidatures centralisées",
       "Synchronisées sur tous vos appareils",
@@ -45,7 +45,7 @@ const ETAPES: Etape[] = [
   {
     titre: "Ajoutez vos offres en 10 secondes",
     texte:
-      "Collez le texte d'une annonce : Careerly extrait l'entreprise, le poste, le lieu et la date limite de candidature automatiquement.",
+      "Collez le texte d'une annonce : NACORA extrait l'entreprise, le poste, le lieu et la date limite de candidature automatiquement.",
     points: [
       "Extraction IA depuis une annonce",
       "Deadlines suivies et surlignées",

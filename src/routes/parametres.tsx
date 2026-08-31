@@ -32,16 +32,16 @@ import { UsageIaCard } from "@/components/UsageIaCard";
 export const Route = createFileRoute("/parametres")({
   head: () => ({
     meta: [
-      { title: "Paramètres — Careerly" },
+      { title: "Paramètres — NACORA" },
       {
         name: "description",
         content:
-          "Gérez votre compte Careerly, exportez vos candidatures et contrôlez vos données locales.",
+          "Gérez votre compte NACORA, exportez vos candidatures et contrôlez vos données locales.",
       },
-      { property: "og:title", content: "Paramètres — Careerly" },
+      { property: "og:title", content: "Paramètres — NACORA" },
       {
         property: "og:description",
-        content: "Compte, export de données et confidentialité dans Careerly.",
+        content: "Compte, export de données et confidentialité dans NACORA.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

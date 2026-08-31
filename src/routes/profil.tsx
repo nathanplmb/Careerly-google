@@ -51,17 +51,17 @@ import { ProfilOptimizerModal } from "@/components/profil/ProfilOptimizerModal";
 export const Route = createFileRoute("/profil")({
   head: () => ({
     meta: [
-      { title: "Profil Candidat — Careerly Orbit" },
+      { title: "Profil Candidat — NACORA Orbit" },
       {
         name: "description",
         content:
-          "Le profil candidat complet de Careerly : identité, aspirations, formations, expériences avec KPI, compétences qualifiées et critères de matching IA.",
+          "Le profil candidat complet de NACORA : identité, aspirations, formations, expériences avec KPI, compétences qualifiées et critères de matching IA.",
       },
-      { property: "og:title", content: "Profil Candidat — Careerly Orbit" },
+      { property: "og:title", content: "Profil Candidat — NACORA Orbit" },
       {
         property: "og:description",
         content:
-          "Votre profil Careerly est la source de vérité pour le Match IA, l'analyseur de CV et les assistants de candidature.",
+          "Votre profil NACORA est la source de vérité pour le Match IA, l'analyseur de CV et les assistants de candidature.",
       },
     ],
   }),
@@ -134,7 +134,7 @@ function ProfilPage() {
       try {
         const saved = await saveProfilCloud(p, user.id);
         setProfil(saved);
-        toast.success("Profil synchronisé dans votre espace Careerly !");
+        toast.success("Profil synchronisé dans votre espace NACORA !");
       } catch {
         toast.error(
           "Enregistré localement (connexion cloud temporairement indisponible).",
@@ -164,7 +164,7 @@ function ProfilPage() {
     <AppShell
       eyebrow="Career Profile"
       title="Mon Profil Candidat"
-      subtitle="La source de vérité Careerly pour le Match IA, l'analyse de CV, la rédaction d'emails et le coaching d'entretien."
+      subtitle="La source de vérité NACORA pour le Match IA, l'analyse de CV, la rédaction d'emails et le coaching d'entretien."
       actions={
         <div className="flex items-center gap-2">
           <Button

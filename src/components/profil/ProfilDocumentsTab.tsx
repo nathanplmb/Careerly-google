@@ -59,7 +59,7 @@ export function ProfilDocumentsTab({ profil, onChange, onOpenCvModal }: Props) {
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs font-semibold">
-              Source de vérité Careerly
+              Source de vérité NACORA
             </Badge>
           </div>
           <h3 className="text-sm font-bold text-foreground flex items-center gap-2">

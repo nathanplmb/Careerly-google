@@ -50,13 +50,13 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/import")({
   head: () => ({
     meta: [
-      { title: "Importer vos données — Careerly" },
+      { title: "Importer vos données — NACORA" },
       {
         name: "description",
         content:
           "Importez votre tableau Excel de recherche de stage, vos contacts LinkedIn, vos lettres de motivation et synchronisez vos échéances avec votre calendrier.",
       },
-      { property: "og:title", content: "Importer vos données — Careerly" },
+      { property: "og:title", content: "Importer vos données — NACORA" },
       {
         property: "og:description",
         content:
