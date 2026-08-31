@@ -33,6 +33,7 @@ export type FormationCV = {
   projets?: string[];
   resultats?: string;
   details: string;
+  niveau?: string;
 };
 
 export type CertificationCV = {
@@ -189,6 +190,14 @@ export type CvStructure = {
   documents?: DocumentProfil[];
   syntheseIa?: SyntheseProfilIA | null;
 };
+
+export type CvExperience = ExperienceCV;
+export type CvFormation = FormationCV;
+export type CvCompetence = CompetenceCV;
+export type CvLangue = LangueCV;
+export type CvCertification = CertificationCV;
+export type CvProjet = ProjetCV;
+export type CvBenevolat = BenevolatCV;
 
 export function nouvelId(): string {
   return Math.random().toString(36).slice(2, 10);

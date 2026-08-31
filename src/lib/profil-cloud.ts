@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
 import {
   emptyProfil,
   type Critere,
@@ -149,6 +149,7 @@ function toRow(p: Profil, userId: string) {
 }
 
 export async function fetchProfil(): Promise<Profil | null> {
+  if (!isSupabaseConfigured()) return null;
   const { data, error } = await supabase
     .from("profils")
     .select("*")
@@ -161,6 +162,7 @@ export async function saveProfilCloud(
   p: Profil,
   userId: string,
 ): Promise<Profil> {
+  if (!isSupabaseConfigured()) return p;
   const { data, error } = await supabase
     .from("profils")
     .upsert(toRow(p, userId), { onConflict: "user_id" })

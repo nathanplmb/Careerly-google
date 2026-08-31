@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
 import {
   emptyContact,
   type Contact,
@@ -65,6 +65,7 @@ function toRow(c: Contact, userId: string) {
 }
 
 export async function fetchContacts(): Promise<Contact[]> {
+  if (!isSupabaseConfigured()) return [];
   const { data, error } = await supabase
     .from("contacts")
     .select("*")
@@ -77,6 +78,7 @@ export async function upsertContact(
   c: Contact,
   userId: string,
 ): Promise<Contact> {
+  if (!isSupabaseConfigured()) return c;
   const { data, error } = await supabase
     .from("contacts")
     .upsert(toRow(c, userId))
@@ -87,6 +89,7 @@ export async function upsertContact(
 }
 
 export async function deleteContact(id: string) {
+  if (!isSupabaseConfigured()) return;
   const { error } = await supabase.from("contacts").delete().eq("id", id);
   if (error) throw error;
 }

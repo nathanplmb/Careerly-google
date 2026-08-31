@@ -659,8 +659,8 @@ export function AuthPage() {
                     Clara P. • NEOMA PGE
                   </p>
                   <p className="text-[11px] text-muted-foreground">
-                    « NACORA m'a permis d'organiser 45 candidatures et d'avoir
-                    6 entretiens en 3 semaines. »
+                    « NACORA m'a permis d'organiser 45 candidatures et d'avoir 6
+                    entretiens en 3 semaines. »
                   </p>
                 </div>
               </div>

@@ -17,12 +17,24 @@ export function profilEnTexte(p: Profil): string {
   const prefs = p.preferences;
   const prefsTxt = prefs
     ? [
-        prefs.secteursPrivilegies?.length ? `Secteurs privilégiés: ${prefs.secteursPrivilegies.join(", ")}` : "",
-        prefs.secteursAEviter?.length ? `Secteurs à éviter: ${prefs.secteursAEviter.join(", ")}` : "",
-        prefs.entreprisesCibles?.length ? `Entreprises cibles: ${prefs.entreprisesCibles.join(", ")}` : "",
-        prefs.taillesEntreprise?.length ? `Tailles d'entreprise: ${prefs.taillesEntreprise.join(", ")}` : "",
-        prefs.criteresNonNegociables?.length ? `Critères non négociables: ${prefs.criteresNonNegociables.join(", ")}` : "",
-      ].filter(Boolean).join(" | ")
+        prefs.secteursPrivilegies?.length
+          ? `Secteurs privilégiés: ${prefs.secteursPrivilegies.join(", ")}`
+          : "",
+        prefs.secteursAEviter?.length
+          ? `Secteurs à éviter: ${prefs.secteursAEviter.join(", ")}`
+          : "",
+        prefs.entreprisesCibles?.length
+          ? `Entreprises cibles: ${prefs.entreprisesCibles.join(", ")}`
+          : "",
+        prefs.taillesEntreprise?.length
+          ? `Tailles d'entreprise: ${prefs.taillesEntreprise.join(", ")}`
+          : "",
+        prefs.criteresNonNegociables?.length
+          ? `Critères non négociables: ${prefs.criteresNonNegociables.join(", ")}`
+          : "",
+      ]
+        .filter(Boolean)
+        .join(" | ")
     : "";
 
   return (
@@ -31,13 +43,19 @@ export function profilEnTexte(p: Profil): string {
     ligne("Formation actuelle", p.formation) +
     ligne("École / Université", p.ecole) +
     ligne("Niveau d'études", p.niveau) +
-    ligne("Localisation actuelle", [p.localisation, p.pays].filter(Boolean).join(", ")) +
+    ligne(
+      "Localisation actuelle",
+      [p.localisation, p.pays].filter(Boolean).join(", "),
+    ) +
     ligne("Mobilité géographique", p.mobilite) +
     ligne("Type de contrat recherché", p.contrats) +
     ligne("Domaines / Secteurs visés", p.domaines) +
     ligne("Métiers ciblés", p.metiers) +
     ligne("Entreprises ciblées", p.entreprisesCiblees) +
-    ligne("Ce que le candidat recherche vraiment (Aspirations)", p.rechercheVraie || "") +
+    ligne(
+      "Ce que le candidat recherche vraiment (Aspirations)",
+      p.rechercheVraie || "",
+    ) +
     ligne("Environnements d'entreprise préférés", envs) +
     ligne("Priorités de recherche", priorites) +
     ligne("Préférences & Critères clés", prefsTxt) +

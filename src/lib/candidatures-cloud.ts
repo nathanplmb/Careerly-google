@@ -1,4 +1,4 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
 import {
   emptyPreparation,
   normalizeCandidature,
@@ -103,6 +103,7 @@ function toRow(c: Candidature, userId: string) {
 }
 
 export async function fetchCandidatures(): Promise<Candidature[]> {
+  if (!isSupabaseConfigured()) return [];
   const { data, error } = await supabase
     .from("candidatures")
     .select("*")
@@ -115,6 +116,7 @@ export async function upsertCandidature(
   c: Candidature,
   userId: string,
 ): Promise<Candidature> {
+  if (!isSupabaseConfigured()) return c;
   const row = toRow(c, userId);
   const { data, error } = await supabase
     .from("candidatures")
@@ -126,6 +128,7 @@ export async function upsertCandidature(
 }
 
 export async function deleteCandidature(id: string) {
+  if (!isSupabaseConfigured()) return;
   const { error } = await supabase.from("candidatures").delete().eq("id", id);
   if (error) throw error;
 }
@@ -134,7 +137,7 @@ export async function insertManyCandidatures(
   items: Candidature[],
   userId: string,
 ): Promise<Candidature[]> {
-  if (items.length === 0) return [];
+  if (!isSupabaseConfigured() || items.length === 0) return items;
   const { data, error } = await supabase
     .from("candidatures")
     .insert(items.map((c) => toRow(c, userId)))

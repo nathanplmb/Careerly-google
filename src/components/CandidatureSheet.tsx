@@ -196,7 +196,12 @@ export function CandidatureSheet({
       bodyClassName="px-0 py-0 sm:px-0"
       footer={
         <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between w-full gap-2">
-          <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)} className="text-xs text-muted-foreground">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onOpenChange(false)}
+            className="text-xs text-muted-foreground"
+          >
             Annuler
           </Button>
 

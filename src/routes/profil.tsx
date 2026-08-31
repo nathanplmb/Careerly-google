@@ -8,6 +8,7 @@ import {
   useRef,
 } from "react";
 import { toast } from "sonner";
+import { isSupabaseConfigured } from "@/integrations/supabase/client";
 import {
   FileText,
   Loader2,
@@ -130,11 +131,11 @@ function ProfilPage() {
     const p = profilRef.current;
     saveProfilLocal(p);
 
-    if (user?.id) {
+    if (user?.id && isSupabaseConfigured()) {
       try {
         const saved = await saveProfilCloud(p, user.id);
         setProfil(saved);
-        toast.success("Profil synchronisé dans votre espace NACORA !");
+        toast.success("Profil synchronisé dans votre espace NACORA Cloud !");
       } catch {
         toast.error(
           "Enregistré localement (connexion cloud temporairement indisponible).",
@@ -144,7 +145,7 @@ function ProfilPage() {
       }
     } else {
       setSaving(false);
-      toast.success("Profil sauvegardé dans votre navigateur.");
+      toast.success("Profil sauvegardé avec succès dans votre navigateur !");
     }
   }, [user?.id]);
 
@@ -369,11 +370,11 @@ function ProfilPage() {
           {/* Barre de statut et de sauvegarde permanente */}
           <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/60 bg-card/60 p-4 shadow-xs">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              {user ? (
+              {user && isSupabaseConfigured() ? (
                 <>
                   <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
                   <span>
-                    Profil synchronisé sur votre compte cloud Supabase.
+                    Profil synchronisé sur votre compte cloud NACORA (Supabase).
                     Raccourci :{" "}
                     <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-foreground">
                       Ctrl + S
@@ -384,8 +385,13 @@ function ProfilPage() {
                 <>
                   <CheckCircle2 className="size-4 text-blue-400 shrink-0" />
                   <span>
-                    Enregistré localement. Connectez-vous pour synchroniser vos
-                    données sur tous vos appareils.
+                    Profil sauvegardé localement sur cet appareil.
+                    <Link
+                      to="/parametres"
+                      className="ml-1 text-purple-400 underline font-medium hover:text-purple-300"
+                    >
+                      Transférer vers un autre appareil / Vercel
+                    </Link>
                   </span>
                 </>
               )}
