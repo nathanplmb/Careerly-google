@@ -17,6 +17,7 @@ import { useCandidatures } from "@/hooks/useCandidatures";
 import { useProfil } from "@/hooks/useProfil";
 import { fetchContacts } from "@/lib/contacts-cloud";
 import { supabase } from "@/integrations/supabase/client";
+import { setCompteActif } from "@/lib/auth-local";
 import { UsageIaCard } from "@/components/UsageIaCard";
 
 export const Route = createFileRoute("/parametres")({
@@ -87,7 +88,13 @@ function ParametresPage() {
   const signOut = async () => {
     await queryClient.cancelQueries();
     queryClient.clear();
-    await supabase.auth.signOut();
+    setCompteActif(null);
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      // Ignorer
+    }
+    toast.success("Déconnexion réussie");
     navigate({ to: "/auth", replace: true });
   };
 

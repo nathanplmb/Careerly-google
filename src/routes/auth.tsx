@@ -29,10 +29,13 @@ import {
   reinitialiserMotDePasseLocal,
   setCompteActif,
   simulerConnexionDemo,
-  simulerConnexionGoogle,
   supprimerCompteEnregistre,
   type UtilisateurLocal,
 } from "@/lib/auth-local";
+import {
+  connecterAvecGoogleReel,
+  loadGoogleGsiScript,
+} from "@/lib/google-auth";
 import {
   biometricEnabled,
   biometricSupported,
@@ -125,6 +128,7 @@ export function AuthPage() {
   useEffect(() => {
     setComptesRecents(getComptesEnregistres());
     setBioSupported(biometricSupported());
+    void loadGoogleGsiScript();
 
     let unsubscribe: (() => void) | undefined;
     try {
@@ -337,17 +341,45 @@ export function AuthPage() {
     toast.success("Un lien de réinitialisation vous a été envoyé par e-mail.");
   };
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     setLoading(true);
-    setTimeout(() => {
-      simulerConnexionGoogle({
-        prenom: "Alexandre",
-        nom: "Dupont",
-      });
+    try {
+      // 1. Tentative Supabase OAuth si configuré
+      try {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: target
+              ? window.location.origin + target
+              : window.location.origin,
+          },
+        });
+        if (!error) return;
+      } catch {
+        // Ignorer si non configuré et continuer vers Google direct
+      }
+
+      // 2. Authentification directe via Google Identity Services (OAuth réel)
+      const user = await connecterAvecGoogleReel();
       setLoading(false);
-      toast.success("Connecté avec succès via votre compte Google !");
+      toast.success(
+        `Bienvenue ${user.prenom || user.email} ! Connecté avec succès via Google.`,
+      );
       rediriger();
-    }, 550);
+    } catch (err: unknown) {
+      setLoading(false);
+      const msg =
+        err instanceof Error
+          ? err.message
+          : "Erreur lors de la connexion avec Google.";
+      if (
+        !msg.toLowerCase().includes("annul") &&
+        !msg.toLowerCase().includes("cancel") &&
+        !msg.toLowerCase().includes("closed")
+      ) {
+        toast.error(msg);
+      }
+    }
   };
 
   const handleDemoSignIn = () => {

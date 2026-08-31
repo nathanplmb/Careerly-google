@@ -19,7 +19,14 @@ const CLE_COMPTES_ENREGISTRES = "careerly_comptes_enregistres";
 export function getCompteActif(): UtilisateurLocal | null {
   try {
     const raw = localStorage.getItem(CLE_COMPTE_ACTIF);
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as UtilisateurLocal;
+    // Si c'est l'ancien compte fictif résiduel, on le nettoie
+    if (parsed && parsed.email === "etudiant.demo@gmail.com") {
+      localStorage.removeItem(CLE_COMPTE_ACTIF);
+      return null;
+    }
+    return parsed;
   } catch {
     return null;
   }
@@ -46,15 +53,23 @@ export function setCompteActif(utilisateur: UtilisateurLocal | null) {
       }
       localStorage.setItem(CLE_COMPTES_ENREGISTRES, JSON.stringify(liste));
 
-      // Mettre à jour le profil local s'il n'est pas déjà personnalisé
+      // Mettre à jour le profil local avec l'identité de l'utilisateur connecté
       try {
         const profilActuel = loadProfil();
         let changed = false;
-        if (utilisateur.prenom && !profilActuel.prenom) {
+        if (
+          utilisateur.prenom &&
+          (profilActuel.prenom !== utilisateur.prenom ||
+            profilActuel.prenom === "Alexandre")
+        ) {
           profilActuel.prenom = utilisateur.prenom;
           changed = true;
         }
-        if (utilisateur.nom && !profilActuel.nom) {
+        if (
+          utilisateur.nom &&
+          (profilActuel.nom !== utilisateur.nom ||
+            profilActuel.nom === "Dupont")
+        ) {
           profilActuel.nom = utilisateur.nom;
           changed = true;
         }
@@ -80,7 +95,11 @@ export function setCompteActif(utilisateur: UtilisateurLocal | null) {
 export function getComptesEnregistres(): UtilisateurLocal[] {
   try {
     const raw = localStorage.getItem(CLE_COMPTES_ENREGISTRES);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as UtilisateurLocal[];
+    return (Array.isArray(parsed) ? parsed : []).filter(
+      (u) => u.email !== "etudiant.demo@gmail.com",
+    );
   } catch {
     return [];
   }
