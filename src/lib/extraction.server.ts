@@ -17,7 +17,11 @@ const OffreSchema = z.object({
   secteur: z.string(),
   priorite: z.string(),
   commentaire: z.string(),
-  resume: z.string(),
+  missions: z.string().optional().default(""),
+  profilRecherche: z.string().optional().default(""),
+  modalites: z.string().optional().default(""),
+  detail: z.string().optional().default(""),
+  resume: z.string().optional().default(""),
 });
 
 export type OffreExtraite = z.infer<typeof OffreSchema>;
@@ -33,6 +37,10 @@ const VIDE: OffreExtraite = {
   secteur: "",
   priorite: "auto",
   commentaire: "",
+  missions: "",
+  profilRecherche: "",
+  modalites: "",
+  detail: "",
   resume: "",
 };
 
@@ -41,7 +49,7 @@ const SYSTEM_INSTRUCTION = `Tu es un expert RH de haut niveau et assistant d'ori
 
 - entreprise : le nom réel de l'entreprise qui recrute (NE JAMAIS mettre le nom de la plateforme d'offres comme JobTeaser, LinkedIn, Welcome to the Jungle ou Indeed).
 - poste : l'intitulé exact et propre du poste (ex: "Stage Digital Transformation & AI - F/H").
-- lieu : ville et département précis du poste (ex: "Paris (75)" ou "Télétravail hybride").
+- lieu : ville et département précis du poste (ex: "Paris (75)", "Milano (Italy)" ou "Télétravail hybride").
 - lien : URL de l'offre si présente dans le texte, sinon vide.
 - source : identifie la plateforme ou canal d'origine parmi exactement : "JobTeaser", "LinkedIn", "Welcome to the Jungle", "Indeed", "Site entreprise", "Candidature spontanée", "Réseau", "École", "Autre".
 - secteur : identifie le secteur d'activité précis parmi : "Tech & IA", "Conseil & Stratégie", "Finance & Banque", "Luxe & Cosmétiques", "Audit & Contrôle de gestion", "Marketing & Communication", "Santé & Pharma", "Industrie & Énergie", "E-commerce & Retail", "RH & Recrutement", "Droit & Juridique", "Agroalimentaire", "Immobilier & BTP", "Autre".
@@ -50,11 +58,12 @@ const SYSTEM_INSTRUCTION = `Tu es un expert RH de haut niveau et assistant d'ori
   2. Si aucun contact nominatif n'est présent : génère une piste concrète à cibler (ex: "Équipe Recrutement / Campus Management @ [Nom Entreprise]").
 - dateLimite : date limite de candidature au format AAAA-MM-JJ si indiquée, sinon vide.
 - priorite : "Haute", "Moyenne" ou "Faible" selon l'urgence de la deadline et l'attractivité de l'opportunité.
-- commentaire : une recommandation stratégique percutante et personnalisée pour le candidat (max 140 caractères).
-- resume : un résumé structuré, dense et TRÈS CONCIS (pas de longs pavés, 10 à 15 lignes au total maximum) avec :
-  🎯 Missions clés (3 à 4 puces courtes)
-  👤 Profil & Compétences (formation, compétences techniques et comportementales, langues)
-  ℹ️ Modalités (durée, démarrage, gratification/télétravail si précisés)`;
+- commentaire : une recommandation stratégique percutante et personnalisée pour le candidat (ex: "Stage chez Generali : valorisez vos compétences analytiques (Excel/PowerPoint) et votre vision stratégique.", max 160 caractères).
+- missions : synthèse des 3 à 5 missions clés et responsabilités principales sous forme de puces (ex: "• Steering strategic projects by supporting senior stakeholders\n• Analysing Asset Management trends...").
+- profilRecherche : synthèse des prérequis, formation attendue, hard skills, outils et langues sous forme de puces (ex: "• Master's Degree in Management or Finance\n• Fluency in English\n• Excel & PowerPoint avancés").
+- modalites : modalités pratiques sous forme de puces (ex: "• Type / Durée : Stage 4 à 6 mois\n• Lieu : Milano (Italy)\n• Démarrage : Dès que possible").
+- detail : détails contextuels complémentaires ou notes additionnelles sur l'offre ou l'équipe (sans dupliquer les missions/profil).
+- resume : synthèse globale reprenant missions, profil et modalités pour rétrocompatibilité.`;
 
 export async function extraireOffre(texte: string): Promise<OffreExtraite> {
   const lignesUtiles = texte

@@ -119,6 +119,9 @@ export type Candidature = {
   dateDernierContact: string;
   dateLimite: string; // date limite pour postuler
   commentaire: string;
+  missions: string;
+  profilRecherche: string;
+  modalites: string;
   detail: string;
   // V2.1
   priorite: PrioriteChoix;
@@ -145,6 +148,9 @@ export function emptyCandidature(): Candidature {
     dateDernierContact: "",
     dateLimite: "",
     commentaire: "",
+    missions: "",
+    profilRecherche: "",
+    modalites: "",
     detail: "",
     priorite: "auto",
     source: "",
@@ -155,9 +161,106 @@ export function emptyCandidature(): Candidature {
   };
 }
 
+/** Sépare intelligemment les blocs structurés (missions, profil, modalités) du texte brut de l'offre si présent. */
+export function extraireSectionsDetail(detail: string): {
+  missions: string;
+  profilRecherche: string;
+  modalites: string;
+  detailNettoye: string;
+} {
+  if (!detail) {
+    return {
+      missions: "",
+      profilRecherche: "",
+      modalites: "",
+      detailNettoye: "",
+    };
+  }
+
+  const aMarqueurs =
+    /🎯|\bMissions?\s*(?:cl[ée]s?|principales?)|\bProfil(?:\s*&|\s*et)?\s*Comp[ée]tences?|👤|\bModalit[ée]s?\s*:|ℹ️/i.test(
+      detail,
+    );
+
+  if (!aMarqueurs) {
+    return {
+      missions: "",
+      profilRecherche: "",
+      modalites: "",
+      detailNettoye: detail,
+    };
+  }
+
+  let missions = "";
+  let profilRecherche = "";
+  let modalites = "";
+  const autresLignes: string[] = [];
+
+  const blocs = detail.split(
+    /\n(?=(?:🎯|👤|ℹ️|\*{1,2}\s*(?:Missions?|Profil|Modalit[ée]s?)))/i,
+  );
+
+  for (const bloc of blocs) {
+    const b = bloc.trim();
+    if (!b) continue;
+
+    if (/^(?:🎯|\*{0,2}\s*🎯|\*{0,2}\s*Missions?\s*cl[ée]s?)/i.test(b)) {
+      missions = b
+        .replace(
+          /^(?:🎯\s*)?(?:\*{1,2})?Missions?\s*cl[ée]s?\s*:?(?:\*{1,2})?\s*\n?/i,
+          "",
+        )
+        .trim();
+    } else if (
+      /^(?:👤|\*{0,2}\s*👤|\*{0,2}\s*Profil(?:\s*&|\s*et)?\s*Comp[ée]tences?)/i.test(
+        b,
+      )
+    ) {
+      profilRecherche = b
+        .replace(
+          /^(?:👤\s*)?(?:\*{1,2})?Profil(?:\s*&|\s*et)?\s*Comp[ée]tences?\s*(?:recherch[ée]s?)?\s*:?(?:\*{1,2})?\s*\n?/i,
+          "",
+        )
+        .trim();
+    } else if (/^(?:ℹ️|\*{0,2}\s*ℹ️|\*{0,2}\s*Modalit[ée]s?)/i.test(b)) {
+      modalites = b
+        .replace(
+          /^(?:ℹ️\s*)?(?:\*{1,2})?Modalit[ée]s?\s*:?(?:\*{1,2})?\s*\n?/i,
+          "",
+        )
+        .trim();
+    } else {
+      autresLignes.push(b);
+    }
+  }
+
+  return {
+    missions,
+    profilRecherche,
+    modalites,
+    detailNettoye: autresLignes.join("\n\n").trim(),
+  };
+}
+
 /** Complète une candidature venant d'une ancienne version (localStorage / cloud). */
 export function normalizeCandidature(c: Partial<Candidature>): Candidature {
   const base = emptyCandidature();
+  let missions = c.missions ?? "";
+  let profilRecherche = c.profilRecherche ?? "";
+  let modalites = c.modalites ?? "";
+  let detail = c.detail ?? "";
+
+  // Rétrocompatibilité : si les champs dédiés sont vides mais detail contient les sections structurées
+  if ((!missions || !profilRecherche) && detail) {
+    const extraits = extraireSectionsDetail(detail);
+    if (extraits.missions || extraits.profilRecherche || extraits.modalites) {
+      missions = missions || extraits.missions;
+      profilRecherche = profilRecherche || extraits.profilRecherche;
+      modalites = modalites || extraits.modalites;
+      detail = extraits.detailNettoye;
+    }
+  }
+
   return {
     ...base,
     ...c,
@@ -165,6 +268,10 @@ export function normalizeCandidature(c: Partial<Candidature>): Candidature {
     statut: (STATUTS as readonly string[]).includes(c.statut ?? "")
       ? (c.statut as Statut)
       : "Je vais postuler",
+    missions,
+    profilRecherche,
+    modalites,
+    detail,
     priorite: c.priorite ?? "auto",
     source: c.source ?? "",
     secteur: c.secteur ?? "",
@@ -321,6 +428,9 @@ export function toCsv(items: Candidature[]): string {
     "Dernier contact",
     "Date limite de candidature",
     "Commentaire",
+    "Missions clés",
+    "Profil recherché",
+    "Modalités",
     "Détail de l'offre",
   ];
   const esc = (v: string) => `"${(v ?? "").replace(/"/g, '""')}"`;
@@ -341,6 +451,9 @@ export function toCsv(items: Candidature[]): string {
       formatDate(c.dateDernierContact),
       formatDate(c.dateLimite),
       c.commentaire,
+      c.missions,
+      c.profilRecherche,
+      c.modalites,
       c.detail,
     ]
       .map(esc)

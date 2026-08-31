@@ -35,14 +35,19 @@ type Row = {
 
 function toProfil(r: Row): Profil {
   const base = emptyProfil();
+  const cvStructure = normaliserCvStructure(
+    r.cv_structure as Partial<CvStructure> | null,
+  );
   return {
     ...base,
     prenom: (r.prenom as string) ?? "",
     nom: (r.nom as string) ?? "",
+    titre: cvStructure.titre || "",
     formation: (r.formation as string) ?? base.formation,
     ecole: (r.ecole as string) ?? base.ecole,
     niveau: (r.niveau as string) ?? base.niveau,
     localisation: (r.localisation as string) ?? "",
+    pays: cvStructure.pays || "France",
     mobilite: (r.mobilite as string) ?? "",
     contrats: (r.contrats as string) ?? base.contrats,
     domaines: (r.domaines as string) ?? "",
@@ -54,20 +59,67 @@ function toProfil(r: Row): Profil {
     niveauAnglais: (r.niveau_anglais as string) ?? "",
     experiences: (r.experiences as string) ?? "",
     teletravail: (r.teletravail as string) ?? "",
+    modeTravail:
+      cvStructure.preferences?.teletravailPrefere ||
+      (r.teletravail?.includes("100%") ? "teletravail" : "hybride"),
     remuneration: (r.remuneration as string) ?? "",
     dateDebut: (r.date_debut as string) ?? "",
     duree: (r.duree as string) ?? "",
+    rechercheVraie:
+      (cvStructure as unknown as { rechercheVraie?: string })?.rechercheVraie ||
+      "",
+    environnements: (cvStructure as unknown as { environnements?: string[] })
+      ?.environnements || ["Grand groupe", "Scale-up"],
+    prioritesRecherche: (
+      cvStructure as unknown as { prioritesRecherche?: string[] }
+    )?.prioritesRecherche || ["Missions apprenantes", "Mentorat / Équipe"],
+    emailContact: cvStructure.email || "",
+    telephone: cvStructure.telephone || "",
+    linkedin: cvStructure.linkedin || "",
+    portfolio: cvStructure.portfolio || "",
+    github: cvStructure.github || "",
+    permis: cvStructure.permis || "",
+    photoUrl: cvStructure.photoUrl || "",
     criteres:
       (r.criteres as Partial<Record<Critere, Importance>> | null) ??
       base.criteres,
     cv: (r.cv as Profil["cv"]) ?? null,
-    cvStructure: normaliserCvStructure(
-      r.cv_structure as Partial<CvStructure> | null,
-    ),
+    cvStructure,
+    preferences: cvStructure.preferences,
+    syntheseIa: cvStructure.syntheseIa,
   };
 }
 
 function toRow(p: Profil, userId: string) {
+  const cvStructure = normaliserCvStructure({
+    ...p.cvStructure,
+    titre: p.titre || p.cvStructure.titre,
+    email: p.emailContact || p.cvStructure.email,
+    telephone: p.telephone || p.cvStructure.telephone,
+    linkedin: p.linkedin || p.cvStructure.linkedin,
+    portfolio: p.portfolio || p.cvStructure.portfolio,
+    github: p.github || p.cvStructure.github,
+    permis: p.permis || p.cvStructure.permis,
+    photoUrl: p.photoUrl || p.cvStructure.photoUrl,
+    ville: p.localisation || p.cvStructure.ville,
+    pays: p.pays || p.cvStructure.pays,
+    preferences: {
+      ...p.cvStructure.preferences,
+      ...p.preferences,
+      teletravailPrefere:
+        (p.modeTravail as
+          "full_remote" | "hybride" | "presentiel" | "indifferent") ||
+        p.cvStructure.preferences?.teletravailPrefere ||
+        "hybride",
+    },
+    syntheseIa: p.syntheseIa || p.cvStructure.syntheseIa,
+    ...(p.rechercheVraie ? { rechercheVraie: p.rechercheVraie } : {}),
+    ...(p.environnements ? { environnements: p.environnements } : {}),
+    ...(p.prioritesRecherche
+      ? { prioritesRecherche: p.prioritesRecherche }
+      : {}),
+  } as unknown as CvStructure);
+
   return {
     user_id: userId,
     prenom: p.prenom,
@@ -92,7 +144,7 @@ function toRow(p: Profil, userId: string) {
     duree: p.duree,
     criteres: p.criteres as never,
     cv: (p.cv ?? null) as never,
-    cv_structure: (p.cvStructure ?? null) as never,
+    cv_structure: cvStructure as never,
   };
 }
 

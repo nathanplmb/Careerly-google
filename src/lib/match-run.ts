@@ -12,29 +12,47 @@ export function profilEnTexte(p: Profil): string {
   const criteres = Object.entries(p.criteres ?? {})
     .map(([k, v]) => `${k} (${v})`)
     .join(", ");
+  const envs = (p.environnements ?? []).join(", ");
+  const priorites = (p.prioritesRecherche ?? []).join(", ");
+  const prefs = p.preferences;
+  const prefsTxt = prefs
+    ? [
+        prefs.secteursPrivilegies?.length ? `Secteurs privilégiés: ${prefs.secteursPrivilegies.join(", ")}` : "",
+        prefs.secteursAEviter?.length ? `Secteurs à éviter: ${prefs.secteursAEviter.join(", ")}` : "",
+        prefs.entreprisesCibles?.length ? `Entreprises cibles: ${prefs.entreprisesCibles.join(", ")}` : "",
+        prefs.taillesEntreprise?.length ? `Tailles d'entreprise: ${prefs.taillesEntreprise.join(", ")}` : "",
+        prefs.criteresNonNegociables?.length ? `Critères non négociables: ${prefs.criteresNonNegociables.join(", ")}` : "",
+      ].filter(Boolean).join(" | ")
+    : "";
+
   return (
-    ligne("Prénom/Nom", `${p.prenom} ${p.nom}`) +
-    ligne("Formation", p.formation) +
-    ligne("École", p.ecole) +
+    ligne("Prénom / Nom", `${p.prenom} ${p.nom}`) +
+    ligne("Titre professionnel", p.titre || p.cvStructure?.titre || "") +
+    ligne("Formation actuelle", p.formation) +
+    ligne("École / Université", p.ecole) +
     ligne("Niveau d'études", p.niveau) +
-    ligne("Localisation actuelle", p.localisation) +
+    ligne("Localisation actuelle", [p.localisation, p.pays].filter(Boolean).join(", ")) +
     ligne("Mobilité géographique", p.mobilite) +
     ligne("Type de contrat recherché", p.contrats) +
-    ligne("Domaines visés", p.domaines) +
-    ligne("Métiers visés", p.metiers) +
+    ligne("Domaines / Secteurs visés", p.domaines) +
+    ligne("Métiers ciblés", p.metiers) +
     ligne("Entreprises ciblées", p.entreprisesCiblees) +
-    ligne("Compétences", p.competences) +
-    ligne("Logiciels / outils", p.logiciels) +
-    ligne("Langues", p.langues) +
-    ligne("Niveau d'anglais", p.niveauAnglais) +
-    ligne("Expériences", p.experiences) +
-    ligne("Télétravail souhaité", p.teletravail) +
-    ligne("Rémunération souhaitée", p.remuneration) +
+    ligne("Ce que le candidat recherche vraiment (Aspirations)", p.rechercheVraie || "") +
+    ligne("Environnements d'entreprise préférés", envs) +
+    ligne("Priorités de recherche", priorites) +
+    ligne("Préférences & Critères clés", prefsTxt) +
+    ligne("Mode de travail souhaité", p.modeTravail || p.teletravail || "") +
+    ligne("Rémunération / Gratification souhaitée", p.remuneration) +
     ligne("Date de début souhaitée", p.dateDebut) +
     ligne("Durée souhaitée", p.duree) +
     ligne("Critères prioritaires", criteres) +
+    ligne("Compétences déclarées", p.competences) +
+    ligne("Logiciels / Outils déclarés", p.logiciels) +
+    ligne("Langues", p.langues) +
+    ligne("Niveau d'anglais", p.niveauAnglais) +
+    ligne("Expériences résumées", p.experiences) +
     ligne(
-      "CV détaillé",
+      "Détail du parcours (Expériences, Formations, Projets, Certifications)",
       cvStructureEnTexte(normaliserCvStructure(p.cvStructure)),
     )
   );
@@ -48,8 +66,11 @@ export function offreEnTexte(c: Candidature): string {
     ligne("Secteur", c.secteur) +
     ligne("Source", c.source) +
     ligne("Date limite de candidature", c.dateLimite) +
-    ligne("Commentaire", c.commentaire) +
-    ligne("Détail de l'offre", c.detail)
+    ligne("Missions clés", c.missions) +
+    ligne("Profil & Compétences recherchés", c.profilRecherche) +
+    ligne("Modalités", c.modalites) +
+    ligne("Commentaire & Conseils", c.commentaire) +
+    ligne("Détails supplémentaires", c.detail)
   );
 }
 

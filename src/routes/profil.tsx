@@ -15,42 +15,53 @@ import {
   CheckCircle2,
   Compass,
   GraduationCap,
+  Briefcase,
   Wrench,
+  Languages,
+  Lightbulb,
   SlidersHorizontal,
   FileCode,
   Sparkles,
+  TrendingUp,
+  UserRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSession } from "@/hooks/useSession";
 import { AppShell } from "@/components/AppShell";
 import { CvAnalyseDialog } from "@/components/CvAnalyseDialog";
-import { CvBuilder } from "@/components/CvBuilder";
 import { normaliserCvStructure } from "@/lib/cv-structure";
 import type { CvEtat } from "@/lib/cv";
 import { fetchProfil, saveProfilCloud } from "@/lib/profil-cloud";
 import { loadProfil, saveProfilLocal, type Profil } from "@/lib/profil";
 import { calculerCompletudeProfil } from "@/lib/profil-completion";
 import { ProfilHeaderCard } from "@/components/profil/ProfilHeaderCard";
-import { ProfilRechercheTab } from "@/components/profil/ProfilRechercheTab";
-import { ProfilFormationTab } from "@/components/profil/ProfilFormationTab";
-import { ProfilCompetencesTab } from "@/components/profil/ProfilCompetencesTab";
-import { ProfilCriteresTab } from "@/components/profil/ProfilCriteresTab";
+import { ProfilIdentityTab } from "@/components/profil/ProfilIdentityTab";
+import { ProfilObjectivesTab } from "@/components/profil/ProfilObjectivesTab";
+import { ProfilEducationTab } from "@/components/profil/ProfilEducationTab";
+import { ProfilExperiencesTab } from "@/components/profil/ProfilExperiencesTab";
+import { ProfilSkillsTab } from "@/components/profil/ProfilSkillsTab";
+import { ProfilLanguagesCertifsTab } from "@/components/profil/ProfilLanguagesCertifsTab";
+import { ProfilProjectsEngagementsTab } from "@/components/profil/ProfilProjectsEngagementsTab";
+import { ProfilPreferencesTab } from "@/components/profil/ProfilPreferencesTab";
+import { ProfilDocumentsTab } from "@/components/profil/ProfilDocumentsTab";
+import { ProfilSummaryIAModal } from "@/components/profil/ProfilSummaryIAModal";
+import { ProfilOptimizerModal } from "@/components/profil/ProfilOptimizerModal";
 
 export const Route = createFileRoute("/profil")({
   head: () => ({
     meta: [
-      { title: "Mon profil — Suivi de stage" },
+      { title: "Profil Candidat — Careerly Orbit" },
       {
         name: "description",
         content:
-          "Renseignez votre profil étudiant : formation, compétences, mobilité et critères pour un matching personnalisé des offres.",
+          "Le profil candidat complet de Careerly : identité, aspirations, formations, expériences avec KPI, compétences qualifiées et critères de matching IA.",
       },
-      { property: "og:title", content: "Mon profil — Suivi de stage" },
+      { property: "og:title", content: "Profil Candidat — Careerly Orbit" },
       {
         property: "og:description",
         content:
-          "Votre profil sert de base au score de correspondance des offres de stage.",
+          "Votre profil Careerly est la source de vérité pour le Match IA, l'analyseur de CV et les assistants de candidature.",
       },
     ],
   }),
@@ -63,6 +74,8 @@ function ProfilPage() {
   const [profil, setProfil] = useState<Profil>(() => loadProfil());
   const [saving, setSaving] = useState(false);
   const [cvOpen, setCvOpen] = useState(false);
+  const [summaryIaOpen, setSummaryIaOpen] = useState(false);
+  const [optimizerOpen, setOptimizerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("recherche");
   const [, startTransition] = useTransition();
 
@@ -70,7 +83,7 @@ function ProfilPage() {
   const profilRef = useRef(profil);
   profilRef.current = profil;
 
-  // Calcul du score de complétude et des pistes d'amélioration
+  // Calcul du score de complétude et des catégories
   const bilan = useMemo(() => calculerCompletudeProfil(profil), [profil]);
 
   // Synchronisation en arrière-plan avec le Cloud Supabase (sans bloquer l'affichage)
@@ -121,7 +134,7 @@ function ProfilPage() {
       try {
         const saved = await saveProfilCloud(p, user.id);
         setProfil(saved);
-        toast.success("Profil enregistré et synchronisé en ligne !");
+        toast.success("Profil synchronisé dans votre espace Careerly !");
       } catch {
         toast.error(
           "Enregistré localement (connexion cloud temporairement indisponible).",
@@ -131,7 +144,7 @@ function ProfilPage() {
       }
     } else {
       setSaving(false);
-      toast.success("Profil enregistré dans votre navigateur.");
+      toast.success("Profil sauvegardé dans votre navigateur.");
     }
   }, [user?.id]);
 
@@ -149,22 +162,37 @@ function ProfilPage() {
 
   return (
     <AppShell
-      eyebrow="Compte & Candidature"
-      title="Mon profil étudiant"
-      subtitle="Vos critères et compétences personnalisent le score de matching et la génération de lettres IA."
+      eyebrow="Career Profile"
+      title="Mon Profil Candidat"
+      subtitle="La source de vérité Careerly pour le Match IA, l'analyse de CV, la rédaction d'emails et le coaching d'entretien."
       actions={
         <div className="flex items-center gap-2">
           <Button
             size="sm"
             variant="outline"
-            onClick={() => setCvOpen(true)}
-            className="hidden sm:inline-flex border-primary/20 hover:bg-primary/5"
+            onClick={() => setSummaryIaOpen(true)}
+            className="hidden sm:inline-flex border-purple-500/30 hover:bg-purple-500/10 text-purple-300 gap-1.5"
           >
-            <Sparkles className="size-4 text-primary" />
-            Analyser mon CV avec l'IA
+            <Sparkles className="size-3.5" />
+            Profil IA
           </Button>
 
-          <Button size="sm" onClick={enregistrer} disabled={saving}>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setOptimizerOpen(true)}
+            className="hidden md:inline-flex border-indigo-500/30 hover:bg-indigo-500/10 text-indigo-300 gap-1.5"
+          >
+            <TrendingUp className="size-3.5" />
+            Optimiser IA
+          </Button>
+
+          <Button
+            size="sm"
+            onClick={enregistrer}
+            disabled={saving}
+            className="gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-xs font-semibold"
+          >
             {saving ? (
               <Loader2 className="size-4 animate-spin" />
             ) : (
@@ -175,142 +203,189 @@ function ProfilPage() {
         </div>
       }
     >
-      <div className="max-w-5xl space-y-6">
-        {/* Header dynamique avec score de complétude & badge de matching */}
+      <div className="max-w-6xl space-y-6">
+        {/* Header Dynamique avec Score de complétude & Actions Rapides */}
         <ProfilHeaderCard
           profil={profil}
           bilan={bilan}
           onOpenCvModal={() => setCvOpen(true)}
+          onOpenSummaryIaModal={() => setSummaryIaOpen(true)}
+          onOpenOptimizerModal={() => setOptimizerOpen(true)}
           onSelectTab={(tab) => {
             startTransition(() => setActiveTab(tab));
           }}
+          saving={saving}
         />
 
-        {/* Système d'onglets ergonomique et instantané */}
+        {/* Système d'onglets ergonomique et responsive */}
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
           className="grid gap-6"
         >
           <div className="overflow-x-auto pb-1">
-            <TabsList className="inline-flex w-full min-w-[580px] justify-start p-1 sm:w-auto">
+            <TabsList className="inline-flex w-full min-w-[760px] justify-start p-1 sm:w-auto bg-card/60 border border-border/60">
               <TabsTrigger
                 value="recherche"
-                className="flex items-center gap-2 px-3 py-1.5 text-xs sm:text-sm"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold"
               >
-                <Compass className="size-3.5" />
+                <Compass className="size-3.5 text-purple-400" />
                 Ma recherche
               </TabsTrigger>
 
               <TabsTrigger
-                value="formation"
-                className="flex items-center gap-2 px-3 py-1.5 text-xs sm:text-sm"
+                value="identite"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold"
               >
-                <GraduationCap className="size-3.5" />
-                Identité & Formation
+                <UserRound className="size-3.5 text-purple-400" />
+                Identité & Contact
+              </TabsTrigger>
+
+              <TabsTrigger
+                value="formation"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold"
+              >
+                <GraduationCap className="size-3.5 text-indigo-400" />
+                Formations
+              </TabsTrigger>
+
+              <TabsTrigger
+                value="experiences"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold"
+              >
+                <Briefcase className="size-3.5 text-purple-400" />
+                Expériences & KPI
               </TabsTrigger>
 
               <TabsTrigger
                 value="competences"
-                className="flex items-center gap-2 px-3 py-1.5 text-xs sm:text-sm"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold"
               >
-                <Wrench className="size-3.5" />
-                Compétences & Outils
+                <Wrench className="size-3.5 text-emerald-400" />
+                Compétences
               </TabsTrigger>
 
               <TabsTrigger
-                value="criteres"
-                className="flex items-center gap-2 px-3 py-1.5 text-xs sm:text-sm"
+                value="langues"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold"
               >
-                <SlidersHorizontal className="size-3.5" />
-                Critères & Priorités
+                <Languages className="size-3.5 text-indigo-400" />
+                Langues & Certifs
               </TabsTrigger>
 
               <TabsTrigger
-                value="cv"
-                className="flex items-center gap-2 px-3 py-1.5 text-xs sm:text-sm"
+                value="engagements"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold"
               >
-                <FileCode className="size-3.5" />
-                CV Structuré
+                <Lightbulb className="size-3.5 text-amber-400" />
+                Projets & Asso
+              </TabsTrigger>
+
+              <TabsTrigger
+                value="preferences"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold"
+              >
+                <SlidersHorizontal className="size-3.5 text-purple-400" />
+                Critères
+              </TabsTrigger>
+
+              <TabsTrigger
+                value="documents"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold"
+              >
+                <FileCode className="size-3.5 text-blue-400" />
+                CV & Documents
               </TabsTrigger>
             </TabsList>
           </div>
 
           {/* Onglet 1: Ma Recherche */}
           <TabsContent value="recherche" className="focus-visible:outline-none">
-            <ProfilRechercheTab profil={profil} onChange={updateProfil} />
+            <ProfilObjectivesTab profil={profil} onChange={updateProfil} />
           </TabsContent>
 
-          {/* Onglet 2: Identité & Formation */}
+          {/* Onglet 2: Identité & Contact */}
+          <TabsContent value="identite" className="focus-visible:outline-none">
+            <ProfilIdentityTab profil={profil} onChange={updateProfil} />
+          </TabsContent>
+
+          {/* Onglet 3: Formations */}
           <TabsContent value="formation" className="focus-visible:outline-none">
-            <ProfilFormationTab profil={profil} onChange={updateProfil} />
+            <ProfilEducationTab profil={profil} onChange={updateProfil} />
           </TabsContent>
 
-          {/* Onglet 3: Compétences & Outils */}
+          {/* Onglet 4: Expériences & KPI */}
+          <TabsContent
+            value="experiences"
+            className="focus-visible:outline-none"
+          >
+            <ProfilExperiencesTab profil={profil} onChange={updateProfil} />
+          </TabsContent>
+
+          {/* Onglet 5: Compétences */}
           <TabsContent
             value="competences"
             className="focus-visible:outline-none"
           >
-            <ProfilCompetencesTab profil={profil} onChange={updateProfil} />
+            <ProfilSkillsTab profil={profil} onChange={updateProfil} />
           </TabsContent>
 
-          {/* Onglet 4: Critères & Priorités */}
-          <TabsContent value="criteres" className="focus-visible:outline-none">
-            <ProfilCriteresTab profil={profil} onChange={updateProfil} />
-          </TabsContent>
-
-          {/* Onglet 5: CV Structuré & Import */}
-          <TabsContent
-            value="cv"
-            className="focus-visible:outline-none space-y-6"
-          >
-            <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-primary/20 bg-primary/5 p-4 sm:p-5">
-              <div className="space-y-1">
-                <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-                  <Sparkles className="size-4 text-primary" />
-                  Générateur & Auditeur de CV intelligent
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Importez votre CV (PDF / Word) pour pré-remplir
-                  automatiquement toutes les rubriques ou auditer vos mots-clés
-                  ATS.
-                </p>
-              </div>
-              <Button
-                size="sm"
-                onClick={() => setCvOpen(true)}
-                className="gap-1.5 shadow-sm"
-              >
-                <FileText className="size-4" />
-                Auditer / Importer un CV
-              </Button>
-            </div>
-
-            <CvBuilder
-              value={normaliserCvStructure(profil.cvStructure)}
-              onChange={(cv) => updateProfil({ cvStructure: cv })}
+          {/* Onglet 6: Langues & Certifications */}
+          <TabsContent value="langues" className="focus-visible:outline-none">
+            <ProfilLanguagesCertifsTab
+              profil={profil}
+              onChange={updateProfil}
             />
           </TabsContent>
 
-          {/* Barre de statut et d'enregistrement fixe/bas de page */}
-          <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border/60 bg-card/60 p-4 shadow-xs">
+          {/* Onglet 7: Projets & Engagements */}
+          <TabsContent
+            value="engagements"
+            className="focus-visible:outline-none"
+          >
+            <ProfilProjectsEngagementsTab
+              profil={profil}
+              onChange={updateProfil}
+            />
+          </TabsContent>
+
+          {/* Onglet 8: Critères & Pondérations */}
+          <TabsContent
+            value="preferences"
+            className="focus-visible:outline-none"
+          >
+            <ProfilPreferencesTab profil={profil} onChange={updateProfil} />
+          </TabsContent>
+
+          {/* Onglet 9: Documents & CV */}
+          <TabsContent value="documents" className="focus-visible:outline-none">
+            <ProfilDocumentsTab
+              profil={profil}
+              onChange={updateProfil}
+              onOpenCvModal={() => setCvOpen(true)}
+            />
+          </TabsContent>
+
+          {/* Barre de statut et de sauvegarde permanente */}
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border/60 bg-card/60 p-4 shadow-xs">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               {user ? (
                 <>
-                  <CheckCircle2 className="size-4 text-emerald-500" />
+                  <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
                   <span>
-                    Profil synchronisé sur votre compte cloud. Raccourci :{" "}
-                    <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-[10px]">
+                    Profil synchronisé sur votre compte cloud Supabase.
+                    Raccourci :{" "}
+                    <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-foreground">
                       Ctrl + S
                     </kbd>
                   </span>
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="size-4 text-blue-500" />
+                  <CheckCircle2 className="size-4 text-blue-400 shrink-0" />
                   <span>
-                    Enregistré localement. Connectez-vous pour synchroniser
-                    entre vos appareils.
+                    Enregistré localement. Connectez-vous pour synchroniser vos
+                    données sur tous vos appareils.
                   </span>
                 </>
               )}
@@ -320,20 +395,39 @@ function ProfilPage() {
               onClick={enregistrer}
               disabled={saving}
               size="sm"
-              className="gap-2"
+              className="gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold"
             >
               {saving ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
                 <Save className="size-4" />
               )}
-              Sauvegarder les modifications
+              Sauvegarder mon profil
             </Button>
           </div>
         </Tabs>
       </div>
 
-      {/* Modal d'analyse IA de CV */}
+      {/* Modal Synthèse IA "Ce que Careerly sait de moi" */}
+      <ProfilSummaryIAModal
+        open={summaryIaOpen}
+        onOpenChange={setSummaryIaOpen}
+        profil={profil}
+        onUpdateProfil={updateProfil}
+      />
+
+      {/* Modal Optimiser mon profil avec l'IA */}
+      <ProfilOptimizerModal
+        open={optimizerOpen}
+        onOpenChange={setOptimizerOpen}
+        profil={profil}
+        onNavigateTab={(tab) => {
+          setOptimizerOpen(false);
+          startTransition(() => setActiveTab(tab));
+        }}
+      />
+
+      {/* Modal d'analyse / Import IA de CV */}
       <CvAnalyseDialog
         open={cvOpen}
         onOpenChange={setCvOpen}

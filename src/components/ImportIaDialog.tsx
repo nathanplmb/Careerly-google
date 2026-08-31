@@ -51,7 +51,10 @@ export function ImportIaDialog({ open, onOpenChange, onResult }: Props) {
           ? r.dateLimite
           : "",
         commentaire: r.commentaire || "",
-        detail: r.resume?.trim() || texte.trim(),
+        missions: r.missions || "",
+        profilRecherche: r.profilRecherche || "",
+        modalites: r.modalites || "",
+        detail: r.detail?.trim() || "",
       });
       setTexte("");
       onOpenChange(false);

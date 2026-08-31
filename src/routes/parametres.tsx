@@ -3,21 +3,30 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
+  Check,
+  Copy,
   Download,
+  Globe,
   Loader2,
   LogIn,
   LogOut,
+  RefreshCw,
   ShieldCheck,
   Trash2,
   UserRound,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { useCandidatures } from "@/hooks/useCandidatures";
 import { useProfil } from "@/hooks/useProfil";
 import { fetchContacts } from "@/lib/contacts-cloud";
 import { supabase } from "@/integrations/supabase/client";
 import { setCompteActif } from "@/lib/auth-local";
+import {
+  appliquerCodeTransfert,
+  genererCodeTransfert,
+} from "@/lib/sync-transfert";
 import { UsageIaCard } from "@/components/UsageIaCard";
 
 export const Route = createFileRoute("/parametres")({
@@ -84,6 +93,43 @@ function ParametresPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
+  const [syncCode, setSyncCode] = useState("");
+  const [importCode, setImportCode] = useState("");
+
+  const handleGenerateSyncCode = () => {
+    const code = genererCodeTransfert();
+    setSyncCode(code);
+    toast.success("Code de transfert généré !");
+  };
+
+  const handleCopyCode = async () => {
+    if (!syncCode) return;
+    try {
+      await navigator.clipboard.writeText(syncCode);
+      toast.success("Code copié dans le presse-papiers !");
+    } catch {
+      toast.info("Copiez manuellement le code affiché.");
+    }
+  };
+
+  const handleApplyCode = async () => {
+    if (!importCode.trim()) {
+      toast.error("Veuillez coller un code de synchronisation valide.");
+      return;
+    }
+    const res = appliquerCodeTransfert(importCode);
+    if (res.success) {
+      toast.success(
+        `Synchronisation réussie ! ${res.candidaturesCount} candidatures et ${res.contactsCount} contacts importés.`,
+      );
+      await queryClient.invalidateQueries();
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
+    } else {
+      toast.error(res.message);
+    }
+  };
 
   const signOut = async () => {
     await queryClient.cancelQueries();
@@ -185,6 +231,71 @@ function ParametresPage() {
               </Link>
             </Button>
           )}
+        </Carte>
+
+        <Carte
+          titre="Synchronisation & Transfert (Preview ⇄ Vercel)"
+          description="Transférez l'intégralité de vos candidatures, contacts et profil entre la Preview Google AI Studio et votre déploiement Vercel en 1 clic sans aucune configuration serveur."
+        >
+          <div className="w-full space-y-4">
+            <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold">
+                  1. Exporter vos données de cet appareil
+                </span>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={handleGenerateSyncCode}
+                    className="h-7 text-xs gap-1.5"
+                  >
+                    <RefreshCw className="size-3" /> Générer le code
+                  </Button>
+                  {syncCode && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleCopyCode}
+                      className="h-7 text-xs gap-1.5"
+                    >
+                      <Copy className="size-3" /> Copier
+                    </Button>
+                  )}
+                </div>
+              </div>
+              {syncCode && (
+                <Textarea
+                  readOnly
+                  rows={2}
+                  value={syncCode}
+                  className="font-mono text-[10px] resize-none bg-background/50 select-all"
+                  onClick={(e) => (e.target as HTMLTextAreaElement).select()}
+                />
+              )}
+            </div>
+
+            <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
+              <span className="text-xs font-semibold">
+                2. Importer et écraser/mettre à jour avec un code de transfert
+              </span>
+              <Textarea
+                rows={2}
+                placeholder="Collez le code CAREERLY_SYNC_... généré depuis votre autre environnement"
+                value={importCode}
+                onChange={(e) => setImportCode(e.target.value)}
+                className="font-mono text-xs resize-none"
+              />
+              <Button
+                size="sm"
+                onClick={handleApplyCode}
+                className="w-full gap-2 mt-1"
+              >
+                <Globe className="size-3.5" /> Appliquer la synchronisation
+                immédiatement
+              </Button>
+            </div>
+          </div>
         </Carte>
 
         <UsageIaCard connecte={!!user} />

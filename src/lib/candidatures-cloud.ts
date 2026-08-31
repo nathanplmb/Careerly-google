@@ -35,9 +35,10 @@ function toCandidature(r: Row): Candidature {
     r.match && typeof r.match === "object" && "global" in (r.match as object)
       ? (r.match as MatchScore)
       : null;
+  const prepRaw = (r.preparation as Record<string, unknown> | null) ?? {};
   const preparation = {
     ...emptyPreparation(),
-    ...((r.preparation as Partial<Preparation> | null) ?? {}),
+    ...(prepRaw as Partial<Preparation>),
   };
   return normalizeCandidature({
     id: r.id,
@@ -52,6 +53,9 @@ function toCandidature(r: Row): Candidature {
     dateDernierContact: r.date_dernier_contact ?? "",
     dateLimite: r.date_limite ?? "",
     commentaire: r.commentaire ?? "",
+    missions: (prepRaw.missions as string) ?? "",
+    profilRecherche: (prepRaw.profilRecherche as string) ?? "",
+    modalites: (prepRaw.modalites as string) ?? "",
     detail: r.detail ?? "",
     priorite: (r.priorite as PrioriteChoix) || "auto",
     source: r.source ?? "",
@@ -89,7 +93,12 @@ function toRow(c: Candidature, userId: string) {
     secteur: c.secteur,
     archive: c.archive,
     match: (c.match ?? {}) as never,
-    preparation: c.preparation as never,
+    preparation: {
+      ...c.preparation,
+      missions: c.missions,
+      profilRecherche: c.profilRecherche,
+      modalites: c.modalites,
+    } as never,
   };
 }
 

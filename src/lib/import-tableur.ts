@@ -142,6 +142,10 @@ export const CHAMPS_CANDIDATURE = [
   { cle: "dateRelance", label: "Date de relance", requis: false },
   { cle: "dateLimite", label: "Date limite", requis: false },
   { cle: "commentaire", label: "Commentaire / notes", requis: false },
+  { cle: "missions", label: "Missions clés", requis: false },
+  { cle: "profilRecherche", label: "Profil recherché", requis: false },
+  { cle: "modalites", label: "Modalités", requis: false },
+  { cle: "detail", label: "Détail de l'offre", requis: false },
 ] as const;
 
 export type CleCandidature = (typeof CHAMPS_CANDIDATURE)[number]["cle"];
@@ -156,16 +160,7 @@ const MOTS_CANDIDATURE: Record<CleCandidature, string[]> = {
     "boite",
     "organisation",
   ],
-  poste: [
-    "poste",
-    "intitule",
-    "job",
-    "role",
-    "position",
-    "titre",
-    "offre",
-    "mission",
-  ],
+  poste: ["poste", "intitule", "job", "role", "position", "titre", "offre"],
   statut: ["statut", "status", "etat", "avancement", "etape"],
   lieu: ["lieu", "ville", "localisation", "location", "city", "site"],
   lien: ["lien", "url", "link", "annonce", "offre lien"],
@@ -190,6 +185,28 @@ const MOTS_CANDIDATURE: Record<CleCandidature, string[]> = {
     "observation",
     "comment",
   ],
+  missions: [
+    "missions",
+    "responsabilites",
+    "missions cles",
+    "taches",
+    "activities",
+  ],
+  profilRecherche: [
+    "profil",
+    "profil recherche",
+    "competences",
+    "requirements",
+    "qualifications",
+  ],
+  modalites: [
+    "modalites",
+    "conditions",
+    "duree",
+    "remuneration",
+    "gratification",
+  ],
+  detail: ["detail", "description", "texte offre", "fiche de poste"],
 };
 
 export function mappingAutoCandidature(colonnes: string[]): Mapping {
@@ -267,6 +284,10 @@ export function ligneVersCandidature(
     dateRelance: normaliserDate(val("dateRelance")),
     dateLimite: normaliserDate(val("dateLimite")),
     commentaire: val("commentaire"),
+    missions: val("missions"),
+    profilRecherche: val("profilRecherche"),
+    modalites: val("modalites"),
+    detail: val("detail"),
   };
 }
 

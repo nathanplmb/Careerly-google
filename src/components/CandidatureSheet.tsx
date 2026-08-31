@@ -67,12 +67,19 @@ export function CandidatureSheet({
 
   const enrichirViaIA = async () => {
     if (!form) return;
-    const contenuAAnalyser =
-      form.detail?.trim() ||
-      `${form.poste} ${form.entreprise} ${form.lieu} ${form.commentaire}`;
+    const contenuAAnalyser = [
+      form.detail?.trim(),
+      form.missions?.trim(),
+      form.profilRecherche?.trim(),
+      form.modalites?.trim(),
+      `${form.poste} ${form.entreprise} ${form.lieu} ${form.commentaire}`,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+
     if (contenuAAnalyser.length < 15) {
       setErreur(
-        "Veuillez coller le texte de l'offre dans 'Détail de l'offre' pour que l'IA puisse l'analyser.",
+        "Veuillez coller le texte ou le détail de l'offre pour que l'IA puisse l'analyser.",
       );
       return;
     }
@@ -113,7 +120,10 @@ export function CandidatureSheet({
             ? (r.priorite as Priorite)
             : form.priorite,
         commentaire: r.commentaire || form.commentaire || "",
-        detail: r.resume?.trim() || form.detail,
+        missions: r.missions || form.missions || "",
+        profilRecherche: r.profilRecherche || form.profilRecherche || "",
+        modalites: r.modalites || form.modalites || "",
+        detail: r.detail?.trim() || form.detail || "",
       });
     } catch (e) {
       setErreur(texteErreurIA(e));
@@ -349,23 +359,17 @@ export function CandidatureSheet({
                     onChange={(e) => set({ dateLimite: e.target.value })}
                   />
                 </div>
-                <div className="grid gap-2 sm:col-span-2">
-                  <Label htmlFor="commentaire">Commentaire</Label>
-                  <Input
-                    id="commentaire"
-                    value={form.commentaire}
-                    onChange={(e) => set({ commentaire: e.target.value })}
-                    placeholder="Entretien prévu le JJ/MM/AAAA"
-                  />
-                </div>
-                <div className="grid gap-2 sm:col-span-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="detail">Détail de l'offre</Label>
+                <div className="grid gap-2 sm:col-span-2 pt-2">
+                  <div className="flex items-center justify-between border-b pb-2 mb-1">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                      <Sparkles className="size-3.5 text-primary" />
+                      Contenu du poste & Analyse IA
+                    </span>
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      className="h-7 text-xs text-primary gap-1.5 hover:bg-primary/10"
+                      className="h-7 text-xs text-primary border-primary/30 hover:bg-primary/10 gap-1.5"
                       onClick={() => void enrichirViaIA()}
                       disabled={enriching}
                     >
@@ -379,16 +383,87 @@ export function CandidatureSheet({
                         : "Remplir & structurer avec l'IA"}
                     </Button>
                   </div>
+                  {erreur && tab === "details" && (
+                    <p className="text-xs text-destructive mb-2">{erreur}</p>
+                  )}
+                </div>
+
+                <div className="grid gap-2 sm:col-span-2">
+                  <Label
+                    htmlFor="missions"
+                    className="flex items-center gap-1.5"
+                  >
+                    <span>🎯</span> Missions clés
+                  </Label>
+                  <Textarea
+                    id="missions"
+                    rows={3}
+                    value={form.missions}
+                    onChange={(e) => set({ missions: e.target.value })}
+                    placeholder="• Responsabilités, projets à piloter, livrables attendus..."
+                  />
+                </div>
+
+                <div className="grid gap-2 sm:col-span-2">
+                  <Label
+                    htmlFor="profilRecherche"
+                    className="flex items-center gap-1.5"
+                  >
+                    <span>👤</span> Profil & Compétences recherchés
+                  </Label>
+                  <Textarea
+                    id="profilRecherche"
+                    rows={3}
+                    value={form.profilRecherche}
+                    onChange={(e) => set({ profilRecherche: e.target.value })}
+                    placeholder="• Formation (ex: Master Finance/Management), hard skills (Excel, PowerPoint...), langues, soft skills..."
+                  />
+                </div>
+
+                <div className="grid gap-2 sm:col-span-2">
+                  <Label
+                    htmlFor="modalites"
+                    className="flex items-center gap-1.5"
+                  >
+                    <span>ℹ️</span> Modalités du poste
+                  </Label>
+                  <Textarea
+                    id="modalites"
+                    rows={2}
+                    value={form.modalites}
+                    onChange={(e) => set({ modalites: e.target.value })}
+                    placeholder="• Type / Durée (ex: Stage 6 mois) • Début • Gratification • Télétravail..."
+                  />
+                </div>
+
+                <div className="grid gap-2 sm:col-span-2">
+                  <Label htmlFor="detail" className="flex items-center gap-1.5">
+                    <span>📝</span> Détails supplémentaires / Texte brut de
+                    l'offre
+                  </Label>
                   <Textarea
                     id="detail"
-                    rows={6}
+                    rows={3}
                     value={form.detail}
                     onChange={(e) => set({ detail: e.target.value })}
-                    placeholder="Copiez/collez ici le détail ou lien de l'offre pour que l'IA remplisse automatiquement le secteur, la source, le contact et synthétise le poste."
+                    placeholder="Collez ici le texte intégral de la fiche de poste ou des notes d'équipe complémentaires..."
                   />
-                  {erreur && tab === "details" && (
-                    <p className="text-xs text-destructive mt-1">{erreur}</p>
-                  )}
+                </div>
+
+                <div className="grid gap-2 sm:col-span-2">
+                  <Label
+                    htmlFor="commentaire"
+                    className="flex items-center gap-1.5"
+                  >
+                    <span>💬</span> Commentaire & Conseil stratégique
+                  </Label>
+                  <Textarea
+                    id="commentaire"
+                    rows={2}
+                    value={form.commentaire}
+                    onChange={(e) => set({ commentaire: e.target.value })}
+                    placeholder="Conseil stratégique pour postuler, points d'accroche ou notes de suivi..."
+                  />
                 </div>
               </div>
             </div>

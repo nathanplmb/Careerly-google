@@ -450,21 +450,33 @@ export function fallbackExtraireOffre(texte: string): OffreExtraite {
     }
   }
 
+  const missionsTexte = missions
+    .slice(0, 5)
+    .map((m) => `• ${m}`)
+    .join("\n");
+  const profilTexte = profil
+    .slice(0, 5)
+    .map((p) => `• ${p}`)
+    .join("\n");
+  const modalitesParts: string[] = [];
+  if (dureeOuContrat) modalitesParts.push(`• Type / Durée : ${dureeOuContrat}`);
+  if (lieu && lieu !== "Non précisé") modalitesParts.push(`• Lieu : ${lieu}`);
+  modalitesParts.push("• Démarrage : Dès que possible");
+  const modalitesTexte = modalitesParts.join("\n");
+
   const resumeParts: string[] = [];
-  if (missions.length > 0) {
+  if (missionsTexte) {
     resumeParts.push("🎯 **Missions clés :**");
-    missions.slice(0, 4).forEach((m) => resumeParts.push(`• ${m}`));
+    resumeParts.push(missionsTexte);
     resumeParts.push("");
   }
-  if (profil.length > 0) {
+  if (profilTexte) {
     resumeParts.push("👤 **Profil & Compétences recherchés :**");
-    profil.slice(0, 4).forEach((p) => resumeParts.push(`• ${p}`));
+    resumeParts.push(profilTexte);
     resumeParts.push("");
   }
   resumeParts.push("ℹ️ **Modalités :**");
-  if (dureeOuContrat) resumeParts.push(`• Type / Durée : ${dureeOuContrat}`);
-  if (lieu && lieu !== "Non précisé") resumeParts.push(`• Lieu : ${lieu}`);
-  resumeParts.push("• Démarrage : Dès que possible");
+  resumeParts.push(modalitesTexte);
 
   const resume = resumeParts.join("\n");
 
@@ -497,7 +509,11 @@ export function fallbackExtraireOffre(texte: string): OffreExtraite {
     source,
     secteur,
     priorite: priorite as "Haute" | "Moyenne" | "Faible" | "auto",
-    commentaire: commentaire.slice(0, 140),
+    commentaire: commentaire.slice(0, 160),
+    missions: missionsTexte,
+    profilRecherche: profilTexte,
+    modalites: modalitesTexte,
+    detail: "",
     resume,
   };
 }
