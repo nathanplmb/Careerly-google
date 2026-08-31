@@ -130,37 +130,6 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="fr" className="dark">
       <head>
         <HeadContent />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                var KEY = 'careerly:chunk-reload';
-                function isChunkError(msg) {
-                  return /Importing a module script failed|Failed to fetch dynamically imported module|error loading dynamically imported module|Loading chunk .* failed/i.test(msg || '');
-                }
-                function tryReload() {
-                  var last = sessionStorage.getItem(KEY);
-                  var now = Date.now();
-                  if (!last || (now - parseInt(last, 10)) > 10000) {
-                    sessionStorage.setItem(KEY, now.toString());
-                    window.location.reload();
-                  }
-                }
-                window.addEventListener('error', function(e) {
-                  if (isChunkError(e.message || (e.error && e.error.message))) {
-                    tryReload();
-                  }
-                });
-                window.addEventListener('unhandledrejection', function(e) {
-                  var msg = (e.reason && (e.reason.message || e.reason.stack)) || String(e.reason || '');
-                  if (isChunkError(msg)) {
-                    tryReload();
-                  }
-                });
-              })();
-            `,
-          }}
-        />
       </head>
       <body>
         {children}
@@ -170,47 +139,8 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
-const CLE_RECHARGEMENT = "careerly:chunk-reload";
-
-/** Après un déploiement, les anciens chunks disparaissent : on recharge de manière sécurisée. */
-function useRechargementSurChunkManquant() {
-  useEffect(() => {
-    const estErreurDeChunk = (message: string) =>
-      /Importing a module script failed|Failed to fetch dynamically imported module|error loading dynamically imported module|Loading chunk .* failed/i.test(
-        message,
-      );
-
-    const recharger = () => {
-      const last = sessionStorage.getItem(CLE_RECHARGEMENT);
-      const now = Date.now();
-      if (!last || now - Number.parseInt(last, 10) > 10000) {
-        sessionStorage.setItem(CLE_RECHARGEMENT, now.toString());
-        window.location.reload();
-      }
-    };
-
-    const onError = (e: ErrorEvent) => {
-      if (estErreurDeChunk(e.message ?? "")) recharger();
-    };
-    const onRejection = (e: PromiseRejectionEvent) => {
-      const reason = e.reason;
-      const message =
-        reason instanceof Error ? reason.message : String(reason ?? "");
-      if (estErreurDeChunk(message)) recharger();
-    };
-
-    window.addEventListener("error", onError);
-    window.addEventListener("unhandledrejection", onRejection);
-    return () => {
-      window.removeEventListener("error", onError);
-      window.removeEventListener("unhandledrejection", onRejection);
-    };
-  }, []);
-}
-
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  useRechargementSurChunkManquant();
 
   return (
     <QueryClientProvider client={queryClient}>
