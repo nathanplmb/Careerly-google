@@ -81,9 +81,20 @@ export function CandidatureSheet({
     try {
       const r = await runAnalyserOffre({ data: { texte: contenuAAnalyser } });
       set({
-        entreprise: form.entreprise || r.entreprise,
-        poste: form.poste || r.poste,
-        lieu: form.lieu || r.lieu,
+        entreprise:
+          !form.entreprise ||
+          form.entreprise === "Entreprise" ||
+          form.entreprise === "Nouvelle entreprise"
+            ? r.entreprise || form.entreprise
+            : form.entreprise,
+        poste:
+          !form.poste || form.poste === "Nouveau poste"
+            ? r.poste || form.poste
+            : form.poste,
+        lieu:
+          !form.lieu || form.lieu === "Non précisé"
+            ? r.lieu || form.lieu
+            : form.lieu,
         lien: form.lien || r.lien,
         source:
           form.source === "Autre" && r.source
@@ -101,7 +112,7 @@ export function CandidatureSheet({
             r.priorite === "Faible")
             ? (r.priorite as Priorite)
             : form.priorite,
-        commentaire: form.commentaire || r.commentaire || "",
+        commentaire: r.commentaire || form.commentaire || "",
         detail: r.resume?.trim() || form.detail,
       });
     } catch (e) {

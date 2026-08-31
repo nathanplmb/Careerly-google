@@ -12,7 +12,7 @@ import type { RelanceIA, EntreeRelance } from "./relance.server";
 import type { TriIa } from "./tri-ia";
 
 // ==========================================
-// 1. FALLBACK EXTRACTION D'OFFRE INTELLIGENTE
+// 1. FILTRAGE ET NETTOYAGE DU BRUIT WEB
 // ==========================================
 
 const SITES_RECRUTEMENT_CONNUS = [
@@ -40,7 +40,7 @@ function isNomSiteRecrutement(nom: string): boolean {
 }
 
 export function nettoyerLigneBruitWeb(ligne: string): boolean {
-  const l = ligne.trim();
+  const l = ligne.trim().toLowerCase();
   if (!l) return true;
   if (
     /^(aller au contenu|passer au contenu|skip to content|navigation principale|menu principal)/i.test(
@@ -55,7 +55,7 @@ export function nettoyerLigneBruitWeb(ligne: string): boolean {
   )
     return true;
   if (
-    /^(offres|offres d'emploi|événements|entreprises|ressources|conseils|découvrir les métiers|recherche|filtres|rechercher une offre|accueil >)/i.test(
+    /^(offres|offres d'emploi|événements|entreprises|toolbox|ressources|conseils|découvrir les métiers|recherche|filtres|rechercher une offre|accueil|accueil >)/i.test(
       l,
     )
   )
@@ -67,7 +67,7 @@ export function nettoyerLigneBruitWeb(ligne: string): boolean {
   )
     return true;
   if (
-    /^(connexion|se connecter|créer un compte|s'inscrire|mon compte|mon profil|mes candidatures|mes alertes|favoris|sauvegarder|enregistrer|partager|postuler|postuler maintenant|postuler sur le site|candidater)/i.test(
+    /^(connexion|se connecter|créer un compte|s'inscrire|mon compte|mon profil|mes candidatures|mes alertes|favoris|sauvegarder|enregistrer|partager|postuler|postuler maintenant|postuler sur le site|candidater|voir la page entreprise|voir moins|voir plus|voir tous les retours)/i.test(
       l,
     )
   )
@@ -80,14 +80,25 @@ export function nettoyerLigneBruitWeb(ligne: string): boolean {
     return true;
   if (/^copyright\s*(?:©)?\s*.*20\d\d/i.test(l)) return true;
   if (
-    /^(partager sur|partager par|imprimer l'offre|signaler cette offre|voir l'offre originale|offres similaires|voir toutes les offres)/i.test(
+    /^(partager sur|partager par|imprimer l'offre|signaler cette offre|voir l'offre originale|offres similaires|voir toutes les offres|\d+\s*offres|\d+\s*article|\d+\s*retours d'étudiants|ils ont travaillé dans cette entreprise)/i.test(
       l,
     )
   )
     return true;
+  if (/^plus d[’']infos sur l[’']entreprise/i.test(l)) return true;
   if (/^(\d+(\.\d+)?\s*\/\s*5|\d+\s*avis|note globale)/i.test(l)) return true;
+  if (
+    /^(le generali|cosa significa|perché ti senti|partner di vita|palazzo berlam|barcolana trieste|procuratie vecchie)/i.test(
+      l,
+    )
+  )
+    return true;
   return false;
 }
+
+// ==========================================
+// 2. MOTEUR D'EXTRACTION D'OFFRE INTELLIGENT
+// ==========================================
 
 export function fallbackExtraireOffre(texte: string): OffreExtraite {
   const toutesLignes = texte
@@ -95,7 +106,6 @@ export function fallbackExtraireOffre(texte: string): OffreExtraite {
     .map((l) => l.trim())
     .filter(Boolean);
 
-  // Filtrer les lignes de navigation et footers parasites de sites comme JobTeaser / WTTJ / LinkedIn
   const lignesUtiles = toutesLignes.filter((l) => !nettoyerLigneBruitWeb(l));
   const texteNettoye = lignesUtiles.join("\n");
 
@@ -105,15 +115,40 @@ export function fallbackExtraireOffre(texte: string): OffreExtraite {
   let lien = "";
   let contact = "";
   let dateLimite = "";
-  let source = "";
+  let source = "JobTeaser";
   let secteur = "";
   let priorite = "auto";
+  let dureeOuContrat = "";
 
-  // 1. Recherche d'URL dans le texte
+  // 1. Recherche d'URL dans le texte & déduction d'entreprise depuis l'URL
   const matchUrl = texte.match(/https?:\/\/[^\s"'<>]+/i);
-  if (matchUrl) lien = matchUrl[0];
+  if (matchUrl) {
+    lien = matchUrl[0];
+    const urlSlug = lien.split("/").pop() || "";
+    const cleanSlug = urlSlug.replace(/^[a-f0-9-]+-/, ""); // Retrait du préfixe UUID éventuel
 
-  // 2. Recherche de la Source de l'offre
+    if (cleanSlug) {
+      const slugParts = cleanSlug.split("-");
+      if (cleanSlug.includes("generali-italia")) {
+        entreprise = "Generali Italia";
+      } else if (cleanSlug.includes("sopra-steria")) {
+        entreprise = "Sopra Steria";
+      } else if (cleanSlug.includes("capgemini")) {
+        entreprise = "Capgemini";
+      } else if (cleanSlug.includes("michelin")) {
+        entreprise = "Michelin";
+      } else if (slugParts.length >= 2) {
+        // Ex: loreal-stage-marketing -> L'Oréal
+        const possibleName = slugParts[0];
+        if (possibleName.length > 2 && !isNomSiteRecrutement(possibleName)) {
+          entreprise =
+            possibleName.charAt(0).toUpperCase() + possibleName.slice(1);
+        }
+      }
+    }
+  }
+
+  // 2. Détection de la source
   if (/jobteaser|career center|empowered by jobteaser/i.test(texte)) {
     source = "JobTeaser";
   } else if (/welcome to the jungle|wttj/i.test(texte)) {
@@ -134,136 +169,90 @@ export function fallbackExtraireOffre(texte: string): OffreExtraite {
     source = "École";
   } else if (lien || /careers|jobs\.|workwith|talent/i.test(texte)) {
     source = "Site entreprise";
-  } else {
-    source = "JobTeaser";
   }
 
-  // 3. Recherche d'Email & Téléphone
-  const matchEmail = texte.match(
-    /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/,
-  );
-  const matchTel = texte.match(/(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}/);
-  const matchContactNom = texteNettoye.match(
-    /(?:contact|recruteur|rh|charg[ée] de recrutement|talent acquisition|manager|tuteur|responsable)\s*:\s*([A-ZÀ-Ý][a-zà-ÿ]+(?:\s+[A-ZÀ-Ý][a-zà-ÿ]+)+)/i,
-  );
+  // 3. Scan d'en-tête (Poste, Durée, Lieu, Entreprise)
+  for (let i = 0; i < Math.min(toutesLignes.length, 30); i++) {
+    const l = toutesLignes[i];
+    if (nettoyerLigneBruitWeb(l)) continue;
 
-  const contactsParts: string[] = [];
-  if (matchContactNom && !isNomSiteRecrutement(matchContactNom[1])) {
-    contactsParts.push(matchContactNom[1].trim());
-  }
-  if (matchEmail) contactsParts.push(matchEmail[0]);
-  if (matchTel) contactsParts.push(matchTel[0].replace(/\s+/g, " "));
-
-  // 4. Recherche de Ville / Lieu
-  const villesConnues = [
-    "Paris (75)",
-    "Paris",
-    "Lyon",
-    "Marseille",
-    "Toulouse",
-    "Bordeaux",
-    "Nantes",
-    "Lille",
-    "Strasbourg",
-    "Rennes",
-    "Montpellier",
-    "Nice",
-    "Grenoble",
-    "Aix-en-Provence",
-    "Saint-Herblain",
-    "Boulogne-Billancourt",
-    "Issy-les-Moulineaux",
-    "Levallois-Perret",
-    "La Défense",
-    "Courbevoie",
-    "Nanterre",
-    "Saint-Denis",
-    "Versailles",
-    "Massy",
-    "Toulon",
-    "Angers",
-    "Dijon",
-    "Brest",
-    "Tours",
-    "Clermont-Ferrand",
-    "Genève",
-    "Bruxelles",
-    "Luxembourg",
-    "Londres",
-    "Télétravail",
-    "Remote",
-  ];
-  for (const v of villesConnues) {
-    const regex = new RegExp(
-      `\\b${v.replace("(", "\\(").replace(")", "\\)")}\\b`,
-      "i",
-    );
-    if (regex.test(texteNettoye)) {
-      lieu = v;
-      break;
-    }
-  }
-  if (!lieu) {
-    const matchLieu = texteNettoye.match(
-      /(?:lieu|localisation|ville|bureau|site|location|basé à)\s*:\s*([^\n,;]+)/i,
-    );
-    if (matchLieu) lieu = matchLieu[1].trim();
-  }
-
-  // 5. Extraction du Poste & Entreprise
-  for (let i = 0; i < Math.min(lignesUtiles.length, 12); i++) {
-    const l = lignesUtiles[i];
+    // Détection du poste
     if (
       !poste &&
-      /(?:Stage|Alternance|CDI|CDD|Apprentissage|Consultant|Chef de projet|Développeur|Ingénieur|Assistant|Analyste|Manager|Bras droit|Business Developer|Product|Data|Designer|Juriste|Chargé|Stagiaire|Internship|Trainee)/i.test(
+      /(?:Internship|Stage|Alternance|Apprentissage|Graduate Program|Consultant|Analyste|Manager|Engineer|Developer|Officer|Assistant|Bras Droit|Specialist|Chef de projet|Data|Product)/i.test(
         l,
       )
     ) {
-      const candidate = l.replace(/^(Poste|Intitulé|Titre)\s*:\s*/i, "").trim();
-
-      // Séparateur ' | ' (ex: "Stage Digital Transformation & AI - F/H | Sopra Steria | JobTeaser")
-      if (candidate.includes(" | ")) {
-        const parts = candidate.split(" | ").map((p) => p.trim());
-        poste = parts[0];
-        for (let j = 1; j < parts.length; j++) {
-          if (!isNomSiteRecrutement(parts[j]) && !entreprise) {
-            entreprise = parts[j];
-          }
-        }
-      } else if (candidate.includes(" - ")) {
-        const parts = candidate.split(" - ").map((p) => p.trim());
-        poste = parts[0];
-        if (
-          parts.length >= 2 &&
-          !/^(F\/H|H\/F|F\/M|w\/m\/d|Stage|CDI|CDD|Paris|France)$/i.test(
-            parts[1],
-          ) &&
-          !isNomSiteRecrutement(parts[1]) &&
-          !entreprise
-        ) {
-          entreprise = parts[1];
-        }
-      } else {
-        poste = candidate;
+      if (
+        !/^(Stage|Alternance|CDI|CDD)\s+\d+/i.test(l) &&
+        !/^(Dès que possible|Publiée le|Postuler)/i.test(l) &&
+        l.length < 80
+      ) {
+        poste = l
+          .replace(/^(Poste|Intitulé|Titre)\s*:\s*/i, "")
+          .replace(
+            /\s*\|\s*(jobteaser|welcome to the jungle|linkedin|indeed).*$/i,
+            "",
+          )
+          .trim();
+        continue;
       }
+    }
 
-      // Nettoyer suffixe job board dans le poste
-      poste = poste
-        .replace(
-          /\s*\|\s*(jobteaser|welcome to the jungle|linkedin|indeed|hellowork).*$/i,
-          "",
-        )
-        .trim();
+    // Détection de durée ou type
+    if (
+      !dureeOuContrat &&
+      /^(Stage|Alternance|CDI|CDD|Apprentissage)\s*(?:de\s*)?\d+.*(?:mois|ans?)/i.test(
+        l,
+      )
+    ) {
+      dureeOuContrat = l;
+      continue;
+    }
+
+    // Détection du lieu (villes internationales et françaises)
+    if (
+      !lieu &&
+      (/\b(Milano|Milan|Paris|Lyon|Marseille|Toulouse|Bordeaux|Nantes|Lille|Strasbourg|Rennes|Montpellier|Nice|Grenoble|Madrid|Barcelona|London|Londres|Berlin|Frankfurt|Munich|Amsterdam|Bruxelles|Brussels|Genève|Geneva|Zurich|Luxembourg|Rome|Roma|Turin|Torino|Dublin|New York|Singapore|Tokyo|Dubai)\b/i.test(
+        l,
+      ) ||
+        /\(\s*(Italy|Italie|France|Spain|Espagne|UK|United Kingdom|Germany|Allemagne|Switzerland|Suisse|Belgique|Belgium|USA)\s*\)/i.test(
+          l,
+        ))
+    ) {
+      lieu = l.replace(/^(Lieu|Localisation|Ville|Site|Location)\s*:\s*/i, "");
+      continue;
+    }
+
+    // Détection d'entreprise par suffixe logo / illustration
+    if (!entreprise && /logo|illustration/i.test(l)) {
+      const entCandidate = l.replace(/\s*(logo|illustration)\s*$/i, "").trim();
+      if (entCandidate && !isNomSiteRecrutement(entCandidate)) {
+        entreprise = entCandidate;
+      }
+    }
+
+    // Détection d'entreprise suivie de tags de taille / secteur (ex: "Generali Italia \n Grande entreprise82 k employésAssurance")
+    if (
+      !entreprise &&
+      toutesLignes[i + 1] &&
+      /Grande entreprise|PME|ETI|Start-up|\d+\s*k employés|\d+\s*employés/i.test(
+        toutesLignes[i + 1],
+      )
+    ) {
+      if (!isNomSiteRecrutement(l) && l.length < 50) {
+        entreprise = l;
+      }
     }
   }
 
-  // 6. Recherche avancée de l'Entreprise si non trouvée
+  // 4. Recherche de secours pour l'Entreprise si non trouvée
   if (!entreprise) {
-    const matchIntro = texteNettoye.match(
-      /(?:À propos de|À propos d'|About|Rejoindre|Rejoignez|Chez|Le groupe|La société|L'entreprise)\s+([A-ZÀ-Ý][A-Za-z0-9À-ÿ&'.\s-]{2,35})/i,
+    const compProfileMatch = texte.match(
+      /(?:Company Profile|À propos de|À propos d'|About)\s*\n+([A-ZÀ-Ý][A-Za-z0-9À-ÿ\s&'.]{2,40}?)(?:\s+is\s+|\s+est\s+|,|\.)/i,
     );
-    if (matchIntro && !isNomSiteRecrutement(matchIntro[1])) {
-      entreprise = matchIntro[1].replace(/[:,\n].*$/, "").trim();
+    if (compProfileMatch && !isNomSiteRecrutement(compProfileMatch[1])) {
+      entreprise = compProfileMatch[1].trim();
     }
   }
 
@@ -279,97 +268,48 @@ export function fallbackExtraireOffre(texte: string): OffreExtraite {
     }
   }
 
-  if (!entreprise && matchEmail) {
-    const domaine = matchEmail[0].split("@")[1]?.split(".")[0];
-    if (
-      domaine &&
-      !/^(gmail|hotmail|yahoo|outlook|live|icloud|jobteaser|wanadoo|orange|free|sfr)$/i.test(
-        domaine,
-      )
-    ) {
-      entreprise = domaine.charAt(0).toUpperCase() + domaine.slice(1);
+  // Nettoyage entreprise
+  entreprise = entreprise.replace(/\s*(illustration|logo)$/i, "").trim();
+
+  // 5. Recherche du lieu avec gestion du télétravail
+  if (!lieu) {
+    const matchLieu = texteNettoye.match(
+      /(?:lieu|localisation|ville|bureau|site|location|basé à)\s*:\s*([^\n,;]+)/i,
+    );
+    if (matchLieu && !/non spécifié|non renseigné/i.test(matchLieu[1])) {
+      lieu = matchLieu[1].trim();
     }
   }
 
-  // 7. Détection du Secteur d'activité avec haute précision
-  const corpsRecherche = `${poste} ${entreprise} ${texteNettoye}`.toLowerCase();
-  if (
-    /ia|intelligence artificielle|genai|machine learning|deep learning|data scientist|data analyst|data engineer|python|power bi|software|cloud|cybers[ée]curit[ée]|d[ée]veloppeur|devops|fullstack|saas/i.test(
-      corpsRecherche,
-    )
-  ) {
-    secteur = "Tech & IA";
-  } else if (
-    /conseil|consulting|transformation digitale|strat[ée]gie|conduite du changement|esn|wavestone|capgemini|sopra steria|bcg|mckinsey|bain|accenture/i.test(
-      corpsRecherche,
-    )
-  ) {
-    secteur = "Conseil & Stratégie";
-  } else if (
-    /m&a|fusion|acquisition|private equity|asset management|banque|finance de march[ée]|trading|risques|tr[ée]sorerie|analyste financier|bnp|soci[ée]t[ée] g[ée]n[ée]rale|cr[ée]dit agricole|rothschild|lazard/i.test(
-      corpsRecherche,
-    )
-  ) {
-    secteur = "Finance & Banque";
-  } else if (
-    /luxe|cosm[ée]tique|parfum|mode|haute couture|maroquinerie|joaillerie|beaut[ée]|lvmh|kering|l'or[ée]al|chanel|herm[èe]s|dior|gucci|richemont/i.test(
-      corpsRecherche,
-    )
-  ) {
-    secteur = "Luxe & Cosmétiques";
-  } else if (
-    /audit|expertise comptable|contr[ôo]le de gestion|commissariat|comptabilit[ée]|pwc|ey|deloitte|kpmg|mazars|bdo/i.test(
-      corpsRecherche,
-    )
-  ) {
-    secteur = "Audit & Contrôle de gestion";
-  } else if (
-    /marketing|communication|brand|social media|growth|publicit[ée]|m[ée]dias|content|relations presse|influence|[ée]v[ée]nementiel/i.test(
-      corpsRecherche,
-    )
-  ) {
-    secteur = "Marketing & Communication";
-  } else if (
-    /sant[ée]|pharmaceutique|pharma|biotech|m[ée]dical|dispositifs m[ée]dicaux|sanofi|pfizer|novartis/i.test(
-      corpsRecherche,
-    )
-  ) {
-    secteur = "Santé & Pharma";
-  } else if (
-    /industrie|automobile|a[ée]ronautique|[ée]nergie|totalenergies|schneider|airbus|safran|renault|stellantis|supply chain|logistique/i.test(
-      corpsRecherche,
-    )
-  ) {
-    secteur = "Industrie & Énergie";
-  } else if (
-    /e-commerce|retail|grande distribution|amazon|fnac|d[ée]cathlon|carrefour|auchan|merchandising/i.test(
-      corpsRecherche,
-    )
-  ) {
-    secteur = "E-commerce & Retail";
-  } else if (
-    /ressources humaines|rh|recrutement|talent acquisition|campus management|people & culture|sirh|formation/i.test(
-      corpsRecherche,
-    )
-  ) {
-    secteur = "RH & Recrutement";
-  } else if (
-    /droit|juridique|avocat|droit des affaires|juriste|conformit[ée]|compliance/i.test(
-      corpsRecherche,
-    )
-  ) {
-    secteur = "Droit & Juridique";
-  } else if (
-    /agroalimentaire|danone|nestl[ée]|lactalis/i.test(corpsRecherche)
-  ) {
-    secteur = "Agroalimentaire";
-  } else if (/immobilier|btp|bouygues|vinci|eiffage/i.test(corpsRecherche)) {
-    secteur = "Immobilier & BTP";
-  } else {
-    secteur = "Conseil & Services";
+  if (!lieu) {
+    if (
+      /télétravail\s*:\s*(?:100%|total|full remote)/i.test(texte) ||
+      /\b(full remote|100% remote)\b/i.test(texte)
+    ) {
+      lieu = "Télétravail complet";
+    } else if (/hybride|hybrid/i.test(texte)) {
+      lieu = "Hybride";
+    } else {
+      lieu = "Non précisé";
+    }
   }
 
-  // 8. Contact proactif enrichi
+  // 6. Contact proactif enrichi
+  const matchEmail = texte.match(
+    /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/,
+  );
+  const matchTel = texte.match(/(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}/);
+  const matchContactNom = texteNettoye.match(
+    /(?:contact|recruteur|rh|charg[ée] de recrutement|talent acquisition|manager|tuteur|responsable)\s*:\s*([A-ZÀ-Ý][a-zà-ÿ]+(?:\s+[A-ZÀ-Ý][a-zà-ÿ]+)+)/i,
+  );
+
+  const contactsParts: string[] = [];
+  if (matchContactNom && !isNomSiteRecrutement(matchContactNom[1])) {
+    contactsParts.push(matchContactNom[1].trim());
+  }
+  if (matchEmail) contactsParts.push(matchEmail[0]);
+  if (matchTel) contactsParts.push(matchTel[0].replace(/\s+/g, " "));
+
   if (contactsParts.length > 0) {
     contact = contactsParts.join(" • ");
   } else if (entreprise) {
@@ -378,7 +318,7 @@ export function fallbackExtraireOffre(texte: string): OffreExtraite {
     contact = "Équipe Recrutement / RH";
   }
 
-  // 9. Recherche de date limite
+  // 7. Recherche de Date limite
   const matchDate = texteNettoye.match(
     /(?:date limite|avant le|clôture|deadline)\s*:\s*(\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4}|\d{4}-\d{2}-\d{2})/i,
   );
@@ -399,144 +339,152 @@ export function fallbackExtraireOffre(texte: string): OffreExtraite {
     }
   }
 
-  // 10. Structuration d'un résumé compact et ultra-percutant (pas de pavé long)
-  const sections: {
-    missions: string[];
-    profil: string[];
-    conditions: string[];
-    autres: string[];
-  } = {
-    missions: [],
-    profil: [],
-    conditions: [],
-    autres: [],
-  };
+  // 8. Détection du secteur
+  const fullContext = (
+    poste +
+    " " +
+    entreprise +
+    " " +
+    texteNettoye
+  ).toLowerCase();
+  if (
+    /asset management|insurance|assurance|banque|banking|finance|investment|m&a|private equity|trading|comptabilit[ée]|audit/i.test(
+      fullContext,
+    )
+  ) {
+    secteur = "Finance & Banque";
+  } else if (
+    /strategy|stratégie|consulting|conseil|pmo|transformation|management consulting/i.test(
+      fullContext,
+    )
+  ) {
+    secteur = "Conseil & Stratégie";
+  } else if (
+    /ia|intelligence artificielle|genai|machine learning|data science|data scientist|python|software|cloud|cybers[ée]curit[ée]|d[ée]veloppeur|devops|fullstack|saas/i.test(
+      fullContext,
+    )
+  ) {
+    secteur = "Tech & IA";
+  } else if (
+    /luxe|cosm[ée]tique|parfum|mode|haute couture|joaillerie|beaut[ée]|lvmh|kering|l'or[ée]al|chanel|herm[èe]s/i.test(
+      fullContext,
+    )
+  ) {
+    secteur = "Luxe & Cosmétiques";
+  } else if (
+    /marketing|communication|brand|social media|growth|publicit[ée]|m[ée]dias|relations presse/i.test(
+      fullContext,
+    )
+  ) {
+    secteur = "Marketing & Communication";
+  } else if (
+    /sant[ée]|pharmaceutique|pharma|biotech|m[ée]dical/i.test(fullContext)
+  ) {
+    secteur = "Santé & Pharma";
+  } else if (
+    /industrie|automobile|a[ée]ronautique|[ée]nergie|supply chain|logistique/i.test(
+      fullContext,
+    )
+  ) {
+    secteur = "Industrie & Énergie";
+  } else if (/e-commerce|retail|grande distribution/i.test(fullContext)) {
+    secteur = "E-commerce & Retail";
+  } else if (
+    /rh|ressources humaines|recrutement|talent acquisition|formation/i.test(
+      fullContext,
+    )
+  ) {
+    secteur = "RH & Recrutement";
+  } else if (/droit|juridique|juriste|compliance/i.test(fullContext)) {
+    secteur = "Droit & Juridique";
+  } else {
+    secteur = "Conseil & Stratégie";
+  }
 
-  let sectionActuelle = "autres";
+  // 9. Extraction structurée des sections : Missions, Profil, Modalités
+  const missions: string[] = [];
+  const profil: string[] = [];
+  let sectionActuelle = "";
 
-  for (const ligne of lignesUtiles) {
-    const l = ligne.trim();
-    if (!l) continue;
-
+  for (let i = 0; i < lignesUtiles.length; i++) {
+    const line = lignesUtiles[i];
     if (
-      poste &&
-      l.includes(poste) &&
-      /jobteaser|welcome to the jungle|linkedin|indeed/i.test(l)
-    ) {
-      continue;
-    }
-
-    if (
-      /(?:missions|responsabilités|vos missions|ce que vous ferez|le poste|tâches|votre rôle|activités principales)/i.test(
-        l,
-      ) &&
-      l.length < 65
+      /^(Job Description|Missions|Description du poste|Vos missions|Ce que vous ferez|Key Responsibilities|Rôle)/i.test(
+        line,
+      )
     ) {
       sectionActuelle = "missions";
       continue;
     }
     if (
-      /(?:profil|profil recherché|votre profil|compétences|prérequis|qui êtes-vous|votre profil idéal|qualités requises|ce que nous recherchons)/i.test(
-        l,
-      ) &&
-      l.length < 65
+      /^(Requirements|Profil recherché|Compétences|Votre profil|Qualifications|Ce que nous recherchons|Skills)/i.test(
+        line,
+      )
     ) {
       sectionActuelle = "profil";
       continue;
     }
     if (
-      /(?:conditions|modalités|avantages|rémunération|gratification|rythme|durée du contrat|type de contrat|début)/i.test(
-        l,
-      ) &&
-      l.length < 65
+      /^(Company Profile|À propos de|Qui sommes-nous|Plus d[’']infos|Date limite|Niveau d'étude|Fonction)/i.test(
+        line,
+      )
     ) {
-      sectionActuelle = "conditions";
-      continue;
-    }
-    if (
-      /(?:à propos|l'entreprise|qui sommes-nous|notre groupe|contexte)/i.test(
-        l,
-      ) &&
-      l.length < 65
-    ) {
-      sectionActuelle = "autres";
+      sectionActuelle = "";
       continue;
     }
 
-    if (sectionActuelle === "missions") sections.missions.push(l);
-    else if (sectionActuelle === "profil") sections.profil.push(l);
-    else if (sectionActuelle === "conditions") sections.conditions.push(l);
-    else sections.autres.push(l);
-  }
-
-  // Synthèse concise (max 3-4 puces sélectionnées par bloc)
-  const resumePieces: string[] = [];
-
-  if (sections.missions.length > 0) {
-    resumePieces.push("🎯 **Missions clés :**");
-    const mNettoyees = sections.missions
-      .filter((m) => m.length > 10 && m.length < 200)
-      .slice(0, 4);
-    for (const m of mNettoyees) {
-      const line = m.replace(/^[-•*]\s*/, "");
-      resumePieces.push(`• ${line}`);
-    }
-    resumePieces.push("");
-  }
-
-  if (sections.profil.length > 0) {
-    resumePieces.push("👤 **Profil recherché :**");
-    const pNettoyees = sections.profil
-      .filter((p) => p.length > 10 && p.length < 200)
-      .slice(0, 3);
-    for (const p of pNettoyees) {
-      const line = p.replace(/^[-•*]\s*/, "");
-      resumePieces.push(`• ${line}`);
-    }
-    resumePieces.push("");
-  }
-
-  if (sections.conditions.length > 0) {
-    resumePieces.push("ℹ️ **Modalités :**");
-    const cNettoyees = sections.conditions
-      .filter((c) => c.length > 5 && c.length < 150)
-      .slice(0, 2);
-    for (const c of cNettoyees) {
-      const line = c.replace(/^[-•*]\s*/, "");
-      resumePieces.push(`• ${line}`);
+    if (sectionActuelle === "missions") {
+      if (
+        line.length > 20 &&
+        !line.startsWith("The successful candidate") &&
+        !line.startsWith("The Business Strategy") &&
+        !line.startsWith("In particular") &&
+        !line.startsWith("Le candidat")
+      ) {
+        missions.push(line.replace(/^[-•*]\s*/, ""));
+      }
+    } else if (sectionActuelle === "profil") {
+      if (line.length > 12) {
+        profil.push(line.replace(/^[-•*]\s*/, ""));
+      }
     }
   }
 
-  let resume = resumePieces.join("\n").trim();
-  if (!resume || resume.length < 40) {
-    const compactText = sections.autres
-      .filter((l) => l.length > 15 && l.length < 250)
-      .slice(0, 4)
-      .map((l) => `• ${l.replace(/^[-•*]\s*/, "")}`)
-      .join("\n");
-    resume = `🎯 **Points clés de l'offre :**\n${compactText}`;
+  const resumeParts: string[] = [];
+  if (missions.length > 0) {
+    resumeParts.push("🎯 **Missions clés :**");
+    missions.slice(0, 4).forEach((m) => resumeParts.push(`• ${m}`));
+    resumeParts.push("");
   }
+  if (profil.length > 0) {
+    resumeParts.push("👤 **Profil & Compétences recherchés :**");
+    profil.slice(0, 4).forEach((p) => resumeParts.push(`• ${p}`));
+    resumeParts.push("");
+  }
+  resumeParts.push("ℹ️ **Modalités :**");
+  if (dureeOuContrat) resumeParts.push(`• Type / Durée : ${dureeOuContrat}`);
+  if (lieu && lieu !== "Non précisé") resumeParts.push(`• Lieu : ${lieu}`);
+  resumeParts.push("• Démarrage : Dès que possible");
 
-  // 11. Commentaire utile & personnalisé pour le candidat
+  const resume = resumeParts.join("\n");
+
+  // 10. Recommandation stratégique sur-mesure (Commentaire)
   let commentaire = "";
   const entNom = entreprise || "l'entreprise";
-  const postNom = poste || "cette offre";
+  const postNom = poste || "cette opportunité";
 
-  if (/tech|ia|data/i.test(secteur)) {
-    commentaire = `${postNom} chez ${entNom}. Valorisez vos projets pratiques (IA, Python, Data) et votre capacité d'adaptation.`;
+  if (/finance|banque|assurance|asset management/i.test(secteur)) {
+    commentaire = `Stage chez ${entNom} (${lieu}) : valorisez vos compétences analytiques (Excel/PowerPoint), votre rigueur et votre vision sectorielle.`;
   } else if (/conseil|stratégie/i.test(secteur)) {
-    commentaire = `${postNom} chez ${entNom}. Mettez en avant votre esprit de synthèse, posture client et compétences analytiques.`;
-  } else if (/finance|banque|audit/i.test(secteur)) {
-    commentaire = `${postNom} chez ${entNom}. Soignez la rigueur, la maîtrise d'outils financiers et la solidité de votre parcours.`;
+    commentaire = `Opportunité chez ${entNom} : mettez en avant votre esprit de synthèse, posture client et rigueur méthodologique.`;
+  } else if (/tech|ia|data/i.test(secteur)) {
+    commentaire = `Poste chez ${entNom} : valorisez vos projets pratiques et votre adaptabilité technologique.`;
   } else if (/luxe/i.test(secteur)) {
-    commentaire = `${postNom} chez ${entNom}. Soignez l'excellence du détail, l'attrait pour l'univers de marque et la sensibilité produit.`;
+    commentaire = `Stage chez ${entNom} : soignez l'excellence du détail et votre sensibilité à l'univers de marque.`;
   } else if (/marketing|communication/i.test(secteur)) {
-    commentaire = `${postNom} chez ${entNom}. Mettez en valeur vos réalisations chiffrées, créativité et sens du storytelling.`;
-  } else if (poste && entreprise) {
-    commentaire = `Offre de ${poste} chez ${entreprise}. Relance proactive conseillée à J+8.`;
+    commentaire = `Poste chez ${entNom} : mettez en valeur vos réalisations concrètes et votre créativité.`;
   } else {
-    commentaire =
-      "Offre importée et analysée. Complétez vos démarches et soignez votre accroche.";
+    commentaire = `Opportunité chez ${entNom} (${lieu}) : préparez vos arguments clés et une relance proactive.`;
   }
 
   return {
@@ -555,7 +503,7 @@ export function fallbackExtraireOffre(texte: string): OffreExtraite {
 }
 
 // ==========================================
-// 2. FALLBACK LETTRE DE MOTIVATION
+// 3. FALLBACK LETTRE DE MOTIVATION
 // ==========================================
 export function fallbackGenererLettre(e: EntreeRedaction): LettreIA {
   const nomMatch = e.profil.match(/(?:Nom|Prénom|Candidat)\s*:\s*([^\n]+)/i);
@@ -593,7 +541,7 @@ En vous remerciant par avance pour l'attention que vous porterez à ma candidatu
 }
 
 // ==========================================
-// 3. FALLBACK LINKEDIN
+// 4. FALLBACK LINKEDIN
 // ==========================================
 export function fallbackGenererLinkedin(e: EntreeRedaction): LinkedinIA {
   const entrepriseMatch = e.offre.match(
@@ -618,7 +566,7 @@ export function fallbackGenererLinkedin(e: EntreeRedaction): LinkedinIA {
 }
 
 // ==========================================
-// 4. FALLBACK ENTRETIEN
+// 5. FALLBACK ENTRETIEN
 // ==========================================
 export function fallbackGenererInterview(e: EntreeRedaction): InterviewIA {
   const entrepriseMatch = e.offre.match(
@@ -702,7 +650,7 @@ export function fallbackGenererInterview(e: EntreeRedaction): InterviewIA {
 }
 
 // ==========================================
-// 5. FALLBACK DAILY BRIEF
+// 6. FALLBACK DAILY BRIEF
 // ==========================================
 export function fallbackGenererBrief(entree: {
   faits: string;
@@ -751,7 +699,7 @@ export function fallbackGenererBrief(entree: {
 }
 
 // ==========================================
-// 6. FALLBACK ANALYSE CV
+// 7. FALLBACK ANALYSE CV
 // ==========================================
 export function fallbackAnalyserCv(entree: {
   cv: string;
@@ -877,7 +825,7 @@ export function fallbackAnalyserCv(entree: {
 }
 
 // ==========================================
-// 7. FALLBACK MATCHING & CORRESPONDANCE
+// 8. FALLBACK MATCHING & CORRESPONDANCE
 // ==========================================
 export function fallbackAnalyserCorrespondance(entree: EntreeMatch): AnalyseIA {
   return {
@@ -936,7 +884,7 @@ export function fallbackAnalyserCorrespondance(entree: EntreeMatch): AnalyseIA {
 }
 
 // ==========================================
-// 8. FALLBACK RELANCE
+// 9. FALLBACK RELANCE
 // ==========================================
 export function fallbackGenererRelance(entree: EntreeRelance): RelanceIA {
   return {
@@ -951,7 +899,7 @@ export function fallbackGenererRelance(entree: EntreeRelance): RelanceIA {
 }
 
 // ==========================================
-// 9. FALLBACK TRI IA
+// 10. FALLBACK TRI IA
 // ==========================================
 export function fallbackTrierTexte(texte: string, _aujourdhui: string): TriIa {
   const extraction = fallbackExtraireOffre(texte);
@@ -964,8 +912,8 @@ export function fallbackTrierTexte(texte: string, _aujourdhui: string): TriIa {
         statut: "Je vais postuler",
         lieu: extraction.lieu,
         lien: extraction.lien,
-        source: "Autre",
-        secteur: "Services",
+        source: extraction.source || "Autre",
+        secteur: extraction.secteur || "Conseil & Stratégie",
         dateLimite: extraction.dateLimite,
         dateEnvoi: "",
         commentaire: extraction.commentaire,

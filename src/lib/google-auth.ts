@@ -2,6 +2,8 @@ import { setCompteActif, type UtilisateurLocal } from "./auth-local";
 import { loadProfil, saveProfilLocal } from "./profil";
 
 export const GOOGLE_CLIENT_ID =
+  (typeof import.meta !== "undefined" &&
+    import.meta.env?.["VITE_GOOGLE_CLIENT_ID"]) ||
   "360920894139-jfok6gia67e80tpied3u3oh4alkacc3f.apps.googleusercontent.com";
 
 export interface GoogleUserInfo {
