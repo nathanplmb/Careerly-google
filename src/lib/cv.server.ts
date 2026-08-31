@@ -4,7 +4,7 @@ import {
   GEMINI_MODEL,
   extraireJsonPropre,
 } from "./gemini.server";
-import { messageErreurIA } from "./ai-gateway.server";
+import { fallbackAnalyserCv } from "./ai-fallbacks";
 
 const AnalyseSchema = z.object({
   global: z.number(),
@@ -132,21 +132,22 @@ const AnalyseSchema = z.object({
 
 export type AnalyseCvIA = z.infer<typeof AnalyseSchema>;
 
-const SYSTEM_INSTRUCTION = `Tu es un coach carrière spécialisé dans les CV d'étudiants qui cherchent un stage ou une alternance.
+const SYSTEM_INSTRUCTION = `Tu es l'assistant IA expert en recrutement de talents et audit de CV pour Grandes Écoles et cabinets de premier plan.
+Tu réalises un audit rigoureux, bienveillant et orienté résultats du CV d'un étudiant.
 
-RÈGLES ABSOLUES :
-- Ne JAMAIS inventer une information absente du CV. Si une information manque, laisse la chaîne vide ("") ou tableau vide ([]).
-- Réponds intégralement en français, en vouvoyant le candidat.
-- Ta réponse DOIT être un JSON valide respectant scrupuleusement la structure demandée :
-  * "scores" : exactement 4 entrées, dans cet ordre ("Clarté et structure", "Impact et résultats chiffrés", "Adéquation avec le projet (stage M1 PGE)", "Mots-clés et lisibilité ATS"), avec score 0-100 et explication factuelle.
-  * "global" : entier 0-100 cohérent.
-  * "pointsForts" : 2 à 5 atouts réels.
-  * "aCorriger" : 3 à 6 axes d'amélioration avec "titre", "conseil", "priorite" ("haute"|"moyenne"|"basse").
-  * "reformulations" : 3 à 6 puces réécrites ("avant", "apres").
-  * "motsClesManquants" : liste des mots clés pertinents absents.
-  * "resume" : 2 à 3 phrases de synthèse.
-  * "profilDetecte" : résumé profil textuel.
-  * "cvStructure" : extraction structurée (experiences, formations, certifications, projets, competences, langues, benevolats, interets).`;
+RÈGLES D'EXCELLENCE :
+- Rigueur factuelle : Ne JAMAIS inventer d'information absente du CV. Si un champ manque, chaîne vide ("") ou tableau vide ([]).
+- Tu vouvoies le candidat et apportes des conseils immédiatement actionnables.
+- Format JSON strict :
+  * "scores" : 4 dimensions évaluées ("Clarté et structure", "Impact et résultats chiffrés", "Adéquation avec le projet professionnel", "Mots-clés et lisibilité ATS"), chacune avec score 0-100 et explication constructive.
+  * "global" : note globale pondérée 0-100.
+  * "pointsForts" : 3 à 5 forces distinctives identifiées dans le parcours.
+  * "aCorriger" : 3 à 6 axes prioritaires avec titre percutant, conseil méthodologique (ex: méthode STAR, verbes d'action, métriques), et priorite ("haute"|"moyenne"|"basse").
+  * "reformulations" : 3 à 6 puces concrètes réécrites ("avant" = extrait brut, "apres" = version musclée avec verbe d'action et impact).
+  * "motsClesManquants" : liste des mots-clés et compétences recherchées par les recruteurs du secteur qui manquent.
+  * "resume" : synthèse globale percutante en 2-3 phrases.
+  * "profilDetecte" : synthèse structurée par champs pour pré-remplir le profil de l'étudiant.
+  * "cvStructure" : parsing exhaustif (expériences, formations, certifications, projets, compétences, langues, bénévolats, centres d'intérêt).`;
 
 export async function analyserCvIA(entree: {
   cv: string;
@@ -172,8 +173,8 @@ ${
     const rawParsed = extraireJsonPropre<AnalyseCvIA>(text);
     return normalise(AnalyseSchema.parse(rawParsed));
   } catch (error) {
-    console.error("[analyserCvIA] Erreur Gemini:", error);
-    throw new Error(messageErreurIA(error));
+    console.warn("[analyserCvIA] Repli intelligent activé:", error);
+    return fallbackAnalyserCv(entree);
   }
 }
 

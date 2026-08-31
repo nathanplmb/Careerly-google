@@ -80,9 +80,9 @@ function Index() {
   const tuto = useOnboarding(user?.id ?? null, ready && !authLoading);
 
   useEffect(() => {
-    if (user) setBioOn(biometricEnabled(user.id));
+    if (user?.id) setBioOn(biometricEnabled(user.id));
     else setBioOn(false);
-  }, [user]);
+  }, [user?.id]);
 
   const today = todayIso();
 

@@ -21,7 +21,7 @@ import { StatutBadge } from "@/components/StatutBadge";
 import { useCandidatures } from "@/hooks/useCandidatures";
 import { useProfil } from "@/hooks/useProfil";
 import { fetchContacts } from "@/lib/contacts-cloud";
-import type { Contact } from "@/lib/contacts";
+import { loadContactsLocal, type Contact } from "@/lib/contacts";
 import { STATUTS, type Candidature } from "@/lib/candidatures";
 
 export const Route = createFileRoute("/entreprises")({
@@ -49,7 +49,9 @@ export const Route = createFileRoute("/entreprises")({
 function EntreprisesPage() {
   const { user, authLoading, items, save } = useCandidatures();
   const profil = useProfil(user);
-  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>(() =>
+    loadContactsLocal(),
+  );
   const [recherche, setRecherche] = useState("");
   const [editing, setEditing] = useState<Candidature | null>(null);
   const [open, setOpen] = useState(false);
@@ -61,14 +63,14 @@ function EntreprisesPage() {
   const [detail, setDetail] = useState<Groupe | null>(null);
 
   useEffect(() => {
-    if (!user) {
-      setContacts([]);
+    if (!user?.id) {
+      setContacts(loadContactsLocal());
       return;
     }
     void fetchContacts()
       .then(setContacts)
-      .catch(() => undefined);
-  }, [user]);
+      .catch(() => setContacts(loadContactsLocal()));
+  }, [user?.id]);
 
   const groupes = useMemo(() => {
     const map = new Map<

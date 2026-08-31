@@ -120,3 +120,24 @@ export function contactEnTexte(c: Contact): string {
     l("Notes", c.notes)
   );
 }
+
+export const CONTACTS_STORAGE_KEY = "careerly_contacts_v1";
+
+export function loadContactsLocal(): Contact[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(CONTACTS_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as Contact[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveContactsLocal(items: Contact[]) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(CONTACTS_STORAGE_KEY, JSON.stringify(items));
+  } catch {
+    // ignorer
+  }
+}

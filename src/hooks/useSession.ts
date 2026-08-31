@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { getCompteActif } from "@/lib/auth-local";
@@ -42,21 +42,22 @@ export function useSession() {
     };
   }, []);
 
-  const computedUser: User | null = session?.user
-    ? session.user
-    : localUser
-      ? ({
-          id: localUser.id,
-          email: localUser.email,
-          user_metadata: {
-            full_name:
-              `${localUser.prenom ?? ""} ${localUser.nom ?? ""}`.trim(),
-          },
-          app_metadata: {},
-          aud: "authenticated",
-          created_at: localUser.creeLe,
-        } as unknown as User)
-      : null;
+  const computedUser: User | null = useMemo(() => {
+    if (session?.user) return session.user;
+    if (localUser) {
+      return {
+        id: localUser.id,
+        email: localUser.email,
+        user_metadata: {
+          full_name: `${localUser.prenom ?? ""} ${localUser.nom ?? ""}`.trim(),
+        },
+        app_metadata: {},
+        aud: "authenticated",
+        created_at: localUser.creeLe,
+      } as unknown as User;
+    }
+    return null;
+  }, [session?.user, localUser]);
 
   return { session, user: computedUser, loading };
 }

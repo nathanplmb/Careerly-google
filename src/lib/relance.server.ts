@@ -4,7 +4,7 @@ import {
   GEMINI_MODEL,
   extraireJsonPropre,
 } from "./gemini.server";
-import { messageErreurIA } from "./ai-gateway.server";
+import { fallbackGenererRelance } from "./ai-fallbacks";
 
 const RelanceSchema = z.object({
   objet: z.string(),
@@ -66,8 +66,8 @@ ${entree.consigne.slice(0, 1000) || "Aucune."}`;
     const parsed = extraireJsonPropre<RelanceIA>(text);
     return RelanceSchema.parse(parsed);
   } catch (error) {
-    console.error("[genererRelanceIA] Erreur Gemini:", error);
-    throw new Error(messageErreurIA(error));
+    console.warn("[genererRelanceIA] Repli intelligent activé:", error);
+    return fallbackGenererRelance(entree);
   }
 }
 

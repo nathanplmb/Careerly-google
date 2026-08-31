@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +28,8 @@ import { MatchPanel } from "@/components/MatchPanel";
 import { matchObsolete } from "@/lib/matching";
 import { lancerAnalyse, offreAnalysable } from "@/lib/match-run";
 import { texteErreurIA } from "@/lib/ai-erreurs";
+import { analyserOffre } from "@/lib/offre.functions";
+import { Sparkles, Loader2 } from "lucide-react";
 import type { Profil } from "@/lib/profil";
 
 type Props = {
@@ -46,8 +49,10 @@ export function CandidatureSheet({
 }: Props) {
   const [form, setForm] = useState<Candidature | null>(value);
   const [analyse, setAnalyse] = useState(false);
+  const [enriching, setEnriching] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
   const [tab, setTab] = useState("details");
+  const runAnalyserOffre = useServerFn(analyserOffre);
 
   useEffect(() => {
     setForm(value);
@@ -59,6 +64,52 @@ export function CandidatureSheet({
 
   const set = (patch: Partial<Candidature>) =>
     setForm((f) => (f ? { ...f, ...patch } : f));
+
+  const enrichirViaIA = async () => {
+    if (!form) return;
+    const contenuAAnalyser =
+      form.detail?.trim() ||
+      `${form.poste} ${form.entreprise} ${form.lieu} ${form.commentaire}`;
+    if (contenuAAnalyser.length < 15) {
+      setErreur(
+        "Veuillez coller le texte de l'offre dans 'Détail de l'offre' pour que l'IA puisse l'analyser.",
+      );
+      return;
+    }
+    setEnriching(true);
+    setErreur(null);
+    try {
+      const r = await runAnalyserOffre({ data: { texte: contenuAAnalyser } });
+      set({
+        entreprise: form.entreprise || r.entreprise,
+        poste: form.poste || r.poste,
+        lieu: form.lieu || r.lieu,
+        lien: form.lien || r.lien,
+        source:
+          form.source === "Autre" && r.source
+            ? (r.source as Source)
+            : form.source || (r.source as Source) || "JobTeaser",
+        secteur: form.secteur || r.secteur || "",
+        contact: form.contact || r.contact || "",
+        dateLimite:
+          form.dateLimite ||
+          (/^\d{4}-\d{2}-\d{2}$/.test(r.dateLimite ?? "") ? r.dateLimite : ""),
+        priorite:
+          form.priorite === "auto" &&
+          (r.priorite === "Haute" ||
+            r.priorite === "Moyenne" ||
+            r.priorite === "Faible")
+            ? (r.priorite as Priorite)
+            : form.priorite,
+        commentaire: form.commentaire || r.commentaire || "",
+        detail: r.resume?.trim() || form.detail,
+      });
+    } catch (e) {
+      setErreur(texteErreurIA(e));
+    } finally {
+      setEnriching(false);
+    }
+  };
 
   const setPrep = (patch: Partial<typeof form.preparation>) =>
     setForm((f) =>
@@ -297,14 +348,36 @@ export function CandidatureSheet({
                   />
                 </div>
                 <div className="grid gap-2 sm:col-span-2">
-                  <Label htmlFor="detail">Détail de l'offre</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="detail">Détail de l'offre</Label>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs text-primary gap-1.5 hover:bg-primary/10"
+                      onClick={() => void enrichirViaIA()}
+                      disabled={enriching}
+                    >
+                      {enriching ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Sparkles className="w-3.5 h-3.5" />
+                      )}
+                      {enriching
+                        ? "Analyse IA en cours..."
+                        : "Remplir & structurer avec l'IA"}
+                    </Button>
+                  </div>
                   <Textarea
                     id="detail"
                     rows={6}
                     value={form.detail}
                     onChange={(e) => set({ detail: e.target.value })}
-                    placeholder="Copiez/collez ici le détail de l'offre, elle peut être supprimée du site."
+                    placeholder="Copiez/collez ici le détail ou lien de l'offre pour que l'IA remplisse automatiquement le secteur, la source, le contact et synthétise le poste."
                   />
+                  {erreur && tab === "details" && (
+                    <p className="text-xs text-destructive mt-1">{erreur}</p>
+                  )}
                 </div>
               </div>
             </div>

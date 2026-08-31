@@ -4,8 +4,8 @@ import {
   GEMINI_MODEL,
   extraireJsonPropre,
 } from "./gemini.server";
-import { messageErreurIA } from "./ai-gateway.server";
 import { TRI_VIDE, type TriIa } from "./tri-ia";
+import { fallbackTrierTexte } from "./ai-fallbacks";
 
 const Schema = z.object({
   resume: z.string(),
@@ -50,24 +50,29 @@ export async function trierTexte(
   texte: string,
   aujourdhui: string,
 ): Promise<TriIa> {
-  const systemInstruction = `Tu es l'assistant de tri de Careerly, une application de suivi de candidatures (stages/alternances).
+  const systemInstruction = `Tu es l'assistant IA intelligent de tri et d'organisation pour étudiants et candidats (stages/alternances).
 On te donne un texte brut quelconque : annonce, e-mail, notes, liste d'entreprises, message LinkedIn, copier-coller de tableau, compte-rendu…
-Tu dois TOUT classer automatiquement, sans rien inventer. Si une information n'est pas dans le texte, laisse la chaîne vide.
-Date du jour : ${aujourdhui}. Toutes les dates doivent être au format AAAA-MM-JJ (convertis « vendredi prochain », « 15 sept » etc.).
+Tu analyses méthodiquement le contenu pour TOUT structurer sans rien inventer.
+Date du jour : ${aujourdhui}. Toutes les dates doivent être au format AAAA-MM-JJ.
 
 Classe en trois familles (JSON strict) :
 1. candidatures : chaque offre / opportunité / entreprise ciblée.
-   - statut parmi exactement : "Je vais postuler", "J'ai postulé", "J'ai relancé", "J'ai un entretien", "J'ai reçu une réponse négative", "Je n'ai pas reçu de réponse" (par défaut "Je vais postuler").
-   - source : LinkedIn, Welcome to the Jungle, JobTeaser, Indeed, Site entreprise, Candidature spontanée, Réseau, École, Autre.
-   - dateLimite : date limite pour postuler ; dateEnvoi : date d'envoi de la candidature si déjà envoyée.
-   - commentaire : une phrase utile (max 140 caractères) ; detail : résumé structuré (missions, profil, durée, rémunération).
-2. contacts : chaque personne citée (recruteur, RH, manager, ancien élève…).
-   - type parmi exactement : "Recruteur", "RH", "Manager", "Ancien élève", "Contact professionnel", "Rencontré en entretien".
-   - notes : ce que le texte dit d'utile sur la personne ou l'échange.
-3. echeances : chaque date importante (limite de candidature, relance à faire, entretien planifié).
-   - nature parmi : "limite", "relance", "entretien", "autre" ; entreprise concernée si connue.
+   - entreprise : nom propre de l'entreprise réelle (pas le job board).
+   - poste : intitulé propre du poste.
+   - statut : "Je vais postuler", "J'ai postulé", "J'ai relancé", "J'ai un entretien", "J'ai reçu une réponse négative", "Je n'ai pas reçu de réponse".
+   - source : "JobTeaser", "LinkedIn", "Welcome to the Jungle", "Indeed", "Site entreprise", "Candidature spontanée", "Réseau", "École", "Autre".
+   - secteur : "Tech & IA", "Conseil & Stratégie", "Finance & Banque", "Luxe & Cosmétiques", "Audit & Contrôle de gestion", "Marketing & Communication", "Santé & Pharma", "Industrie & Énergie", "E-commerce & Retail", "RH & Recrutement", "Droit & Juridique", "Agroalimentaire", "Immobilier & BTP", "Autre".
+   - dateLimite : date limite AAAA-MM-JJ ; dateEnvoi : date d'envoi si mentionnée.
+   - commentaire : conseil stratégique ou rappel (max 140 car).
+   - detail : résumé synthétique et très concis (missions clés, profil requis, modalités).
+2. contacts : chaque interlocuteur identifié (recruteur, RH, manager, tuteur, contact réseau).
+   - nom, entreprise, poste, email, telephone, linkedin.
+   - type : "Recruteur", "RH", "Manager", "Ancien élève", "Contact professionnel", "Rencontré en entretien".
+   - notes : informations utiles issues du texte.
+3. echeances : chaque jalon ou date clé (date limite, relance, date d'entretien).
+   - nature : "limite", "relance", "entretien", "autre".
 
-resume : 1 à 2 phrases décrivant ce que tu as trouvé et classé.`;
+resume : Synthèse de 1 à 2 phrases décrivant clairement ce qui a été détecté et extrait.`;
 
   const userPrompt = `Texte à classer :
 """
@@ -84,7 +89,7 @@ ${texte.slice(0, 20000)}
     const parsed = extraireJsonPropre<Partial<TriIa>>(text);
     return { ...TRI_VIDE, ...parsed };
   } catch (error) {
-    console.error("[trierTexte] Erreur Gemini:", error);
-    throw new Error(messageErreurIA(error));
+    console.warn("[trierTexte] Repli intelligent activé:", error);
+    return fallbackTrierTexte(texte, aujourdhui);
   }
 }

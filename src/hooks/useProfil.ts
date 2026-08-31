@@ -5,13 +5,14 @@ import { fetchProfil } from "@/lib/profil-cloud";
 
 /** Profil courant : cloud si connecté (avec repli local), sinon local. */
 export function useProfil(user: User | null) {
-  const [profil, setProfil] = useState<Profil | null>(null);
+  const [profil, setProfil] = useState<Profil | null>(() => loadProfil());
+  const userId = user?.id;
 
   useEffect(() => {
     let cancelled = false;
     const local = loadProfil();
     setProfil(local);
-    if (!user) return;
+    if (!userId) return;
     void fetchProfil()
       .then((cloud) => {
         if (!cancelled && cloud) {
@@ -23,7 +24,7 @@ export function useProfil(user: User | null) {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [userId]);
 
   return profil;
 }

@@ -134,7 +134,7 @@ function ProfilPage() {
     let cancelled = false;
     (async () => {
       const local = loadProfil();
-      if (!user) {
+      if (!user?.id) {
         if (!cancelled) {
           setProfil(local);
           setLoading(false);
@@ -153,7 +153,7 @@ function ProfilPage() {
     return () => {
       cancelled = true;
     };
-  }, [user, authLoading]);
+  }, [user?.id, authLoading]);
 
   const enregistrer = async () => {
     setSaving(true);

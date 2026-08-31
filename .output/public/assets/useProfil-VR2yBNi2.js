@@ -1,1 +1,0 @@
-import{i as e,n as t}from"./jsx-dev-runtime-C9LtdlTh.js";import{o as n,s as r,t as i}from"./profil-cloud-CLXN5LBW.js";var a=e(t(),1);function o(e){let[t,o]=(0,a.useState)(null);return(0,a.useEffect)(()=>{let t=!1,a=n();if(o(a),e)return i().then(e=>{!t&&e&&(o(e),r(e))}).catch(()=>void 0),()=>{t=!0}},[e]),t}export{o as t};

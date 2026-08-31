@@ -38,12 +38,20 @@ export function ImportIaDialog({ open, onOpenChange, onResult }: Props) {
         poste: r.poste,
         lieu: r.lieu,
         lien: r.lien,
-        contact: r.contact,
+        source: r.source || "JobTeaser",
+        secteur: r.secteur || "",
+        priorite:
+          r.priorite === "Haute" ||
+          r.priorite === "Moyenne" ||
+          r.priorite === "Faible"
+            ? r.priorite
+            : "auto",
+        contact: r.contact || "",
         dateLimite: /^\d{4}-\d{2}-\d{2}$/.test(r.dateLimite ?? "")
           ? r.dateLimite
           : "",
-        commentaire: r.commentaire,
-        detail: r.resume || texte,
+        commentaire: r.commentaire || "",
+        detail: r.resume?.trim() || texte.trim(),
       });
       setTexte("");
       onOpenChange(false);

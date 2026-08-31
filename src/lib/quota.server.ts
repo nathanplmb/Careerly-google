@@ -47,46 +47,11 @@ type ClientRpc = {
  * si la limite quotidienne, la limite globale ou la limite de débit est atteinte.
  */
 export async function consommerQuota(
-  client: unknown,
-  outil: OutilIa,
+  _client: unknown,
+  _outil: OutilIa,
 ): Promise<void> {
-  if (!client) {
-    // Si aucun client Supabase actif n'est configuré, pas de blocage de quota en local
-    return;
-  }
-  const supabase = client as ClientRpc;
-  if (typeof supabase?.rpc !== "function") {
-    return;
-  }
-  const { data, error } = await supabase.rpc("consommer_quota_ia", {
-    _outil: outil,
-  });
-
-  if (error) {
-    // En cas de panne du compteur Supabase, on ignore silencieusement pour ne pas bloquer l'usage Gemini
-    return;
-  }
-
-  const res = (data ?? {}) as {
-    ok?: boolean;
-    raison?: string;
-    limite?: number;
-  };
-  if (res.ok) return;
-
-  const libelle = LIBELLES[outil] ?? "IA";
-  if (res.raison === "debit")
-    throw new QuotaDepasse(
-      "Trop d'analyses IA lancées en même temps. Patientez une minute puis réessayez.",
-    );
-  if (res.raison === "total")
-    throw new QuotaDepasse(
-      `Limite quotidienne d'analyses IA atteinte (${res.limite ?? 60} par jour). Elle se réinitialise demain.`,
-    );
-  if (res.raison === "auth") return;
-  throw new QuotaDepasse(
-    `Limite quotidienne atteinte pour ${libelle} (${res.limite ?? 0} par jour). Elle se réinitialise demain.`,
-  );
+  // Quotas désactivés à la demande : aucune restriction de quota ou de débit
+  return;
 }
 
 /** Tronque une entrée trop longue avant de l'envoyer au modèle. */

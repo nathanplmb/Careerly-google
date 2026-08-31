@@ -20,7 +20,9 @@ import {
  * Partagé par toutes les pages (dashboard, candidatures, calendrier…).
  */
 export function useCandidatures() {
-  const { user, loading: authLoading } = useSession();
+  const { session, user, loading: authLoading } = useSession();
+  const isCloudUser = Boolean(session?.user?.id);
+  const userId = session?.user?.id || user?.id;
   const [items, setItems] = useState<Candidature[]>(SEED);
   const [ready, setReady] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -30,7 +32,7 @@ export function useCandidatures() {
     if (authLoading) return;
     let cancelled = false;
 
-    if (!user) {
+    if (!isCloudUser) {
       setItems(loadCandidatures());
       setReady(true);
       return;
@@ -42,9 +44,14 @@ export function useCandidatures() {
       try {
         const cloud = await fetchCandidatures();
         const local = loadCandidatures();
-        if (cloud.length === 0 && local.length > 0 && !migre.current) {
+        if (
+          cloud.length === 0 &&
+          local.length > 0 &&
+          !migre.current &&
+          userId
+        ) {
           migre.current = true;
-          const migrated = await insertManyCandidatures(local, user.id);
+          const migrated = await insertManyCandidatures(local, userId);
           if (!cancelled) {
             setItems(migrated);
             window.localStorage.removeItem(STORAGE_KEY);
@@ -56,7 +63,10 @@ export function useCandidatures() {
           setItems(cloud);
         }
       } catch {
-        if (!cancelled) toast.error("Synchronisation impossible.");
+        if (!cancelled) {
+          // Repli silencieux sur le stockage local si déconnecté ou erreur réseau
+          setItems(loadCandidatures());
+        }
       } finally {
         if (!cancelled) {
           setSyncing(false);
@@ -68,11 +78,11 @@ export function useCandidatures() {
     return () => {
       cancelled = true;
     };
-  }, [user, authLoading]);
+  }, [isCloudUser, userId, authLoading]);
 
-  // Multi-appareils : on relit le cloud au retour sur l'onglet.
+  // Multi-appareils : on relit le cloud au retour sur l'onglet si connecté au cloud
   useEffect(() => {
-    if (!user) return;
+    if (!isCloudUser) return;
     const refresh = () => {
       if (document.visibilityState !== "visible") return;
       void fetchCandidatures()
@@ -85,20 +95,20 @@ export function useCandidatures() {
       window.removeEventListener("focus", refresh);
       document.removeEventListener("visibilitychange", refresh);
     };
-  }, [user]);
+  }, [isCloudUser]);
 
   useEffect(() => {
-    if (ready && !user) saveCandidatures(items);
-  }, [items, ready, user]);
+    if (ready && !isCloudUser) saveCandidatures(items);
+  }, [items, ready, isCloudUser]);
 
   const pushCloud = useCallback(
     (c: Candidature) => {
-      if (!user) return;
-      void upsertCandidature(c, user.id).catch(() =>
+      if (!isCloudUser || !session?.user?.id) return;
+      void upsertCandidature(c, session.user.id).catch(() =>
         toast.error("Enregistrement en ligne impossible."),
       );
     },
-    [user],
+    [isCloudUser, session?.user?.id],
   );
 
   const patch = useCallback(
@@ -117,22 +127,22 @@ export function useCandidatures() {
   const remove = useCallback(
     (id: string) => {
       setItems((prev) => prev.filter((p) => p.id !== id));
-      if (user)
+      if (isCloudUser)
         void deleteCandidature(id).catch(() =>
           toast.error("Suppression en ligne impossible."),
         );
     },
-    [user],
+    [isCloudUser],
   );
 
   const save = useCallback(
     async (c: Candidature) => {
       let saved = c;
-      if (user) {
+      if (isCloudUser && session?.user?.id) {
         try {
-          saved = await upsertCandidature(c, user.id);
+          saved = await upsertCandidature(c, session.user.id);
         } catch {
-          toast.error("Enregistrement en ligne impossible.");
+          // Ne bloque pas la sauvegarde locale
         }
       }
       setItems((prev) =>
@@ -142,7 +152,7 @@ export function useCandidatures() {
       );
       return saved;
     },
-    [user],
+    [isCloudUser, session?.user?.id],
   );
 
   return {

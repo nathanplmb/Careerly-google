@@ -15,7 +15,13 @@ import { AppShell } from "@/components/AppShell";
 import { ContactSheet } from "@/components/ContactSheet";
 import { useSession } from "@/hooks/useSession";
 import { useProfil } from "@/hooks/useProfil";
-import { emptyContact, TYPES_CONTACT, type Contact } from "@/lib/contacts";
+import {
+  emptyContact,
+  loadContactsLocal,
+  saveContactsLocal,
+  TYPES_CONTACT,
+  type Contact,
+} from "@/lib/contacts";
 import {
   deleteContact,
   fetchContacts,
@@ -47,10 +53,13 @@ export const Route = createFileRoute("/contacts")({
 });
 
 function ContactsPage() {
-  const { user, loading } = useSession();
+  const { session, user, loading } = useSession();
+  const isCloudUser = Boolean(session?.user?.id);
   const profil = useProfil(user);
 
-  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>(() =>
+    loadContactsLocal(),
+  );
   const [candidatures, setCandidatures] = useState<Candidature[]>([]);
   const [chargement, setChargement] = useState(false);
   const [recherche, setRecherche] = useState("");
@@ -59,9 +68,8 @@ function ContactsPage() {
   const [courant, setCourant] = useState<Contact>(() => emptyContact());
 
   useEffect(() => {
-    if (!user) {
-      setContacts([]);
-      setCandidatures([]);
+    if (!isCloudUser) {
+      setContacts(loadContactsLocal());
       return;
     }
     let annule = false;
@@ -72,9 +80,8 @@ function ContactsPage() {
         setContacts(cs);
         setCandidatures(cands);
       })
-      .catch((e) => {
-        if (!annule)
-          toast.error(e instanceof Error ? e.message : "Chargement impossible");
+      .catch(() => {
+        if (!annule) setContacts(loadContactsLocal());
       })
       .finally(() => {
         if (!annule) setChargement(false);
@@ -82,7 +89,7 @@ function ContactsPage() {
     return () => {
       annule = true;
     };
-  }, [user]);
+  }, [isCloudUser]);
 
   const liste = useMemo(() => {
     const q = recherche.trim().toLowerCase();
@@ -103,31 +110,39 @@ function ContactsPage() {
   };
 
   const sauver = async (c: Contact) => {
-    if (!user) {
-      toast.error("Connectez-vous pour enregistrer vos contacts.");
-      return;
-    }
     setContacts((prev) => {
       const existe = prev.some((x) => x.id === c.id);
-      return existe ? prev.map((x) => (x.id === c.id ? c : x)) : [c, ...prev];
+      const next = existe
+        ? prev.map((x) => (x.id === c.id ? c : x))
+        : [c, ...prev];
+      if (!isCloudUser) saveContactsLocal(next);
+      return next;
     });
     setOuvert(false);
-    try {
-      await upsertContact(c, user.id);
-      toast.success("Contact enregistré");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Enregistrement impossible");
+    toast.success("Contact enregistré");
+    if (isCloudUser && session?.user?.id) {
+      try {
+        await upsertContact(c, session.user.id);
+      } catch {
+        // conservé localement
+      }
     }
   };
 
   const supprimer = async (c: Contact) => {
-    setContacts((prev) => prev.filter((x) => x.id !== c.id));
+    setContacts((prev) => {
+      const next = prev.filter((x) => x.id !== c.id);
+      if (!isCloudUser) saveContactsLocal(next);
+      return next;
+    });
     setOuvert(false);
-    try {
-      await deleteContact(c.id);
-      toast.success("Contact supprimé");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Suppression impossible");
+    toast.success("Contact supprimé");
+    if (isCloudUser) {
+      try {
+        await deleteContact(c.id);
+      } catch {
+        // conservé localement
+      }
     }
   };
 

@@ -3,16 +3,21 @@ import { GoogleGenAI } from "@google/genai";
 let _ai: GoogleGenAI | null = null;
 
 export function getGeminiClient(): GoogleGenAI {
+  const env =
+    typeof import.meta !== "undefined"
+      ? (import.meta as unknown as { env?: { VITE_GEMINI_API_KEY?: string } })
+          .env
+      : undefined;
+  const apiKey =
+    process.env.GEMINI_API_KEY ||
+    process.env.VITE_GEMINI_API_KEY ||
+    env?.VITE_GEMINI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("Clé AI manquante. Veuillez configurer GEMINI_API_KEY.");
+  }
+
   if (!_ai) {
-    const apiKey =
-      process.env.GEMINI_API_KEY ||
-      process.env.VITE_GEMINI_API_KEY ||
-      (typeof import.meta !== "undefined" &&
-        (import.meta as unknown as { env?: { VITE_GEMINI_API_KEY?: string } })
-          .env?.VITE_GEMINI_API_KEY);
-    if (!apiKey) {
-      throw new Error("Clé AI manquante. Veuillez configurer GEMINI_API_KEY.");
-    }
     _ai = new GoogleGenAI({
       apiKey,
       httpOptions: {

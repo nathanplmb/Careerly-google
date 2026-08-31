@@ -1,7 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Fingerprint, LogIn, LogOut, UserRound } from "lucide-react";
+import {
+  Fingerprint,
+  LogIn,
+  LogOut,
+  Settings,
+  Sparkles,
+  UserCheck,
+  UserPlus,
+  UserRound,
+} from "lucide-react";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,7 +29,7 @@ import {
   disableBiometric,
   enableBiometric,
 } from "@/lib/biometric";
-import { setCompteActif } from "@/lib/auth-local";
+import { getCompteActif, setCompteActif } from "@/lib/auth-local";
 
 export function AccountMenu({ user }: { user: User | null }) {
   const navigate = useNavigate();
@@ -28,9 +37,28 @@ export function AccountMenu({ user }: { user: User | null }) {
   const [bio, setBio] = useState(false);
   const [supported, setSupported] = useState(false);
 
+  const localCompte = getCompteActif();
+  const displayName =
+    (user?.user_metadata?.full_name as string) ||
+    (localCompte?.prenom
+      ? `${localCompte.prenom} ${localCompte.nom || ""}`.trim()
+      : null) ||
+    user?.email?.split("@")[0] ||
+    "Mon compte";
+
+  const initials = (
+    localCompte?.prenom?.[0] ||
+    user?.email?.[0] ||
+    "U"
+  ).toUpperCase();
+
   useEffect(() => {
     setSupported(biometricSupported());
-    setBio(user ? biometricEnabled(user.id) : false);
+    if (user?.id) {
+      setBio(biometricEnabled(user.id));
+    } else {
+      setBio(false);
+    }
   }, [user?.id]);
 
   const toggleBio = async () => {
@@ -57,7 +85,7 @@ export function AccountMenu({ user }: { user: User | null }) {
     try {
       await supabase.auth.signOut();
     } catch {
-      // Ignored
+      // Ignoré
     }
     toast.success("Déconnexion réussie");
     navigate({ to: "/auth", replace: true });
@@ -65,9 +93,15 @@ export function AccountMenu({ user }: { user: User | null }) {
 
   if (!user) {
     return (
-      <Button asChild size="sm" variant="outline">
+      <Button
+        asChild
+        size="sm"
+        variant="outline"
+        className="gap-2 border-primary/30 hover:bg-primary/5"
+      >
         <Link to="/auth">
-          <LogIn className="size-4" /> Créer un compte
+          <LogIn className="size-4 text-primary" />
+          <span>Connexion</span>
         </Link>
       </Button>
     );
@@ -76,31 +110,80 @@ export function AccountMenu({ user }: { user: User | null }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm">
-          <UserRound className="size-4" />
-          <span className="max-w-32 truncate">
-            {user.email ?? "Mon compte"}
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2 border-border/80 hover:bg-accent px-2.5"
+        >
+          <div className="flex size-5 items-center justify-center rounded-full bg-primary/10 text-[11px] font-bold text-primary">
+            {initials}
+          </div>
+          <span className="max-w-28 truncate text-xs font-medium">
+            {displayName}
           </span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64">
-        <DropdownMenuLabel className="truncate">{user.email}</DropdownMenuLabel>
+      <DropdownMenuContent align="end" className="w-64 p-1.5 shadow-xl">
+        <DropdownMenuLabel className="p-2 font-normal">
+          <div className="flex flex-col space-y-1">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-semibold text-foreground truncate">
+                {displayName}
+              </p>
+              <span className="inline-flex items-center gap-1 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                <UserCheck className="size-3" /> Connecté
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground truncate">
+              {user.email}
+            </p>
+            {localCompte?.ecole && (
+              <p className="text-[11px] text-muted-foreground/80 truncate">
+                🎓 {localCompte.ecole}
+              </p>
+            )}
+          </div>
+        </DropdownMenuLabel>
+
         <DropdownMenuSeparator />
+
+        <DropdownMenuItem asChild>
+          <Link to="/parametres" className="cursor-pointer gap-2 text-xs">
+            <Settings className="size-4 text-muted-foreground" />
+            <span>Paramètres & Profil</span>
+          </Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem asChild>
+          <Link to="/auth" className="cursor-pointer gap-2 text-xs">
+            <UserPlus className="size-4 text-muted-foreground" />
+            <span>Changer de compte</span>
+          </Link>
+        </DropdownMenuItem>
+
         {supported && (
           <DropdownMenuItem
+            className="cursor-pointer gap-2 text-xs"
             onSelect={(e) => {
               e.preventDefault();
               void toggleBio();
             }}
           >
-            <Fingerprint className="size-4" />
-            {bio
-              ? "Désactiver la biométrie"
-              : "Activer le déverrouillage biométrique"}
+            <Fingerprint className="size-4 text-muted-foreground" />
+            <span>
+              {bio ? "Désactiver la biométrie" : "Activer la biométrie"}
+            </span>
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem onSelect={() => void signOut()}>
-          <LogOut className="size-4" /> Se déconnecter
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem
+          className="cursor-pointer gap-2 text-xs text-destructive focus:bg-destructive/10 focus:text-destructive"
+          onSelect={() => void signOut()}
+        >
+          <LogOut className="size-4" />
+          <span>Se déconnecter</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

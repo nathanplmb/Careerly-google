@@ -4,7 +4,7 @@ import {
   GEMINI_MODEL,
   extraireJsonPropre,
 } from "./gemini.server";
-import { messageErreurIA } from "./ai-gateway.server";
+import { fallbackGenererBrief } from "./ai-fallbacks";
 
 const BriefSchema = z.object({
   resume: z.string(),
@@ -53,8 +53,8 @@ ${entree.faits.slice(0, 12000)}`;
     const parsed = extraireJsonPropre<BriefIA>(text);
     return BriefSchema.parse(parsed);
   } catch (error) {
-    console.error("[genererBriefIA] Erreur Gemini:", error);
-    throw new Error(messageErreurIA(error));
+    console.warn("[genererBriefIA] Repli intelligent activé:", error);
+    return fallbackGenererBrief(entree);
   }
 }
 
