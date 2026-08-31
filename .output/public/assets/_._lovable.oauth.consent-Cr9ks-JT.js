@@ -1,1 +1,0 @@
-import{t as e}from"./jsx-runtime-BkSabwWG.js";var t=e(),n=({error:e})=>(0,t.jsx)(`main`,{className:`flex min-h-screen items-center justify-center p-6 text-center`,children:(0,t.jsxs)(`p`,{className:`text-sm text-muted-foreground`,children:[`Impossible de charger cette demande d'autorisation :`,` `,String(e?.message??e)]})});export{n as errorComponent};

@@ -1,9 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Copy, Linkedin, Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, Copy, Linkedin, Loader2, Sparkles } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -13,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { AiContextCard } from "@/components/ai-hub/AiContextCard";
 import { useCandidatures } from "@/hooks/useCandidatures";
 import { useProfil } from "@/hooks/useProfil";
 import { genererLinkedin } from "@/lib/redaction.functions";
@@ -22,13 +22,13 @@ import { texteErreurIA } from "@/lib/ai-erreurs";
 export const Route = createFileRoute("/assistant/linkedin")({
   head: () => ({
     meta: [
-      { title: "LinkedIn Assistant — Careerly" },
+      { title: "LinkedIn Assistant — Careerly AI Hub" },
       {
         name: "description",
         content:
           "Générez vos notes d'invitation, messages de suivi et accroche de profil LinkedIn à partir de votre profil réel.",
       },
-      { property: "og:title", content: "LinkedIn Assistant — Careerly" },
+      { property: "og:title", content: "LinkedIn Assistant — Careerly AI Hub" },
       {
         property: "og:description",
         content:
@@ -59,8 +59,9 @@ function Bloc({ titre, texte }: { titre: string; texte: string }) {
           size="sm"
           onClick={() => {
             void navigator.clipboard.writeText(texte);
-            toast.success("Copié.");
+            toast.success("Copié dans le presse-papiers.");
           }}
+          className="h-7 text-xs"
         >
           <Copy className="size-3.5" /> Copier
         </Button>
@@ -101,6 +102,7 @@ function LinkedinPage() {
         accrocheProfil: r.accrocheProfil ?? "",
         conseils: r.conseils ?? [],
       });
+      toast.success("Messages LinkedIn générés !");
     } catch (e) {
       toast.error(texteErreurIA(e));
     } finally {
@@ -110,99 +112,134 @@ function LinkedinPage() {
 
   return (
     <AppShell
-      eyebrow="AI Studio"
+      eyebrow="Careerly AI Hub"
       title="LinkedIn Assistant"
-      subtitle="Invitations, messages de suivi et accroche de profil"
+      subtitle="Invitations réseau, messages d'approche et accroche de profil"
+      headerExtra={
+        <Button
+          asChild
+          variant="outline"
+          size="sm"
+          className="h-8 gap-1.5 rounded-xl border-border/70 text-xs text-muted-foreground hover:text-foreground"
+        >
+          <Link to="/assistant">
+            <ArrowLeft className="size-3.5" />
+            <span>Retour AI Hub</span>
+          </Link>
+        </Button>
+      }
       actions={
         authLoading ? (
           <Loader2 className="size-5 animate-spin opacity-70" />
         ) : null
       }
     >
-      <div className="grid gap-4 lg:grid-cols-[1fr_1.15fr]">
-        <section className="glass-card pop-in flex flex-col gap-4 p-5">
-          <div>
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Offre ciblée (facultatif)
-            </label>
-            <Select value={cibleId} onValueChange={setCibleId}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="aucune">Aucune offre</SelectItem>
-                {items.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>
-                    {c.entreprise} — {c.poste}
+      <div className="space-y-6">
+        <AiContextCard />
+
+        <div className="grid gap-4 lg:grid-cols-[1fr_1.2fr]">
+          <section className="glass-card pop-in p-5 space-y-4">
+            <div className="flex items-center gap-2 text-primary font-semibold text-sm">
+              <Linkedin className="size-4" />
+              <span>Paramètres de génération</span>
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold text-foreground">
+                Offre ciblée (optionnel) :
+              </label>
+              <Select value={cibleId} onValueChange={setCibleId}>
+                <SelectTrigger className="rounded-xl">
+                  <SelectValue placeholder="Général (sans offre spécifique)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="aucune">
+                    Général (sans offre spécifique)
                   </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+                  {items.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.entreprise} — {c.poste}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-          <div>
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Consigne complémentaire
-            </label>
-            <Textarea
-              value={consigne}
-              onChange={(e) => setConsigne(e.target.value)}
-              rows={5}
-              placeholder="Ex : je contacte un ancien élève de mon école, ton un peu plus direct."
-            />
-          </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold text-foreground">
+                Consigne spécifique ou ton souhaité :
+              </label>
+              <Textarea
+                value={consigne}
+                onChange={(e) => setConsigne(e.target.value)}
+                placeholder="Ex: Ton chaleureux, prise de contact auprès d'un alumni de mon école..."
+                className="min-h-[100px] rounded-xl text-xs"
+              />
+            </div>
 
-          <Button onClick={() => void generer()} disabled={loading || !profil}>
-            {loading ? (
+            <Button
+              onClick={generer}
+              disabled={loading || !profil}
+              className="w-full gap-2 rounded-xl bg-primary text-xs font-semibold text-primary-foreground shadow-sm"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />
+                  <span>Rédaction en cours...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="size-4" />
+                  <span>Générer mes messages LinkedIn</span>
+                </>
+              )}
+            </Button>
+          </section>
+
+          <section className="space-y-3">
+            {res ? (
               <>
-                <Loader2 className="animate-spin" /> Génération…
+                <Bloc
+                  titre="Note d'invitation (< 300 caractères)"
+                  texte={res.invitation}
+                />
+                <Bloc
+                  titre="Message de suivi / InMail"
+                  texte={res.messageSuivi}
+                />
+                <Bloc
+                  titre="Accroche pour votre profil LinkedIn"
+                  texte={res.accrocheProfil}
+                />
+                {res.conseils.length > 0 && (
+                  <div className="rounded-2xl border border-primary/20 bg-card/60 p-4">
+                    <h3 className="mb-2 text-xs font-semibold text-primary">
+                      Conseils de conversion
+                    </h3>
+                    <ul className="space-y-1.5 text-xs text-muted-foreground">
+                      {res.conseils.map((c, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <span className="mt-1 size-1.5 rounded-full bg-primary shrink-0" />
+                          <span>{c}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </>
             ) : (
-              <>
-                <Sparkles /> Générer mes messages
-              </>
+              <div className="glass-card p-10 text-center text-xs text-muted-foreground">
+                <Linkedin className="mx-auto size-8 text-muted-foreground/50 mb-2" />
+                <p className="font-medium text-foreground">
+                  Aucun message généré pour le moment.
+                </p>
+                <p className="mt-1">
+                  Configurez vos options à gauche et cliquez sur "Générer".
+                </p>
+              </div>
             )}
-          </Button>
-
-          {!profil && (
-            <p className="text-xs text-muted-foreground">
-              Renseignez d'abord{" "}
-              <Link to="/profil" className="text-primary hover:underline">
-                votre profil
-              </Link>
-              .
-            </p>
-          )}
-        </section>
-
-        <section className="flex flex-col gap-3">
-          {!res && (
-            <p className="glass-card p-8 text-center text-sm text-muted-foreground">
-              <Linkedin className="mx-auto mb-3 size-6 text-primary" />
-              Vos messages LinkedIn générés apparaîtront ici.
-            </p>
-          )}
-          {res && (
-            <div className="pop-in flex flex-col gap-3">
-              <Bloc titre="Note d'invitation" texte={res.invitation} />
-              <Bloc
-                titre="Message après acceptation"
-                texte={res.messageSuivi}
-              />
-              <Bloc titre="Accroche de profil" texte={res.accrocheProfil} />
-              {res.conseils.length > 0 && (
-                <div className="rounded-2xl border border-border/60 bg-card/60 p-4">
-                  <h3 className="mb-2 text-sm font-semibold">Conseils</h3>
-                  <ul className="list-disc pl-5 text-[13.5px] text-muted-foreground">
-                    {res.conseils.map((c, i) => (
-                      <li key={i}>{c}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-        </section>
+          </section>
+        </div>
       </div>
     </AppShell>
   );

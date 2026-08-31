@@ -1,12 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Loader2, RefreshCw, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  ChevronRight,
+  Loader2,
+  RefreshCw,
+  Sparkles,
+} from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 
 import { Button } from "@/components/ui/button";
 import { MatchBadge } from "@/components/MatchBadge";
 import { MatchPanel } from "@/components/MatchPanel";
+import { AiContextCard } from "@/components/ai-hub/AiContextCard";
 import { useCandidatures } from "@/hooks/useCandidatures";
 import { useProfil } from "@/hooks/useProfil";
 import { matchObsolete, niveauMatch } from "@/lib/matching";
@@ -17,13 +24,13 @@ import type { Candidature } from "@/lib/candidatures";
 export const Route = createFileRoute("/assistant/match")({
   head: () => ({
     meta: [
-      { title: "Match IA — Careerly" },
+      { title: "Match IA — Careerly AI Hub" },
       {
         name: "description",
         content:
           "Classement IA de vos offres : score de correspondance, points forts, vigilance et compétences à renforcer.",
       },
-      { property: "og:title", content: "Match IA — Careerly" },
+      { property: "og:title", content: "Match IA — Careerly AI Hub" },
       {
         property: "og:description",
         content:
@@ -116,116 +123,145 @@ function MatchPage() {
 
   return (
     <AppShell
-      eyebrow="AI Studio"
-      title="Match IA"
-      subtitle={`Score moyen ${moyenne}% sur ${items.length} opportunité(s)`}
+      eyebrow="Careerly AI Hub"
+      title="Match IA & Compatibilité"
+      subtitle={`Score moyen de ${moyenne}% sur ${items.length} opportunité(s)`}
+      headerExtra={
+        <Button
+          asChild
+          variant="outline"
+          size="sm"
+          className="h-8 gap-1.5 rounded-xl border-border/70 text-xs text-muted-foreground hover:text-foreground"
+        >
+          <Link to="/assistant">
+            <ArrowLeft className="size-3.5" />
+            <span>Retour AI Hub</span>
+          </Link>
+        </Button>
+      }
       actions={
         authLoading ? (
           <Loader2 className="size-5 animate-spin opacity-70" />
         ) : null
       }
     >
-      <div className="mb-4">
-        <Button
-          variant="secondary"
-          disabled={!!maj || !profil}
-          onClick={() => void toutAnalyser()}
-        >
-          {maj ? (
-            <>
-              <Loader2 className="animate-spin" /> {maj.fait}/{maj.total}
-            </>
-          ) : (
-            <>
-              <RefreshCw /> Actualiser tous les matchs
-            </>
-          )}
-        </Button>
-        {!profil && (
-          <p className="mt-2 text-xs text-muted-foreground">
-            Complétez d'abord{" "}
-            <Link to="/profil" className="text-primary hover:underline">
-              votre profil
-            </Link>{" "}
-            pour activer le moteur de correspondance.
-          </p>
-        )}
-      </div>
+      <div className="space-y-6">
+        {/* Context Card */}
+        <AiContextCard />
 
-      <div className="grid gap-4 [&>*]:min-w-0 lg:grid-cols-[1fr_1.1fr]">
-        <section className="glass-card pop-in p-4">
-          <h2 className="mb-3 px-1 text-sm font-semibold">
-            Classement des offres
-          </h2>
-          {classement.length === 0 && (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              Aucune opportunité à analyser.
-            </p>
-          )}
-          <ul className="flex flex-col gap-1.5">
-            {classement.map((c, i) => {
-              const score = c.match?.global;
-              const n = typeof score === "number" ? niveauMatch(score) : null;
-              return (
-                <li key={c.id}>
-                  <button
-                    type="button"
-                    onClick={() => setSelection(c.id)}
-                    className={`flex w-full items-center gap-3 rounded-2xl border px-3 py-2.5 text-left transition-colors ${
-                      courant?.id === c.id
-                        ? "border-primary/50 bg-primary/10"
-                        : "border-border/60 bg-card/50 hover:bg-accent/40"
-                    }`}
-                  >
-                    <span className="w-5 shrink-0 text-xs text-muted-foreground">
-                      {i + 1}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[13.5px] font-medium">
-                        {c.entreprise || "Sans entreprise"}
-                      </span>
-                      <span className="block truncate text-xs text-muted-foreground">
-                        {c.poste}
-                      </span>
-                    </span>
-                    {enCours === c.id ? (
-                      <Loader2 className="size-4 shrink-0 animate-spin text-primary" />
-                    ) : c.match ? (
-                      <MatchBadge
-                        match={c.match}
-                        obsolete={matchObsolete(c, profil)}
-                      />
-                    ) : (
-                      <span className="inline-flex shrink-0 items-center gap-1 text-[11px] text-muted-foreground">
-                        <Sparkles className="size-3.5" /> non analysé
-                      </span>
-                    )}
-                    {n && <span className="sr-only">{n.label}</span>}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
+        {/* Global actions */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Button
+            variant="secondary"
+            disabled={!!maj || !profil}
+            onClick={() => void toutAnalyser()}
+            className="h-9 gap-2 rounded-xl text-xs font-semibold shadow-sm"
+          >
+            {maj ? (
+              <>
+                <Loader2 className="size-3.5 animate-spin" />
+                <span>
+                  Actualisation {maj.fait}/{maj.total}
+                </span>
+              </>
+            ) : (
+              <>
+                <RefreshCw className="size-3.5" />
+                <span>Actualiser tous les matchs ({items.length})</span>
+              </>
+            )}
+          </Button>
 
-        <section className="pop-in">
-          {courant ? (
-            <MatchPanel
-              match={courant.match}
-              obsolete={matchObsolete(courant, profil)}
-              loading={enCours === courant.id}
-              erreur={erreur}
-              profilPret={!!profil}
-              offrePrete={offreAnalysable(courant)}
-              onAnalyser={() => void analyser(courant)}
-              candidature={courant}
-            />
-          ) : (
-            <p className="glass-card p-8 text-center text-sm text-muted-foreground">
-              Sélectionnez une offre pour voir l'analyse détaillée.
-            </p>
-          )}
-        </section>
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="h-8 gap-1.5 text-xs text-primary hover:text-primary/80"
+          >
+            <Link to="/assistant">
+              <span>Lancer le Workflow complet</span>
+              <ChevronRight className="size-3.5" />
+            </Link>
+          </Button>
+        </div>
+
+        {/* Grid: List + Detail panel */}
+        <div className="grid gap-4 [&>*]:min-w-0 lg:grid-cols-[1fr_1.1fr]">
+          <section className="glass-card pop-in p-4">
+            <h2 className="mb-3 px-1 text-sm font-semibold">
+              Classement des offres ({classement.length})
+            </h2>
+            {classement.length === 0 && (
+              <p className="py-8 text-center text-sm text-muted-foreground">
+                Aucune opportunité à analyser. Ajoutez des candidatures depuis
+                l'onglet Candidatures ou l'AI Hub.
+              </p>
+            )}
+            <ul className="flex flex-col gap-1.5">
+              {classement.map((c, i) => {
+                const score = c.match?.global;
+                const n = typeof score === "number" ? niveauMatch(score) : null;
+                return (
+                  <li key={c.id}>
+                    <button
+                      type="button"
+                      onClick={() => setSelection(c.id)}
+                      className={`flex w-full items-center gap-3 rounded-2xl border px-3 py-2.5 text-left transition-colors ${
+                        courant?.id === c.id
+                          ? "border-primary/50 bg-primary/10"
+                          : "border-border/60 bg-card/50 hover:bg-accent/40"
+                      }`}
+                    >
+                      <span className="w-5 shrink-0 text-xs text-muted-foreground font-semibold">
+                        {i + 1}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[13.5px] font-medium">
+                          {c.entreprise || "Sans entreprise"}
+                        </span>
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {c.poste}
+                        </span>
+                      </span>
+                      {enCours === c.id ? (
+                        <Loader2 className="size-4 shrink-0 animate-spin text-primary" />
+                      ) : c.match ? (
+                        <MatchBadge
+                          match={c.match}
+                          obsolete={matchObsolete(c, profil)}
+                        />
+                      ) : (
+                        <span className="inline-flex shrink-0 items-center gap-1 text-[11px] text-muted-foreground">
+                          <Sparkles className="size-3.5" /> non analysé
+                        </span>
+                      )}
+                      {n && <span className="sr-only">{n.label}</span>}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+
+          <section className="pop-in">
+            {courant ? (
+              <MatchPanel
+                match={courant.match}
+                obsolete={matchObsolete(courant, profil)}
+                loading={enCours === courant.id}
+                erreur={erreur}
+                profilPret={!!profil}
+                offrePrete={offreAnalysable(courant)}
+                onAnalyser={() => void analyser(courant)}
+                candidature={courant}
+              />
+            ) : (
+              <p className="glass-card p-8 text-center text-sm text-muted-foreground">
+                Sélectionnez une offre pour voir l'analyse détaillée.
+              </p>
+            )}
+          </section>
+        </div>
       </div>
     </AppShell>
   );

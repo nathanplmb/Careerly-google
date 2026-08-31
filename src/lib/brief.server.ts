@@ -7,15 +7,17 @@ import {
 import { fallbackGenererBrief } from "./ai-fallbacks";
 
 const BriefSchema = z.object({
-  resume: z.string(),
-  elements: z.array(
-    z.object({
-      id: z.string(),
-      titre: z.string(),
-      raison: z.string(),
-    }),
-  ),
-  recommandations: z.array(z.string()),
+  resume: z.string().catch("Priorités du jour"),
+  elements: z
+    .array(
+      z.object({
+        id: z.string().catch(""),
+        titre: z.string().catch(""),
+        raison: z.string().catch(""),
+      }),
+    )
+    .catch([]),
+  recommandations: z.array(z.string()).catch([]),
 });
 
 export type BriefIA = z.infer<typeof BriefSchema>;

@@ -17,6 +17,7 @@ import {
   UserRound,
   Wand2,
 } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { texteErreurIA } from "@/lib/ai-erreurs";
 import {
@@ -32,7 +33,7 @@ import {
   type ElementBrief,
 } from "@/lib/brief";
 import { lancerBrief } from "@/lib/brief-run";
-import type { Candidature } from "@/lib/candidatures";
+import { getNextBestAction, type Candidature } from "@/lib/candidatures";
 import type { Profil } from "@/lib/profil";
 
 type Props = {
@@ -238,14 +239,20 @@ export function DailyBrief({
     }
   };
 
+  const navigate = useNavigate();
+
   const agir = (id: string, action: ActionBrief) => {
     const c = items.find((i) => i.id === id);
     if (!c) return;
-    if (action === "relancer") onRelancer(c);
-    else if (action === "postuler") onPostuler(c);
-    else if (action === "analyser") onAnalyser(c);
-    else if (action === "voir_offre" && c.lien) window.open(c.lien, "_blank");
-    else onOuvrir(c);
+    if (action === "voir_offre" && c.lien) {
+      window.open(c.lien, "_blank");
+      return;
+    }
+    const nba = getNextBestAction(c);
+    void navigate({
+      to: "/assistant",
+      search: { oppId: c.id, step: nba.step } as Record<string, unknown>,
+    });
   };
 
   const elements = brief?.elements ?? [];

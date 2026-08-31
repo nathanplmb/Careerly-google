@@ -32,11 +32,14 @@ import { analyserOffre } from "@/lib/offre.functions";
 import { Sparkles, Loader2 } from "lucide-react";
 import type { Profil } from "@/lib/profil";
 
+import { useNavigate } from "@tanstack/react-router";
+
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   value: Candidature | null;
   onSave: (c: Candidature) => void;
+  onStartWorkflow?: (c: Candidature) => void;
   profil?: Profil | null;
 };
 
@@ -45,8 +48,10 @@ export function CandidatureSheet({
   onOpenChange,
   value,
   onSave,
+  onStartWorkflow,
   profil = null,
 }: Props) {
+  const navigate = useNavigate();
   const [form, setForm] = useState<Candidature | null>(value);
   const [analyse, setAnalyse] = useState(false);
   const [enriching, setEnriching] = useState(false);
@@ -61,6 +66,26 @@ export function CandidatureSheet({
   }, [value]);
 
   if (!form) return null;
+
+  const handleSaveOnly = () => {
+    if (!form) return;
+    onSave(form);
+    onOpenChange(false);
+  };
+
+  const handleSaveAndStart = async () => {
+    if (!form) return;
+    onSave(form);
+    onOpenChange(false);
+    if (onStartWorkflow) {
+      onStartWorkflow(form);
+    } else {
+      void navigate({
+        to: "/assistant",
+        search: { oppId: form.id } as Record<string, unknown>,
+      });
+    }
+  };
 
   const set = (patch: Partial<Candidature>) =>
     setForm((f) => (f ? { ...f, ...patch } : f));
@@ -170,16 +195,31 @@ export function CandidatureSheet({
       }
       bodyClassName="px-0 py-0 sm:px-0"
       footer={
-        <div className="flex items-center justify-end gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+        <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between w-full gap-2">
+          <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)} className="text-xs text-muted-foreground">
             Annuler
           </Button>
-          <Button
-            onClick={() => onSave(form)}
-            disabled={!form.entreprise.trim()}
-          >
-            Enregistrer
-          </Button>
+
+          <div className="flex items-center justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSaveOnly}
+              disabled={!form.entreprise.trim()}
+              className="text-xs font-medium"
+            >
+              Enregistrer uniquement
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSaveAndStart}
+              disabled={!form.entreprise.trim()}
+              className="text-xs font-medium bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-md gap-1.5"
+            >
+              <Sparkles className="size-3.5" />
+              Commencer ma candidature
+            </Button>
+          </div>
         </div>
       }
     >

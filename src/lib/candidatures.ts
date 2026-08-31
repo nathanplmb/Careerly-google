@@ -106,6 +106,25 @@ export function emptyPreparation(): Preparation {
   };
 }
 
+export type WorkflowStepId =
+  "offre" | "match" | "pitch" | "contact" | "interview";
+
+export type WorkflowProgress = {
+  currentStep: WorkflowStepId;
+  completedSteps: WorkflowStepId[];
+  lastUpdated?: string;
+  pitchData?: {
+    pitchAccroche?: string;
+    lettreMotivation?: string;
+    pointsAValoriser?: string[];
+  };
+  contactData?: {
+    emailCandidature?: string;
+    emailRelance?: string;
+    messageLinkedin?: string;
+  };
+};
+
 export type Candidature = {
   id: string;
   entreprise: string;
@@ -130,6 +149,7 @@ export type Candidature = {
   archive: boolean;
   match: MatchScore | null;
   preparation: Preparation;
+  workflowProgress?: WorkflowProgress;
 };
 
 export const STORAGE_KEY = "neoma-suivi-stage-v1";
@@ -158,6 +178,10 @@ export function emptyCandidature(): Candidature {
     archive: false,
     match: null,
     preparation: emptyPreparation(),
+    workflowProgress: {
+      currentStep: "offre",
+      completedSteps: ["offre"],
+    },
   };
 }
 
@@ -278,6 +302,145 @@ export function normalizeCandidature(c: Partial<Candidature>): Candidature {
     archive: c.archive ?? false,
     match: c.match ?? null,
     preparation: { ...emptyPreparation(), ...(c.preparation ?? {}) },
+    workflowProgress: c.workflowProgress ?? {
+      currentStep: "offre",
+      completedSteps: c.match ? ["offre", "match"] : ["offre"],
+    },
+  };
+}
+
+export type NextBestAction = {
+  label: string;
+  step: WorkflowStepId;
+  description: string;
+  buttonText: string;
+  badgeText: string;
+  prioriteUrgente?: boolean;
+};
+
+export function getNextBestAction(c: Candidature): NextBestAction {
+  const steps = c.workflowProgress?.completedSteps ?? [];
+  const matchFait = Boolean(c.match || steps.includes("match"));
+  const pitchFait = Boolean(steps.includes("pitch"));
+  const contactFait = Boolean(steps.includes("contact"));
+  const interviewFait = Boolean(
+    steps.includes("interview") ||
+    (c.preparation?.questionsRH && c.preparation.questionsRH.length > 0),
+  );
+
+  // 1. Entretien programmé
+  if (c.statut === "J'ai un entretien") {
+    return {
+      label: "Entretien à préparer",
+      step: "interview",
+      description:
+        "Votre entretien approche ! Entraînez-vous avec l'Interview Coach pour valoriser vos réponses.",
+      buttonText: "Préparer mon entretien",
+      badgeText: "Entretien programmé",
+      prioriteUrgente: true,
+    };
+  }
+
+  // 2. Relance à effectuer
+  if (
+    c.statut === "J'ai relancé" ||
+    (c.statut === "J'ai postulé" &&
+      c.dateRelance &&
+      new Date(c.dateRelance) <= new Date())
+  ) {
+    return {
+      label: "Relance à effectuer",
+      step: "contact",
+      description:
+        "Candidature envoyée. Relancez le recruteur pour maintenir le contact et marquer des points.",
+      buttonText: "Écrire ma relance",
+      badgeText: "Relance due",
+      prioriteUrgente: true,
+    };
+  }
+
+  // 3. Deadline très proche
+  if (c.dateLimite) {
+    const diffDays = daysBetween(todayIso(), c.dateLimite);
+    if (
+      diffDays !== null &&
+      diffDays >= 0 &&
+      diffDays <= 3 &&
+      c.statut === "Je vais postuler"
+    ) {
+      if (!pitchFait) {
+        return {
+          label: "Deadline très proche",
+          step: "pitch",
+          description: `Date limite dans ${diffDays === 0 ? "aujourd'hui" : `${diffDays} jour(s)`}. Adaptez votre CV et votre pitch en priorité.`,
+          buttonText: "Adapter mon CV",
+          badgeText: `Deadline J-${diffDays}`,
+          prioriteUrgente: true,
+        };
+      }
+      return {
+        label: "Postuler en urgence",
+        step: "contact",
+        description: `Date limite dans ${diffDays === 0 ? "aujourd'hui" : `${diffDays} jour(s)`}. Envoyez votre candidature !`,
+        buttonText: "Envoyer ma candidature",
+        badgeText: `Deadline J-${diffDays}`,
+        prioriteUrgente: true,
+      };
+    }
+  }
+
+  // 4. Progression séquentielle du workflow
+  if (!matchFait) {
+    return {
+      label: "Analyser l'offre & Match IA",
+      step: "match",
+      description:
+        "Évaluez le taux de correspondance de votre profil avec le poste.",
+      buttonText: "Calculer le Match IA",
+      badgeText: "Offre récente",
+    };
+  }
+
+  if (!pitchFait) {
+    return {
+      label: "Adapter le CV & Pitch",
+      step: "pitch",
+      description:
+        "Match IA effectué. Adaptez votre CV pour répondre parfaitement à l'offre.",
+      buttonText: "Adapter mon CV",
+      badgeText: "CV à optimiser",
+    };
+  }
+
+  if (!contactFait) {
+    return {
+      label: "Rédiger le message au recruteur",
+      step: "contact",
+      description:
+        "Votre CV est prêt. Rédigez l'e-mail de candidature ou le message LinkedIn.",
+      buttonText: "Rédiger mon e-mail",
+      badgeText: "Prêt à postuler",
+    };
+  }
+
+  if (!interviewFait) {
+    return {
+      label: "Anticiper l'entretien",
+      step: "interview",
+      description:
+        "Préparez vos arguments clés et anticipez les questions du recruteur.",
+      buttonText: "Préparer l'entretien",
+      badgeText: "Anticipation",
+    };
+  }
+
+  return {
+    label: "Candidature complète",
+    step: "contact",
+    description:
+      "Toutes les étapes principales du workflow ont été réalisées pour cette opportunité.",
+    buttonText: "Voir le récapitulatif",
+    badgeText: "Complète",
   };
 }
 

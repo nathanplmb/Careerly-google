@@ -49,7 +49,7 @@ const MAIN: Item[] = [
 
 const STUDIO: Item[] = [
   { label: "Match IA", icon: Sparkles, to: "/assistant/match", sub: true },
-  { label: "CV Analyzer", icon: ScanLine, to: "/profil", sub: true },
+  { label: "CV Optimizer", icon: ScanLine, to: "/profil", sub: true },
   { label: "Email Assistant", icon: Mail, to: "/contacts", sub: true },
   {
     label: "LinkedIn Assistant",
@@ -72,7 +72,7 @@ const STUDIO: Item[] = [
 ];
 
 const ASSISTANT: Item = {
-  label: "Assistant IA",
+  label: "Careerly AI (Hub)",
   icon: Wand2,
   to: "/assistant",
 };
@@ -197,7 +197,7 @@ export function AppShell({
             <div className="my-4 h-px bg-sidebar-border" />
 
             <p className="mb-2 flex items-center gap-1.5 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              AI Studio <span className="text-primary">✦</span>
+              Careerly AI <span className="text-primary">✦</span>
             </p>
             <NavRow item={ASSISTANT} active={pathname === "/assistant"} />
             <div className="mt-1 ml-5 flex flex-col gap-1 border-l border-sidebar-border pl-2">
@@ -250,7 +250,7 @@ export function AppShell({
           <div className="my-4 h-px bg-sidebar-border" />
 
           <p className="mb-2 flex items-center gap-1.5 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            AI Studio <span className="text-primary">✦</span>
+            Careerly AI <span className="text-primary">✦</span>
           </p>
           <NavRow item={ASSISTANT} active={pathname === "/assistant"} />
           <div className="mt-1 ml-5 flex flex-col gap-1 border-l border-sidebar-border pl-2">
