@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
 import {
   connecterUtilisateurLocal,
   getComptesEnregistres,
@@ -230,19 +230,21 @@ export function AuthPage() {
     setLoading(true);
 
     // 1. Tentative Supabase si configuré
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
-      if (!error) {
-        setLoading(false);
-        toast.success("Connexion réussie ! Heureux de vous revoir.");
-        rediriger();
-        return;
+    if (isSupabaseConfigured()) {
+      try {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+        if (!error) {
+          setLoading(false);
+          toast.success("Connexion réussie ! Heureux de vous revoir.");
+          rediriger();
+          return;
+        }
+      } catch {
+        // Ignorer si offline
       }
-    } catch {
-      // Ignorer si offline
     }
 
     // 2. Connexion locale autonome optimisée
@@ -272,35 +274,37 @@ export function AuthPage() {
     setLoading(true);
 
     // 1. Tentative Supabase si configuré
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: {
-          data: {
-            full_name: `${prenom} ${nom}`.trim() || undefined,
-            school: ecole.trim() || undefined,
+    if (isSupabaseConfigured()) {
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            data: {
+              full_name: `${prenom} ${nom}`.trim() || undefined,
+              school: ecole.trim() || undefined,
+            },
+            emailRedirectTo: target
+              ? window.location.origin + target
+              : window.location.origin,
           },
-          emailRedirectTo: target
-            ? window.location.origin + target
-            : window.location.origin,
-        },
-      });
-      if (!error && data?.user) {
-        setLoading(false);
-        if (!data.session) {
-          setSentEmailVerification(true);
-          toast.success(
-            "Vérifiez votre boîte mail pour confirmer votre compte.",
-          );
+        });
+        if (!error && data?.user) {
+          setLoading(false);
+          if (!data.session) {
+            setSentEmailVerification(true);
+            toast.success(
+              "Vérifiez votre boîte mail pour confirmer votre compte.",
+            );
+            return;
+          }
+          toast.success("Compte créé avec succès ! Bienvenue sur Careerly.");
+          rediriger();
           return;
         }
-        toast.success("Compte créé avec succès ! Bienvenue sur Careerly.");
-        rediriger();
-        return;
+      } catch {
+        // Offline / non configuré
       }
-    } catch {
-      // Offline / non configuré
     }
 
     // 2. Inscription locale autonome
@@ -326,12 +330,14 @@ export function AuthPage() {
     }
     setLoading(true);
 
-    try {
-      await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: window.location.origin + "/auth",
-      });
-    } catch {
-      // Ignorer
+    if (isSupabaseConfigured()) {
+      try {
+        await supabase.auth.resetPasswordForEmail(email.trim(), {
+          redirectTo: window.location.origin + "/auth",
+        });
+      } catch {
+        // Ignorer
+      }
     }
 
     // Simuler réinitialisation locale
@@ -344,22 +350,24 @@ export function AuthPage() {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-      // 1. Tentative Supabase OAuth si configuré
-      try {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: "google",
-          options: {
-            redirectTo: target
-              ? window.location.origin + target
-              : window.location.origin,
-          },
-        });
-        if (!error) return;
-      } catch {
-        // Ignorer si non configuré et continuer vers Google direct
+      // 1. Tentative Supabase OAuth SEULEMENT si Supabase est réellement configuré (avec une URL valide non placeholder)
+      if (isSupabaseConfigured()) {
+        try {
+          const { error } = await supabase.auth.signInWithOAuth({
+            provider: "google",
+            options: {
+              redirectTo: target
+                ? window.location.origin + target
+                : window.location.origin,
+            },
+          });
+          if (!error) return;
+        } catch {
+          // Si échec Supabase, basculer sur Google direct
+        }
       }
 
-      // 2. Authentification directe via Google Identity Services (OAuth réel)
+      // 2. Authentification directe via Google Identity Services (OAuth réel avec Client ID Google)
       const user = await connecterAvecGoogleReel();
       setLoading(false);
       toast.success(
