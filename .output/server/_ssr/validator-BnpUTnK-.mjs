@@ -1,5 +1,5 @@
 import { t as CVImportResultSchema } from "./schema-BG_0AQDk.mjs";
-//#region node_modules/.nitro/vite/services/ssr/assets/validator-By3zfY0U.js
+//#region node_modules/.nitro/vite/services/ssr/assets/validator-BnpUTnK-.js
 function validateCVImportResult(data) {
 	const warnings = [];
 	const parsed = CVImportResultSchema.safeParse(data);
@@ -52,6 +52,15 @@ function validateCVImportResult(data) {
 		}
 		return true;
 	});
+	result.experiences.sort((a, b) => {
+		if (a.isCurrent && !b.isCurrent) return -1;
+		if (!a.isCurrent && b.isCurrent) return 1;
+		const dateA = a.startDate || "";
+		const dateB = b.startDate || "";
+		if (dateA > dateB) return -1;
+		if (dateA < dateB) return 1;
+		return 0;
+	});
 	for (let i = 0; i < result.experiences.length; i++) {
 		const exp = result.experiences[i];
 		if (!exp.company) warnings.push({
@@ -59,7 +68,7 @@ function validateCVImportResult(data) {
 			message: `Entreprise non identifiée pour l'expérience "${exp.title}".`,
 			severity: "warning"
 		});
-		if (!exp.startDate && !exp.endDate && !exp.isCurrent) warnings.push({
+		if (!Boolean(exp.startDate || exp.endDate || exp.isCurrent)) warnings.push({
 			field: `experiences[${i}].dates`,
 			message: `Aucune date explicite trouvée pour "${exp.title}".`,
 			severity: "info"

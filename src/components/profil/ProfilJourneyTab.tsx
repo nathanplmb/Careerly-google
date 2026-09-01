@@ -238,7 +238,7 @@ export function ProfilJourneyTab({ profil, onChange }: Props) {
               .join(" • ");
             const dates =
               exp.debut || exp.fin
-                ? `${exp.debut || "?"} - ${exp.enCours ? "Aujourd'hui" : exp.fin || "?"}`
+                ? `${exp.debut || "Non renseigné"} - ${exp.enCours ? "Aujourd'hui" : exp.fin || "Non renseigné"}`
                 : "";
 
             return (
@@ -520,7 +520,7 @@ export function ProfilJourneyTab({ profil, onChange }: Props) {
               .join(" • ");
             const dates =
               f.debut || f.fin
-                ? `${f.debut || "?"} - ${f.enCours ? "En cours" : f.fin || "?"}`
+                ? `${f.debut || "Non renseigné"} - ${f.enCours ? "En cours" : f.fin || "Non renseigné"}`
                 : "";
 
             return (

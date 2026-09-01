@@ -82,7 +82,7 @@ export function CvImportPreview({
               <div>
                 <span className="text-muted-foreground block text-xs">Prénom & Nom</span>
                 <span className="font-medium">
-                  {result.identity.firstName} {result.identity.lastName}
+                  {result.identity.firstName || result.identity.lastName ? `${result.identity.firstName} ${result.identity.lastName}`.trim() : "Non renseigné"}
                 </span>
               </div>
               {result.identity.professionalTitle && (
@@ -122,7 +122,7 @@ export function CvImportPreview({
                         <div className="text-xs text-muted-foreground">{exp.company}</div>
                       </div>
                       <div className="text-xs text-muted-foreground whitespace-nowrap text-right">
-                        {exp.startDate || "?"} <ArrowRight className="inline size-3 mx-1" /> {exp.endDate || (exp.isCurrent ? "Aujourd'hui" : "?")}
+                        {exp.startDate || "Non renseigné"} <ArrowRight className="inline size-3 mx-1" /> {exp.endDate || (exp.isCurrent ? "Aujourd'hui" : "Non renseigné")}
                       </div>
                     </div>
                   </div>

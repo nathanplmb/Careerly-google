@@ -35,15 +35,16 @@ Ta mission est d'extraire STRICTEMENT les informations réellement et textuellem
 
 RÈGLES D'OR DE FIDÉLITÉ (VIOLATION = ÉCHEC CRITIQUE) :
 1. VÉRITÉ FACTUELLE STRICTE : N'invente JAMAIS aucune information (aucun diplôme, aucune entreprise, aucune date, aucune compétence, aucun niveau, aucun titre non écrit).
-2. ISOLATION DES EXPÉRIENCES : Chaque expérience professionnelle mentionnée (dates, poste, entreprise, missions) DOIT constituer un objet DISTINCT dans le tableau "experiences". Si le CV liste 10 expériences, le tableau DOIT en contenir 10. NE JAMAIS les fusionner.
-3. ISOLATION DES FORMATIONS : Chaque diplôme ou cursus DOIT être un objet distinct dans "education".
-4. COMPÉTENCES SANS NIVEAU INVENTÉ : N'attribue un "level" à une compétence QUE si le CV écrit expressément un niveau (ex: "Avancé", "Expert"). Si aucun niveau n'est mentionné, mets OBLIGATOIREMENT "level": null.
+2. ISOLATION DES EXPÉRIENCES : Chaque expérience professionnelle mentionnée DOIT constituer un objet DISTINCT dans le tableau "experiences". Extrais rigoureusement les dates dans "startDate" et "endDate" au format YYYY-MM, et retire-les du titre.
+3. ISOLATION DES FORMATIONS : Chaque diplôme ou cursus DOIT être un objet distinct dans "education". Ne crée pas de doublons si une formation est mentionnée sur plusieurs lignes.
+4. COMPÉTENCES SANS NIVEAU INVENTÉ : N'attribue un "level" à une compétence QUE si le CV écrit expressément un niveau (ex: "Avancé", "Expert"). Sinon, mets OBLIGATOIREMENT "level": null. Ne mets AUCUNE langue, AUCUNE certification et AUCUN intérêt dans "skills".
 5. ÉTANCHÉITÉ DES CATÉGORIES :
    - Les LANGUES (ex: Français, Anglais, Espagnol) vont EXCLUSIVEMENT dans "languages", JAMAIS dans "skills".
-   - Les CERTIFICATIONS ou scores (ex: TOEIC, TAGE MAGE, CLES) vont EXCLUSIVEMENT dans "certifications", JAMAIS dans "skills".
-   - Les CENTRES D'INTÉRÊT (ex: Automobile, Économie, Horlogerie) vont EXCLUSIVEMENT dans "interests", JAMAIS dans "skills".
-6. TITRE PROFESSIONNEL : "professionalTitle" doit être null si aucun titre explicite n'apparaît dans l'en-tête (ne pas transformer une formation ou une ville en titre).
-7. FORMAT JSON STRICT : Réponds UNIQUEMENT avec un objet JSON valide conforme au schéma.`;
+   - Les CERTIFICATIONS ou scores (ex: TOEIC, TAGE MAGE) vont EXCLUSIVEMENT dans "certifications", JAMAIS dans "skills".
+   - Les CENTRES D'INTÉRÊT vont EXCLUSIVEMENT dans "interests", JAMAIS dans "skills".
+6. PROJETS NON FRAGMENTÉS : Ne sépare pas le nom d'un projet de sa description. Une phrase descriptive appartient à la description du projet en cours, elle ne doit pas devenir un nouveau projet.
+7. IDENTITÉ ET EN-TÊTE : Utilise l'en-tête du document comme source prioritaire pour l'identité. Le prénom et le nom (ex: Nathan PALUMBO) doivent aller dans "firstName" et "lastName". Ne mets pas la ville ("city") si elle n'est pas clairement dans l'en-tête. "professionalTitle" doit être null si aucun titre explicite n'apparaît dans l'en-tête (ne pas utiliser une formation comme titre).
+8. FORMAT JSON STRICT : Réponds UNIQUEMENT avec un objet JSON valide conforme au schéma.`;
 
 const GeminiExtractionSchema = z.object({
   identity: IdentityEntitySchema,
@@ -226,7 +227,14 @@ function assainirEducation(
   _segmentedBlocks: SegmentedBlocks["educationBlocks"],
   _warnings: ImportWarning[],
 ): EducationEntity[] {
-  return geminiEdu.map((edu, idx) => ({
+  const unique = new Map<string, EducationEntity>();
+  for (const edu of geminiEdu) {
+    const key = `${edu.school.trim().toLowerCase()}|${edu.degree.trim().toLowerCase()}`;
+    if (!unique.has(key)) {
+      unique.set(key, edu);
+    }
+  }
+  return Array.from(unique.values()).map((edu, idx) => ({
     ...edu,
     id: edu.id || `edu-${idx + 1}`,
     school: edu.school.trim() || "Établissement",
@@ -250,6 +258,11 @@ function assainirSkills(
     "italien",
     "toeic",
     "tage mage",
+    "cles",
+    "b2",
+    "b1",
+    "c1",
+    "a2",
     "automobile",
     "économie",
     "horlogerie",
@@ -259,20 +272,26 @@ function assainirSkills(
   for (const s of skills) {
     const cleanName = s.name.trim();
     const lower = cleanName.toLowerCase();
+    
+    // Filtre strict : si ça ressemble à une langue ou une certification, on ignore
     if (!cleanName || langueNoms.has(lower) || certifNoms.has(lower) || blacklist.has(lower)) {
       continue;
     }
+    // Autre sécurité : vérifier les mots-clés
+    if (lower.includes("anglais") || lower.includes("toeic") || lower.includes("espagnol") || lower.includes("français")) {
+      continue;
+    }
+
     if (!unique.has(lower)) {
       unique.set(lower, {
         ...s,
         id: s.id || `skill-${unique.size + 1}`,
         name: cleanName,
         // Forcer level à null si non expressément explicite
-        level: s.level && /^(notions|débutant|intermédiaire|avancé|expert)$/i.test(s.level) ? s.level : null,
+        level: null,
       });
     }
   }
-
   return Array.from(unique.values());
 }
 
@@ -321,11 +340,32 @@ function assainirProjects(
   _segmentedBlocks: SegmentedBlocks["projectBlocks"],
   _warnings: ImportWarning[],
 ): ProjectEntity[] {
-  return projects.map((p, idx) => ({
+  const unique = new Map<string, ProjectEntity>();
+  for (const p of projects) {
+    const cleanName = p.name.trim();
+    const lower = cleanName.toLowerCase();
+    if (!cleanName) continue;
+
+    // Si le nom du projet est une longue phrase, c'est probablement une description mal classée
+    if (cleanName.length > 60 && unique.size > 0) {
+      const lastKey = Array.from(unique.keys()).pop()!;
+      const lastProj = unique.get(lastKey)!;
+      lastProj.description = [lastProj.description, cleanName, p.description].filter(Boolean).join(" ");
+      continue;
+    }
+
+    if (!unique.has(lower)) {
+      unique.set(lower, {
+        ...p,
+        name: cleanName,
+        description: p.description.trim(),
+      });
+    }
+  }
+  return Array.from(unique.values()).map((p, idx) => ({
     ...p,
     id: p.id || `proj-${idx + 1}`,
-    name: p.name.trim() || `Projet ${idx + 1}`,
-    description: p.description.trim() || "",
+    name: p.name || `Projet ${idx + 1}`,
   }));
 }
 

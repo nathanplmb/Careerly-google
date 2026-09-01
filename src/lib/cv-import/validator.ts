@@ -81,7 +81,17 @@ export function validateCVImportResult(data: unknown): {
     return true;
   });
 
-  // 3. Validation des dates d'expériences
+  // 3. Tri des expériences et validation des dates
+  result.experiences.sort((a, b) => {
+    if (a.isCurrent && !b.isCurrent) return -1;
+    if (!a.isCurrent && b.isCurrent) return 1;
+    const dateA = a.startDate || "";
+    const dateB = b.startDate || "";
+    if (dateA > dateB) return -1;
+    if (dateA < dateB) return 1;
+    return 0;
+  });
+
   for (let i = 0; i < result.experiences.length; i++) {
     const exp = result.experiences[i];
     if (!exp.company) {
@@ -91,7 +101,8 @@ export function validateCVImportResult(data: unknown): {
         severity: "warning",
       });
     }
-    if (!exp.startDate && !exp.endDate && !exp.isCurrent) {
+    const dateDetected = Boolean(exp.startDate || exp.endDate || exp.isCurrent);
+    if (!dateDetected) {
       warnings.push({
         field: `experiences[${i}].dates`,
         message: `Aucune date explicite trouvée pour "${exp.title}".`,
