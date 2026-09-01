@@ -23,10 +23,13 @@ export interface NormalizedUser {
 export function useSession() {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [localUser, setLocalUser] = useState(getCompteActif());
+  const [localUser, setLocalUser] = useState<ReturnType<
+    typeof getCompteActif
+  > | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLocalUser(getCompteActif());
     let unsubsFirebase: (() => void) | undefined;
     if (isFirebaseConfigured()) {
       unsubsFirebase = onAuthStateChanged(firebaseAuth, (fUser) => {

@@ -405,14 +405,37 @@ function CandidaturesPage() {
             setEditing(emptyCandidature());
             setOpen(true);
           }}
+          className="gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold"
         >
-          <Plus /> Ajouter
+          <Plus className="size-4" /> Ajouter
         </Button>
       </div>
 
-      <p className="mt-5 text-xs text-muted-foreground">
-        {filtered.length} candidature(s) affichée(s) sur {items.length}
-      </p>
+      <div className="mt-5 flex items-center justify-between">
+        <p className="text-xs text-muted-foreground">
+          {filtered.length} candidature(s) affichée(s) sur {items.length}
+        </p>
+
+        {items.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              if (
+                window.confirm(
+                  "Êtes-vous sûr de vouloir supprimer TOUTES vos candidatures ? Cette action est irréversible.",
+                )
+              ) {
+                items.forEach((c) => remove(c.id));
+                toast.success("Toutes les candidatures ont été supprimées.");
+              }
+            }}
+            className="h-7 px-2 text-xs text-muted-foreground hover:text-destructive"
+          >
+            Tout effacer
+          </Button>
+        )}
+      </div>
 
       <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {filtered.map((c, i) => (
@@ -436,8 +459,42 @@ function CandidaturesPage() {
       </div>
 
       {filtered.length === 0 && (
-        <div className="glass-card mt-3 p-10 text-center text-sm text-muted-foreground">
-          Aucune candidature ne correspond à votre recherche.
+        <div className="glass-card mt-3 space-y-4 p-10 text-center text-sm text-muted-foreground">
+          {items.length === 0 ? (
+            <div className="mx-auto max-w-md space-y-3">
+              <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-purple-500/10 text-xl font-bold text-purple-400">
+                🎯
+              </div>
+              <h3 className="text-base font-bold text-foreground">
+                Aucune candidature pour le moment
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Votre tableau de bord est prêt. Ajoutez votre première offre ou
+                importez une fiche de poste via l'assistant IA.
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+                <Button
+                  onClick={() => {
+                    setEditing(emptyCandidature());
+                    setOpen(true);
+                  }}
+                  className="gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-xs font-semibold text-white"
+                >
+                  <Plus className="size-4" /> Ajouter une candidature
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIaOpen(true)}
+                  className="gap-1.5 border-purple-500/30 text-xs text-purple-300"
+                >
+                  <Sparkles className="size-3.5" /> Analyser une offre (IA)
+                </Button>
+              </div>
+            </div>
+          ) : (
+            "Aucune candidature ne correspond à vos filtres actuels."
+          )}
         </div>
       )}
 

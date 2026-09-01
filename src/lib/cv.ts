@@ -20,6 +20,18 @@ export type ReformulationCV = {
 };
 
 export type ProfilDetecte = {
+  prenom?: string;
+  nom?: string;
+  titre?: string;
+  email?: string;
+  telephone?: string;
+  localisation?: string;
+  pays?: string;
+  linkedin?: string;
+  portfolio?: string;
+  github?: string;
+  permis?: string;
+  accroche?: string;
   competences: string;
   logiciels: string;
   langues: string;
@@ -30,7 +42,6 @@ export type ProfilDetecte = {
   niveau: string;
   metiers: string;
   domaines: string;
-  localisation: string;
 };
 
 export type AnalyseCV = {

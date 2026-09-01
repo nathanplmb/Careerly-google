@@ -6,7 +6,7 @@ import type { NormalizedUser } from "@/hooks/useSession";
 
 /** Profil courant : cloud si connecté (avec repli local), sinon local. */
 export function useProfil(user: User | NormalizedUser | null) {
-  const [profil, setProfil] = useState<Profil | null>(() => loadProfil());
+  const [profil, setProfil] = useState<Profil | null>(null);
   const userId = user?.id;
 
   useEffect(() => {

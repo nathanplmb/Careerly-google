@@ -558,14 +558,14 @@ export const SEED: Candidature[] = [
 ];
 
 export function loadCandidatures(): Candidature[] {
-  if (typeof window === "undefined") return SEED;
+  if (typeof window === "undefined") return [];
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return SEED;
+    if (!raw) return [];
     const parsed = JSON.parse(raw) as Partial<Candidature>[];
-    return Array.isArray(parsed) ? parsed.map(normalizeCandidature) : SEED;
+    return Array.isArray(parsed) ? parsed.map(normalizeCandidature) : [];
   } catch {
-    return SEED;
+    return [];
   }
 }
 

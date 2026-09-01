@@ -93,11 +93,13 @@ export function CandidatureSheet({
   const enrichirViaIA = async () => {
     if (!form) return;
     const contenuAAnalyser = [
-      form.detail?.trim(),
-      form.missions?.trim(),
-      form.profilRecherche?.trim(),
-      form.modalites?.trim(),
-      `${form.poste} ${form.entreprise} ${form.lieu} ${form.commentaire}`,
+      typeof form.detail === "string" ? form.detail.trim() : "",
+      typeof form.missions === "string" ? form.missions.trim() : "",
+      typeof form.profilRecherche === "string"
+        ? form.profilRecherche.trim()
+        : "",
+      typeof form.modalites === "string" ? form.modalites.trim() : "",
+      `${form.poste || ""} ${form.entreprise || ""} ${form.lieu || ""} ${form.commentaire || ""}`.trim(),
     ]
       .filter(Boolean)
       .join("\n\n");
@@ -210,7 +212,7 @@ export function CandidatureSheet({
               variant="outline"
               size="sm"
               onClick={handleSaveOnly}
-              disabled={!form.entreprise.trim()}
+              disabled={!String(form.entreprise || "").trim()}
               className="text-xs font-medium"
             >
               Enregistrer uniquement
@@ -218,7 +220,7 @@ export function CandidatureSheet({
             <Button
               size="sm"
               onClick={handleSaveAndStart}
-              disabled={!form.entreprise.trim()}
+              disabled={!String(form.entreprise || "").trim()}
               className="text-xs font-medium bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-md gap-1.5"
             >
               <Sparkles className="size-3.5" />

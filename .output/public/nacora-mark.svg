@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="nacora-mark-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a855f7" />
+      <stop offset="50%" stop-color="#9333ea" />
+      <stop offset="100%" stop-color="#7c3aed" />
+    </linearGradient>
+  </defs>
+  <!-- Anneau principal -->
+  <circle cx="50" cy="50" r="38" stroke="url(#nacora-mark-grad)" stroke-width="8.5" fill="none" />
+  <!-- Noyau central -->
+  <circle cx="50" cy="50" r="16" fill="url(#nacora-mark-grad)" />
+  <!-- Satellite haut-droite -->
+  <circle cx="77" cy="23" r="10" fill="url(#nacora-mark-grad)" />
+</svg>

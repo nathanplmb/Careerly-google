@@ -52,17 +52,32 @@ const CHAMPS: {
   label: string;
   source: keyof AnalyseCV["profilDetecte"];
 }[] = [
-  { cle: "competences", label: "Compétences", source: "competences" },
+  { cle: "prenom", label: "Prénom", source: "prenom" },
+  { cle: "nom", label: "Nom", source: "nom" },
+  { cle: "titre", label: "Titre professionnel", source: "titre" },
+  { cle: "emailContact", label: "Email", source: "email" },
+  { cle: "telephone", label: "Téléphone", source: "telephone" },
+  {
+    cle: "localisation",
+    label: "Localisation / Ville",
+    source: "localisation",
+  },
+  { cle: "pays", label: "Pays", source: "pays" },
+  { cle: "linkedin", label: "Profil LinkedIn", source: "linkedin" },
+  { cle: "permis", label: "Permis de conduire", source: "permis" },
+  { cle: "portfolio", label: "Portfolio / Site", source: "portfolio" },
+  { cle: "github", label: "GitHub", source: "github" },
+  { cle: "rechercheVraie", label: "Bio / Accroche", source: "accroche" },
+  { cle: "formation", label: "Formation", source: "formation" },
+  { cle: "ecole", label: "École / Université", source: "ecole" },
+  { cle: "niveau", label: "Niveau d'études", source: "niveau" },
+  { cle: "metiers", label: "Métiers visés", source: "metiers" },
+  { cle: "domaines", label: "Domaines d'activité", source: "domaines" },
+  { cle: "competences", label: "Compétences clés", source: "competences" },
   { cle: "logiciels", label: "Logiciels / outils", source: "logiciels" },
   { cle: "langues", label: "Langues", source: "langues" },
   { cle: "niveauAnglais", label: "Niveau d'anglais", source: "niveauAnglais" },
-  { cle: "experiences", label: "Expériences", source: "experiences" },
-  { cle: "formation", label: "Formation", source: "formation" },
-  { cle: "ecole", label: "École", source: "ecole" },
-  { cle: "niveau", label: "Niveau", source: "niveau" },
-  { cle: "metiers", label: "Métiers visés", source: "metiers" },
-  { cle: "domaines", label: "Domaines", source: "domaines" },
-  { cle: "localisation", label: "Localisation", source: "localisation" },
+  { cle: "experiences", label: "Synthèse expériences", source: "experiences" },
 ];
 
 function videStructure(cv?: CvStructure | null): boolean {
@@ -145,7 +160,7 @@ export function CvAnalyseDialog({
       setGenereLe(etat.genereLe);
       onSaveCv(etat);
 
-      // Pré-remplissage automatique : uniquement les champs encore vides du profil.
+      // Pré-remplissage automatique : remplit les champs détectés
       const d = a.profilDetecte;
       const patch: Partial<Profil> = {};
       const remplis: string[] = [];
@@ -158,9 +173,54 @@ export function CvAnalyseDialog({
         }
       }
       const structure = structureDetectee(a.cvStructure);
-      if (structure && videStructure(profil.cvStructure)) {
-        patch.cvStructure = structure;
-        remplis.push("CV détaillé (expériences, formations, compétences…)");
+      if (structure) {
+        // Remplissage des coordonnées manquantes depuis la structure
+        if (!patch.emailContact && !profil.emailContact && structure.email) {
+          patch.emailContact = structure.email;
+        }
+        if (!patch.telephone && !profil.telephone && structure.telephone) {
+          patch.telephone = structure.telephone;
+        }
+        if (!patch.linkedin && !profil.linkedin && structure.linkedin) {
+          patch.linkedin = structure.linkedin;
+        }
+        if (!patch.permis && !profil.permis && structure.permis) {
+          patch.permis = structure.permis;
+        }
+        if (!patch.portfolio && !profil.portfolio && structure.portfolio) {
+          patch.portfolio = structure.portfolio;
+        }
+        if (!patch.localisation && !profil.localisation && structure.ville) {
+          patch.localisation = structure.ville;
+        }
+        if (!patch.titre && !profil.titre && structure.titre) {
+          patch.titre = structure.titre;
+        }
+
+        if (
+          videStructure(profil.cvStructure) ||
+          structure.experiences.length > 0 ||
+          structure.formations.length > 0
+        ) {
+          patch.cvStructure = {
+            ...profil.cvStructure,
+            ...structure,
+            prenom: patch.prenom || profil.prenom || structure.prenom,
+            nom: patch.nom || profil.nom || structure.nom,
+            titre: patch.titre || profil.titre || structure.titre,
+            email: patch.emailContact || profil.emailContact || structure.email,
+            telephone:
+              patch.telephone || profil.telephone || structure.telephone,
+            linkedin: patch.linkedin || profil.linkedin || structure.linkedin,
+            permis: patch.permis || profil.permis || structure.permis,
+            portfolio:
+              patch.portfolio || profil.portfolio || structure.portfolio,
+            ville: patch.localisation || profil.localisation || structure.ville,
+          };
+          remplis.push(
+            "Parcours détaillé (expériences, formations, compétences)",
+          );
+        }
       }
       if (remplis.length > 0) {
         setAutoRemplis(remplis);
@@ -179,17 +239,44 @@ export function CvAnalyseDialog({
     : [];
 
   const appliquer = () => {
-    if (!detecte) return;
+    if (!detecte && !analyse?.cvStructure) return;
     const patch: Partial<Profil> = {};
-    for (const c of champsDetectes) {
-      (patch as Record<string, string>)[c.cle as string] =
-        detecte[c.source].trim();
+    if (detecte) {
+      for (const c of champsDetectes) {
+        (patch as Record<string, string>)[c.cle as string] =
+          detecte[c.source]?.trim() ?? "";
+      }
     }
     const structure = structureDetectee(analyse?.cvStructure);
     const labels = champsDetectes.map((c) => c.label);
     if (structure) {
-      patch.cvStructure = structure;
-      labels.push("CV détaillé");
+      if (!patch.emailContact && structure.email)
+        patch.emailContact = structure.email;
+      if (!patch.telephone && structure.telephone)
+        patch.telephone = structure.telephone;
+      if (!patch.linkedin && structure.linkedin)
+        patch.linkedin = structure.linkedin;
+      if (!patch.permis && structure.permis) patch.permis = structure.permis;
+      if (!patch.portfolio && structure.portfolio)
+        patch.portfolio = structure.portfolio;
+      if (!patch.localisation && structure.ville)
+        patch.localisation = structure.ville;
+      if (!patch.titre && structure.titre) patch.titre = structure.titre;
+
+      patch.cvStructure = {
+        ...profil.cvStructure,
+        ...structure,
+        prenom: patch.prenom || profil.prenom || structure.prenom,
+        nom: patch.nom || profil.nom || structure.nom,
+        titre: patch.titre || profil.titre || structure.titre,
+        email: patch.emailContact || profil.emailContact || structure.email,
+        telephone: patch.telephone || profil.telephone || structure.telephone,
+        linkedin: patch.linkedin || profil.linkedin || structure.linkedin,
+        permis: patch.permis || profil.permis || structure.permis,
+        portfolio: patch.portfolio || profil.portfolio || structure.portfolio,
+        ville: patch.localisation || profil.localisation || structure.ville,
+      };
+      labels.push("Parcours détaillé (expériences, formations, compétences)");
     }
     onAppliquerProfil(patch);
     setAutoRemplis(labels);

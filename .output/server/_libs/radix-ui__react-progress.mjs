@@ -1,5 +1,5 @@
 import { a as __toESM } from "../_runtime.mjs";
-import { f as createContextScope, p as Primitive, v as require_jsx_runtime } from "./@radix-ui/react-accordion+[...].mjs";
+import { l as Primitive, m as createContextScope, v as require_jsx_runtime } from "./@radix-ui/react-accordion+[...].mjs";
 import { u as require_react } from "./@floating-ui/react-dom+[...].mjs";
 //#region node_modules/@radix-ui/react-progress/dist/index.mjs
 var import_react = /* @__PURE__ */ __toESM(require_react(), 1);

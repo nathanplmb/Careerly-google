@@ -792,6 +792,45 @@ export function fallbackAnalyserCv(entree: {
     motsClesManquants: ["Gestion de projet", "KPIs", "Agile", "Reporting"],
     resume: `CV solide comportant environ ${mots} mots. Des axes d'optimisation clairs permettront d'augmenter significativement le taux de réponse des recruteurs.`,
     profilDetecte: {
+      prenom: (
+        texte.match(/(?:Prénom|Prenom)\s*:\s*([A-Za-zÀ-ÿ-]+)/i)?.[1] || ""
+      ).trim(),
+      nom: (texte.match(/(?:Nom)\s*:\s*([A-Za-zÀ-ÿ-]+)/i)?.[1] || "").trim(),
+      titre: (
+        texte.match(/(?:Titre|Poste visé|Objectif)\s*:\s*([^\n]+)/i)?.[1] || ""
+      ).trim(),
+      email: (
+        texte.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/)?.[1] ||
+        ""
+      ).trim(),
+      telephone: (
+        texte.match(/(?:(?:\+|00)33|0)\s*[1-9](?:[\s.-]*\d{2}){4}/)?.[0] || ""
+      ).trim(),
+      localisation: (
+        texte.match(
+          /(?:Ville|Adresse|Localisation|Lieu)\s*:\s*([^\n,]+)/i,
+        )?.[1] || "France"
+      ).trim(),
+      pays: "France",
+      linkedin: (
+        texte.match(
+          /(https?:\/\/(?:www\.)?linkedin\.com\/in\/[^\s\n,]+|linkedin\.com\/in\/[^\s\n,]+)/i,
+        )?.[0] || ""
+      ).trim(),
+      portfolio: (
+        texte.match(
+          /(https?:\/\/(?:www\.)?[a-zA-Z0-9-]+\.(?:com|fr|io|me|dev|app)[^\s\n,]*)/i,
+        )?.[0] || ""
+      ).trim(),
+      github: (
+        texte.match(
+          /(https?:\/\/(?:www\.)?github\.com\/[^\s\n,]+|github\.com\/[^\s\n,]+)/i,
+        )?.[0] || ""
+      ).trim(),
+      permis: (
+        texte.match(/(?:Permis\s+[A-Z0-9,\s-]+|Véhiculé(?:e)?)/i)?.[0] || ""
+      ).trim(),
+      accroche: "",
       competences: "Gestion de projet, Analyse, Communication, Pack Office",
       logiciels: "Excel, PowerPoint, Trello, Notion",
       langues: "Français (langue maternelle), Anglais (professionnel)",
@@ -802,7 +841,6 @@ export function fallbackAnalyserCv(entree: {
       niveau: "Bac +4 / Bac +5",
       metiers: "Gestion de projet, Conseil, Management, Marketing",
       domaines: "Services, Tech, Conseil",
-      localisation: "France / Mobilité nationale",
     },
     cvStructure: {
       titre: "Étudiant en recherche d'opportunité",

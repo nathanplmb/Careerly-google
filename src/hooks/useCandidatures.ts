@@ -1,17 +1,14 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useSession } from "@/hooks/useSession";
 import {
   deleteCandidature,
   fetchCandidatures,
-  insertManyCandidatures,
   upsertCandidature,
 } from "@/lib/candidatures-cloud";
 import {
   loadCandidatures,
   saveCandidatures,
-  SEED,
-  STORAGE_KEY,
   type Candidature,
 } from "@/lib/candidatures";
 
@@ -23,10 +20,9 @@ export function useCandidatures() {
   const { user, loading: authLoading } = useSession();
   const userId = user?.id;
   const isCloudUser = Boolean(userId);
-  const [items, setItems] = useState<Candidature[]>(SEED);
+  const [items, setItems] = useState<Candidature[]>([]);
   const [ready, setReady] = useState(false);
   const [syncing, setSyncing] = useState(false);
-  const migre = useRef(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -43,21 +39,11 @@ export function useCandidatures() {
     (async () => {
       try {
         const cloud = await fetchCandidatures(userId);
-        const local = loadCandidatures();
-        if (cloud.length === 0 && local.length > 0 && !migre.current) {
-          migre.current = true;
-          const migrated = await insertManyCandidatures(local, userId);
-          if (!cancelled) {
-            setItems(migrated);
-            window.localStorage.removeItem(STORAGE_KEY);
-            toast.success(
-              "Vos candidatures ont été transférées sur votre compte cloud.",
-            );
-          }
-        } else if (!cancelled) {
+        if (!cancelled) {
           setItems(cloud);
         }
-      } catch {
+      } catch (err) {
+        console.warn("Firestore/cloud fetch error:", err);
         if (!cancelled) {
           // Repli silencieux sur le stockage local si déconnecté ou erreur réseau
           setItems(loadCandidatures());
@@ -113,19 +99,28 @@ export function useCandidatures() {
         if (!current) return prev;
         const next = { ...current, ...p };
         pushCloud(next);
+        if (!isCloudUser) {
+          saveCandidatures(prev.map((c) => (c.id === id ? next : c)));
+        }
         return prev.map((c) => (c.id === id ? next : c));
       });
     },
-    [pushCloud],
+    [pushCloud, isCloudUser],
   );
 
   const remove = useCallback(
     (id: string) => {
-      setItems((prev) => prev.filter((p) => p.id !== id));
-      if (isCloudUser && userId)
+      setItems((prev) => {
+        const next = prev.filter((p) => p.id !== id);
+        saveCandidatures(next);
+        return next;
+      });
+      if (isCloudUser && userId) {
         void deleteCandidature(id, userId).catch(() =>
           toast.error("Suppression en ligne impossible."),
         );
+      }
+      toast.success("Candidature supprimée.");
     },
     [isCloudUser, userId],
   );
@@ -140,11 +135,13 @@ export function useCandidatures() {
           // Ne bloque pas la sauvegarde locale
         }
       }
-      setItems((prev) =>
-        prev.some((p) => p.id === c.id)
+      setItems((prev) => {
+        const next = prev.some((p) => p.id === c.id)
           ? prev.map((p) => (p.id === c.id ? saved : p))
-          : [saved, ...prev],
-      );
+          : [saved, ...prev];
+        if (!isCloudUser) saveCandidatures(next);
+        return next;
+      });
       return saved;
     },
     [isCloudUser, userId],

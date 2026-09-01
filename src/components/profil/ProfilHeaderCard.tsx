@@ -119,31 +119,21 @@ export function ProfilHeaderCard({
         <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 shrink-0">
           <Button
             size="sm"
-            onClick={onOpenSummaryIaModal}
+            onClick={onOpenCvModal}
             className="gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-md shadow-purple-600/20 text-xs font-semibold"
           >
-            <Sparkles className="size-3.5" />
-            Profil IA (Synthèse)
-          </Button>
-
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={onOpenOptimizerModal}
-            className="gap-2 border-purple-500/30 hover:bg-purple-500/10 text-purple-300 text-xs font-semibold"
-          >
-            <TrendingUp className="size-3.5" />
-            Optimiser mon profil
-          </Button>
-
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={onOpenCvModal}
-            className="gap-1.5 border-border/60 hover:bg-card/80 text-xs text-muted-foreground hover:text-foreground"
-          >
             <FileText className="size-3.5" />
-            Importer CV
+            Analyser mon CV
+          </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onOpenSummaryIaModal}
+            className="gap-1.5 border-purple-500/30 hover:bg-purple-500/10 text-purple-300 text-xs font-semibold"
+          >
+            <Sparkles className="size-3.5" />
+            Synthèse & Conseils IA
           </Button>
         </div>
       </div>

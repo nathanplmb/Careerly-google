@@ -218,7 +218,10 @@ function Index() {
       }
     >
       <div className="pop-in mb-6">
-        <p className="text-[15px] font-medium text-muted-foreground">
+        <p
+          className="text-[15px] font-medium text-muted-foreground"
+          suppressHydrationWarning
+        >
           Bonjour {profil?.prenom || user?.email?.split("@")[0] || "à vous"} 👋
         </p>
         <h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-[34px] sm:leading-tight">

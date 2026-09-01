@@ -42,6 +42,22 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
+
+    // Auto-reload on stale chunk / module import error
+    const msg = error?.message || "";
+    if (
+      msg.includes("Importing a module script failed") ||
+      msg.includes("Failed to fetch dynamically imported module") ||
+      msg.includes("error loading dynamically imported module")
+    ) {
+      const key = "chunk_reload_attempted";
+      const lastAttempt = sessionStorage.getItem(key);
+      const now = Date.now();
+      if (!lastAttempt || now - Number(lastAttempt) > 10000) {
+        sessionStorage.setItem(key, String(now));
+        window.location.reload();
+      }
+    }
   }, [error]);
 
   return (
@@ -51,10 +67,11 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           ⚠️
         </div>
         <h1 className="text-lg font-bold tracking-tight text-foreground">
-          Chargement de la page
+          Mise à jour de l'application
         </h1>
         <p className="text-xs text-muted-foreground leading-relaxed">
-          Un souci temporaire est survenu lors du chargement des composants.
+          Une nouvelle version de l'application est disponible ou un module n'a
+          pas pu être chargé.
         </p>
 
         {error?.message && (
@@ -66,12 +83,11 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         <div className="pt-2 flex flex-col sm:flex-row justify-center gap-2">
           <button
             onClick={() => {
-              router.invalidate();
-              reset();
+              window.location.reload();
             }}
             className="inline-flex items-center justify-center rounded-xl bg-purple-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-purple-500"
           >
-            Réessayer
+            Recharger la page
           </button>
           <a
             href="/"
@@ -153,6 +169,17 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    const handlePreloadError = (e: Event) => {
+      console.warn("Preload error detected, reloading page...", e);
+      window.location.reload();
+    };
+    window.addEventListener("vite:preloadError", handlePreloadError);
+    return () => {
+      window.removeEventListener("vite:preloadError", handlePreloadError);
+    };
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

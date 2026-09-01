@@ -32,6 +32,18 @@ const AnalyseSchema = z.object({
   motsClesManquants: z.array(z.string()),
   resume: z.string(),
   profilDetecte: z.object({
+    prenom: z.string().optional().default(""),
+    nom: z.string().optional().default(""),
+    titre: z.string().optional().default(""),
+    email: z.string().optional().default(""),
+    telephone: z.string().optional().default(""),
+    localisation: z.string().optional().default(""),
+    pays: z.string().optional().default("France"),
+    linkedin: z.string().optional().default(""),
+    portfolio: z.string().optional().default(""),
+    github: z.string().optional().default(""),
+    permis: z.string().optional().default(""),
+    accroche: z.string().optional().default(""),
     competences: z.string(),
     logiciels: z.string(),
     langues: z.string(),
@@ -42,7 +54,6 @@ const AnalyseSchema = z.object({
     niveau: z.string(),
     metiers: z.string(),
     domaines: z.string(),
-    localisation: z.string(),
   }),
   cvStructure: z.object({
     titre: z.string(),
@@ -146,8 +157,21 @@ RÈGLES D'EXCELLENCE :
   * "reformulations" : 3 à 6 puces concrètes réécrites ("avant" = extrait brut, "apres" = version musclée avec verbe d'action et impact).
   * "motsClesManquants" : liste des mots-clés et compétences recherchées par les recruteurs du secteur qui manquent.
   * "resume" : synthèse globale percutante en 2-3 phrases.
-  * "profilDetecte" : synthèse structurée par champs pour pré-remplir le profil de l'étudiant.
-  * "cvStructure" : parsing exhaustif (expériences, formations, certifications, projets, compétences, langues, bénévolats, centres d'intérêt).`;
+  * "profilDetecte" : synthèse structurée par champs pour pré-remplir l'INTÉGRALITÉ du profil de l'étudiant :
+    - "prenom" : prénom du candidat
+    - "nom" : nom de famille du candidat
+    - "titre" : titre du profil / poste recherché / accroche visible en haut de CV
+    - "email" : adresse email de contact
+    - "telephone" : numéro de téléphone
+    - "localisation" : ville, département ou région
+    - "pays" : pays de résidence (ex: France)
+    - "linkedin" : URL complète ou lien / identifiant LinkedIn (ex: https://linkedin.com/in/... ou linkedin.com/in/...)
+    - "portfolio" : site web personnel, portfolio ou blog
+    - "github" : profil GitHub ou code public
+    - "permis" : permis de conduire (ex: "Permis B", "Permis B - Véhiculé", "Permis A, B", etc.)
+    - "accroche" : court paragraphe ou résumé professionnel
+    - "competences", "logiciels", "langues", "niveauAnglais", "experiences", "formation", "ecole", "niveau", "metiers", "domaines"
+  * "cvStructure" : parsing exhaustif et détaillé (titre, accroche, email, telephone, ville, linkedin, portfolio, permis, experiences, formations, certifications, projets, competences, langues, benevolats, interets).`;
 
 export async function analyserCvIA(entree: {
   cv: string;

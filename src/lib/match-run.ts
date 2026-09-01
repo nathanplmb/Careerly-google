@@ -5,8 +5,17 @@ import type { Candidature, MatchScore } from "./candidatures";
 import type { Profil } from "./profil";
 import { cvStructureEnTexte, normaliserCvStructure } from "./cv-structure";
 
-const ligne = (label: string, v: string) =>
-  v?.trim() ? `${label} : ${v.trim()}\n` : "";
+const ligne = (label: string, v: unknown) => {
+  if (typeof v === "string") {
+    const s = v.trim();
+    return s ? `${label} : ${s}\n` : "";
+  }
+  if (v !== null && v !== undefined && typeof v !== "object") {
+    const s = String(v).trim();
+    return s ? `${label} : ${s}\n` : "";
+  }
+  return "";
+};
 
 export function profilEnTexte(p: Profil): string {
   const criteres = Object.entries(p.criteres ?? {})

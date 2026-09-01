@@ -1,16 +1,13 @@
 import { useState } from "react";
 import {
-  Compass,
   Target,
-  Building2,
   Calendar,
   DollarSign,
-  Laptop,
   Sparkles,
-  HeartHandshake,
   Plus,
   X,
   Check,
+  ShieldAlert,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +15,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Profil } from "@/lib/profil";
-import { ProfilTagSuggestions } from "./ProfilTagSuggestions";
 
 const CONTRATS_OPTIONS = [
   "Stage",
@@ -31,32 +27,20 @@ const CONTRATS_OPTIONS = [
 ];
 
 const MODES_TRAVAIL = [
-  { id: "hybride", label: "Hybride (Télétravail + Bureau)", icone: "🏢" },
-  { id: "full_remote", label: "100% Télétravail / Full Remote", icone: "💻" },
-  { id: "presentiel", label: "Présentiel complet", icone: "👥" },
-  { id: "indifferent", label: "Indifférent", icone: "✨" },
-];
-
-const ENVIRONNEMENTS_OPTIONS = [
-  "Grand groupe",
-  "Scale-up",
-  "Startup",
-  "Cabinet de conseil",
-  "Banque / Finance",
-  "PME / ETI",
-  "Secteur public / ONG",
-  "Tech / SaaS",
-];
-
-const PRIORITES_OPTIONS = [
-  "Missions apprenantes & formatrices",
-  "Mentorat & Management bienveillant",
-  "Perspectives de recrutement (CDI à la clé)",
-  "Rémunération attractive / Bonus",
-  "Culture d'entreprise & Équilibre de vie",
-  "Impact écologique / RSE",
-  "Exposition internationale",
-  "Autonomie & Prise de décision",
+  {
+    id: "hybride",
+    label: "Hybride",
+    desc: "Télétravail + Bureau",
+    icone: "🏢",
+  },
+  {
+    id: "full_remote",
+    label: "100% Remote",
+    desc: "Télétravail complet",
+    icone: "💻",
+  },
+  { id: "presentiel", label: "Présentiel", desc: "Sur site", icone: "👥" },
+  { id: "indifferent", label: "Indifférent", desc: "Flexible", icone: "✨" },
 ];
 
 type Props = {
@@ -69,32 +53,10 @@ export function ProfilObjectivesTab({ profil, onChange }: Props) {
   const [nouveauDomaine, setNouveauDomaine] = useState("");
   const [nouvelleEntreprise, setNouvelleEntreprise] = useState("");
 
-  const environnements = profil.environnements ?? ["Grand groupe", "Scale-up"];
-  const priorites = profil.prioritesRecherche ?? [
-    "Missions apprenantes & formatrices",
-    "Mentorat & Management bienveillant",
-  ];
-
-  const toggleEnvironnement = (env: string) => {
-    const exists = environnements.includes(env);
-    const next = exists
-      ? environnements.filter((e) => e !== env)
-      : [...environnements, env];
-    onChange({ environnements: next });
-  };
-
-  const togglePriorite = (prio: string) => {
-    const exists = priorites.includes(prio);
-    const next = exists
-      ? priorites.filter((p) => p !== prio)
-      : [...priorites, prio];
-    onChange({ prioritesRecherche: next });
-  };
-
   const ajouterTag = (
     val: string,
     champ: "metiers" | "domaines" | "entreprisesCiblees",
-    reset: () => void,
+    reset?: () => void,
   ) => {
     const trim = val.trim();
     if (!trim) return;
@@ -104,11 +66,11 @@ export function ProfilObjectivesTab({ profil, onChange }: Props) {
           .map((s) => s.trim())
           .filter(Boolean)
       : [];
-    if (!current.includes(trim)) {
+    if (!current.some((c) => c.toLowerCase() === trim.toLowerCase())) {
       current.push(trim);
       onChange({ [champ]: current.join(", ") });
     }
-    reset();
+    if (reset) reset();
   };
 
   const retirerTag = (
@@ -121,7 +83,9 @@ export function ProfilObjectivesTab({ profil, onChange }: Props) {
           .map((s) => s.trim())
           .filter(Boolean)
       : [];
-    const next = current.filter((t) => t !== tag);
+    const next = current.filter(
+      (t) => t.toLowerCase() !== tag.toLowerCase().trim(),
+    );
     onChange({ [champ]: next.join(", ") });
   };
 
@@ -140,34 +104,33 @@ export function ProfilObjectivesTab({ profil, onChange }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* 1. Métiers & Secteurs Ciblés */}
-      <div className="glass-card p-5 sm:p-6 space-y-5">
-        <div className="flex items-center gap-3 border-b border-border/50 pb-3">
+      {/* 1. Postes & Secteurs Cibles */}
+      <div className="glass-card p-5 sm:p-6 space-y-5 rounded-2xl border border-border/70 bg-card/80">
+        <div className="flex items-center gap-3 border-b border-border/40 pb-3">
           <div className="flex size-8 items-center justify-center rounded-lg bg-purple-500/10 text-purple-400">
             <Target className="size-4" />
           </div>
           <div>
             <h3 className="text-sm font-semibold text-foreground">
-              Métiers & Secteurs Cibles
+              Postes & Secteurs ciblés
             </h3>
             <p className="text-xs text-muted-foreground">
-              Les intitulés de postes et domaines d'activité que le Match IA
-              doit cibler en priorité
+              Les intitulés et domaines recherchés pour le Match IA
             </p>
           </div>
         </div>
 
-        {/* Métiers ciblés */}
+        {/* Métiers recherchés */}
         <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground">
+          <Label className="text-xs font-medium text-foreground">
             Intitulés de postes / Métiers recherchés *
           </Label>
-          <div className="flex flex-wrap gap-1.5 min-h-[36px] p-2 rounded-lg border border-border/60 bg-background/50">
+          <div className="flex flex-wrap items-center gap-1.5 min-h-[38px] p-2 rounded-xl border border-border/70 bg-background/50 focus-within:border-purple-500/50 transition-colors">
             {metiersList.map((m) => (
               <Badge
                 key={m}
                 variant="secondary"
-                className="gap-1.5 bg-purple-500/15 text-purple-300 border border-purple-500/20 text-xs py-1 px-2.5"
+                className="gap-1 bg-purple-500/15 text-purple-200 border border-purple-500/30 text-xs py-1 px-2.5 rounded-lg"
               >
                 {m}
                 <button
@@ -179,7 +142,7 @@ export function ProfilObjectivesTab({ profil, onChange }: Props) {
                 </button>
               </Badge>
             ))}
-            <div className="flex-1 min-w-[200px] flex items-center gap-2">
+            <div className="flex-1 min-w-[180px] flex items-center gap-2">
               <input
                 type="text"
                 value={nouveauMetier}
@@ -192,52 +155,43 @@ export function ProfilObjectivesTab({ profil, onChange }: Props) {
                     );
                   }
                 }}
-                placeholder="Ajouter un métier (ex: Bras Droit, Chef de Produit, Analyste M&A...) et tapez Entrée"
+                placeholder={
+                  metiersList.length === 0
+                    ? "Ex : Bras Droit CEO, Chef de Projet, Data Analyst... (Entrée)"
+                    : "Ajouter un autre intitulé..."
+                }
                 className="w-full bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                onClick={() =>
-                  ajouterTag(nouveauMetier, "metiers", () =>
-                    setNouveauMetier(""),
-                  )
-                }
-                className="h-6 px-2 text-xs text-purple-400"
-              >
-                <Plus className="size-3" />
-              </Button>
+              {nouveauMetier && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() =>
+                    ajouterTag(nouveauMetier, "metiers", () =>
+                      setNouveauMetier(""),
+                    )
+                  }
+                  className="h-6 px-2 text-xs text-purple-400"
+                >
+                  <Plus className="size-3" />
+                </Button>
+              )}
             </div>
           </div>
-          <ProfilTagSuggestions
-            categorie="metiers"
-            valeurActuelle={profil.metiers}
-            onSelectSuggestion={(val) => {
-              const current = profil.metiers
-                ? profil.metiers
-                    .split(",")
-                    .map((s) => s.trim())
-                    .filter(Boolean)
-                : [];
-              if (!current.includes(val)) {
-                onChange({ metiers: [...current, val].join(", ") });
-              }
-            }}
-          />
         </div>
 
         {/* Domaines d'activité */}
-        <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground">
+        <div className="space-y-2 pt-2 border-t border-border/40">
+          <Label className="text-xs font-medium text-foreground">
             Domaines / Secteurs d'activité
           </Label>
-          <div className="flex flex-wrap gap-1.5 min-h-[36px] p-2 rounded-lg border border-border/60 bg-background/50">
+          <div className="flex flex-wrap items-center gap-1.5 min-h-[38px] p-2 rounded-xl border border-border/70 bg-background/50 focus-within:border-indigo-500/50 transition-colors">
             {domainesList.map((d) => (
               <Badge
                 key={d}
                 variant="secondary"
-                className="gap-1.5 bg-indigo-500/15 text-indigo-300 border border-indigo-500/20 text-xs py-1 px-2.5"
+                className="gap-1 bg-indigo-500/15 text-indigo-200 border border-indigo-500/30 text-xs py-1 px-2.5 rounded-lg"
               >
                 {d}
                 <button
@@ -249,7 +203,7 @@ export function ProfilObjectivesTab({ profil, onChange }: Props) {
                 </button>
               </Badge>
             ))}
-            <div className="flex-1 min-w-[200px] flex items-center gap-2">
+            <div className="flex-1 min-w-[180px] flex items-center gap-2">
               <input
                 type="text"
                 value={nouveauDomaine}
@@ -262,52 +216,43 @@ export function ProfilObjectivesTab({ profil, onChange }: Props) {
                     );
                   }
                 }}
-                placeholder="Ajouter un secteur (ex: Tech / SaaS, Conseil, Finance, Luxe...) et tapez Entrée"
+                placeholder={
+                  domainesList.length === 0
+                    ? "Ex : Tech & SaaS, Finance, Conseil, Luxe... (Entrée)"
+                    : "Ajouter un secteur..."
+                }
                 className="w-full bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                onClick={() =>
-                  ajouterTag(nouveauDomaine, "domaines", () =>
-                    setNouveauDomaine(""),
-                  )
-                }
-                className="h-6 px-2 text-xs text-indigo-400"
-              >
-                <Plus className="size-3" />
-              </Button>
+              {nouveauDomaine && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() =>
+                    ajouterTag(nouveauDomaine, "domaines", () =>
+                      setNouveauDomaine(""),
+                    )
+                  }
+                  className="h-6 px-2 text-xs text-indigo-400"
+                >
+                  <Plus className="size-3" />
+                </Button>
+              )}
             </div>
           </div>
-          <ProfilTagSuggestions
-            categorie="domaines"
-            valeurActuelle={profil.domaines}
-            onSelectSuggestion={(val) => {
-              const current = profil.domaines
-                ? profil.domaines
-                    .split(",")
-                    .map((s) => s.trim())
-                    .filter(Boolean)
-                : [];
-              if (!current.includes(val)) {
-                onChange({ domaines: [...current, val].join(", ") });
-              }
-            }}
-          />
         </div>
 
-        {/* Entreprises ciblées */}
-        <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground">
-            Entreprises spécifiques ciblées (Dream Companies)
+        {/* Entreprises spécifiques ciblées */}
+        <div className="space-y-2 pt-2 border-t border-border/40">
+          <Label className="text-xs font-medium text-foreground">
+            Entreprises spécifiques ciblées (Optionnel)
           </Label>
-          <div className="flex flex-wrap gap-1.5 min-h-[36px] p-2 rounded-lg border border-border/60 bg-background/50">
+          <div className="flex flex-wrap items-center gap-1.5 min-h-[38px] p-2 rounded-xl border border-border/70 bg-background/50 focus-within:border-blue-500/50 transition-colors">
             {entreprisesList.map((e) => (
               <Badge
                 key={e}
                 variant="secondary"
-                className="gap-1.5 bg-blue-500/15 text-blue-300 border border-blue-500/20 text-xs py-1 px-2.5"
+                className="gap-1 bg-blue-500/15 text-blue-200 border border-blue-500/30 text-xs py-1 px-2.5 rounded-lg"
               >
                 {e}
                 <button
@@ -319,7 +264,7 @@ export function ProfilObjectivesTab({ profil, onChange }: Props) {
                 </button>
               </Badge>
             ))}
-            <div className="flex-1 min-w-[200px] flex items-center gap-2">
+            <div className="flex-1 min-w-[180px] flex items-center gap-2">
               <input
                 type="text"
                 value={nouvelleEntreprise}
@@ -332,46 +277,48 @@ export function ProfilObjectivesTab({ profil, onChange }: Props) {
                     );
                   }
                 }}
-                placeholder="Ex : L'Oréal, BNP Paribas, Doctolib, BCG, Alan... et tapez Entrée"
+                placeholder="Ex : L'Oréal, BNP Paribas, Doctolib, BCG... (Entrée)"
                 className="w-full bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
-              <Button
-                type="button"
-                size="sm"
-                variant="ghost"
-                onClick={() =>
-                  ajouterTag(nouvelleEntreprise, "entreprisesCiblees", () =>
-                    setNouvelleEntreprise(""),
-                  )
-                }
-                className="h-6 px-2 text-xs text-blue-400"
-              >
-                <Plus className="size-3" />
-              </Button>
+              {nouvelleEntreprise && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={() =>
+                    ajouterTag(nouvelleEntreprise, "entreprisesCiblees", () =>
+                      setNouvelleEntreprise(""),
+                    )
+                  }
+                  className="h-6 px-2 text-xs text-blue-400"
+                >
+                  <Plus className="size-3" />
+                </Button>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* 2. Modalités de contrat & Calendrier */}
-      <div className="glass-card p-5 sm:p-6 space-y-5">
-        <div className="flex items-center gap-3 border-b border-border/50 pb-3">
+      {/* 2. Type de contrat & Disponibilité */}
+      <div className="glass-card p-5 sm:p-6 space-y-5 rounded-2xl border border-border/70 bg-card/80">
+        <div className="flex items-center gap-3 border-b border-border/40 pb-3">
           <div className="flex size-8 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400">
             <Calendar className="size-4" />
           </div>
           <div>
             <h3 className="text-sm font-semibold text-foreground">
-              Type de contrat & Calendrier de recherche
+              Contrat & Disponibilité
             </h3>
             <p className="text-xs text-muted-foreground">
-              Format de la mission, dates de disponibilité et durée souhaitée
+              Type de contrat, calendrier et rythme de travail
             </p>
           </div>
         </div>
 
         {/* Type de contrat */}
         <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground">
+          <Label className="text-xs font-medium text-foreground">
             Type de contrat recherché *
           </Label>
           <div className="flex flex-wrap gap-2">
@@ -393,8 +340,8 @@ export function ProfilObjectivesTab({ profil, onChange }: Props) {
                   }}
                   className={`rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all ${
                     selected
-                      ? "border-purple-500/40 bg-purple-500/20 text-purple-200 shadow-xs"
-                      : "border-border/60 bg-card/40 text-muted-foreground hover:bg-card/80 hover:text-foreground"
+                      ? "border-purple-500/50 bg-purple-500/20 text-purple-200 shadow-xs"
+                      : "border-border/60 bg-card/40 text-muted-foreground hover:bg-card hover:text-foreground"
                   }`}
                 >
                   {selected && <Check className="size-3.5 inline mr-1" />}
@@ -407,46 +354,49 @@ export function ProfilObjectivesTab({ profil, onChange }: Props) {
 
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
               <Calendar className="size-3.5" /> Date de début souhaitée
             </Label>
             <Input
-              value={profil.dateDebut}
+              value={profil.dateDebut || ""}
               onChange={(e) => onChange({ dateDebut: e.target.value })}
-              placeholder="Ex : Janvier 2026, Septembre..."
+              placeholder="Ex : Dès que possible, Septembre 2026..."
+              className="text-xs rounded-xl"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">
+            <Label className="text-xs font-medium text-muted-foreground">
               Durée souhaitée
             </Label>
             <Input
-              value={profil.duree}
+              value={profil.duree || ""}
               onChange={(e) => onChange({ duree: e.target.value })}
-              placeholder="Ex : 6 mois, 12 à 24 mois..."
+              placeholder="Ex : 6 mois, 1 an..."
+              className="text-xs rounded-xl"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
+            <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
               <DollarSign className="size-3.5 text-emerald-400" /> Rémunération
               min.
             </Label>
             <Input
-              value={profil.remuneration}
+              value={profil.remuneration || ""}
               onChange={(e) => onChange({ remuneration: e.target.value })}
-              placeholder="Ex : 1200 €/mois, 45k€..."
+              placeholder="Ex : 1 200 €/mois, 45 k€..."
+              className="text-xs rounded-xl"
             />
           </div>
         </div>
 
-        {/* Mode de travail */}
-        <div className="space-y-2 pt-2">
-          <Label className="text-xs text-muted-foreground">
+        {/* Mode de travail préféré */}
+        <div className="space-y-2 pt-1 border-t border-border/40">
+          <Label className="text-xs font-medium text-foreground">
             Mode de travail préféré
           </Label>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-2 grid-cols-2 sm:grid-cols-4">
             {MODES_TRAVAIL.map((m) => {
               const selected = (profil.modeTravail || "hybride") === m.id;
               return (
@@ -456,90 +406,19 @@ export function ProfilObjectivesTab({ profil, onChange }: Props) {
                   onClick={() =>
                     onChange({ modeTravail: m.id, teletravail: m.label })
                   }
-                  className={`flex items-center gap-2.5 rounded-xl border p-3 text-left transition-all ${
+                  className={`flex flex-col items-start gap-1 p-3 rounded-xl border text-left transition-all ${
                     selected
-                      ? "border-purple-500/40 bg-purple-500/15 text-purple-200"
+                      ? "border-purple-500/50 bg-purple-500/15 text-purple-200 ring-1 ring-purple-500/30"
                       : "border-border/60 bg-card/40 text-muted-foreground hover:bg-card/70 hover:text-foreground"
                   }`}
                 >
                   <span className="text-base">{m.icone}</span>
-                  <span className="text-xs font-semibold">{m.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Environnements d'entreprise & Priorités */}
-      <div className="glass-card p-5 sm:p-6 space-y-5">
-        <div className="flex items-center gap-3 border-b border-border/50 pb-3">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400">
-            <Building2 className="size-4" />
-          </div>
-          <div>
-            <h3 className="text-sm font-semibold text-foreground">
-              Environnements & Critères Prioritaires
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              La taille de structure et les valeurs qui comptent le plus pour
-              vous
-            </p>
-          </div>
-        </div>
-
-        {/* Environnements */}
-        <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground">
-            Types de structures privilégiées
-          </Label>
-          <div className="flex flex-wrap gap-2">
-            {ENVIRONNEMENTS_OPTIONS.map((env) => {
-              const selected = environnements.includes(env);
-              return (
-                <button
-                  key={env}
-                  type="button"
-                  onClick={() => toggleEnvironnement(env)}
-                  className={`rounded-xl border px-3 py-1.5 text-xs font-semibold transition-all ${
-                    selected
-                      ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-300"
-                      : "border-border/60 bg-card/40 text-muted-foreground hover:bg-card/70 hover:text-foreground"
-                  }`}
-                >
-                  {selected && <Check className="size-3.5 inline mr-1" />}
-                  {env}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Priorités */}
-        <div className="space-y-2">
-          <Label className="text-xs text-muted-foreground">
-            Vos priorités absolues dans une opportunité
-          </Label>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {PRIORITES_OPTIONS.map((prio) => {
-              const selected = priorites.includes(prio);
-              return (
-                <button
-                  key={prio}
-                  type="button"
-                  onClick={() => togglePriorite(prio)}
-                  className={`flex items-center gap-2 rounded-xl border p-2.5 text-left text-xs font-medium transition-all ${
-                    selected
-                      ? "border-purple-500/40 bg-purple-500/15 text-purple-200 font-semibold"
-                      : "border-border/60 bg-card/40 text-muted-foreground hover:bg-card/70 hover:text-foreground"
-                  }`}
-                >
-                  <span
-                    className={`size-3.5 rounded-full border flex items-center justify-center ${selected ? "border-purple-400 bg-purple-500 text-white" : "border-muted-foreground/40"}`}
-                  >
-                    {selected && <Check className="size-2.5" />}
+                  <span className="text-xs font-semibold text-foreground">
+                    {m.label}
                   </span>
-                  <span>{prio}</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {m.desc}
+                  </span>
                 </button>
               );
             })}
@@ -547,8 +426,8 @@ export function ProfilObjectivesTab({ profil, onChange }: Props) {
         </div>
       </div>
 
-      {/* 4. Ce que je recherche vraiment (Zone libre stratégique pour l'IA) */}
-      <div className="glass-card p-5 sm:p-6 space-y-4 border-purple-500/30 bg-gradient-to-br from-purple-500/5 via-card/60 to-indigo-500/5">
+      {/* 3. Contexte IA & Critères non négociables */}
+      <div className="glass-card p-5 sm:p-6 space-y-4 rounded-2xl border border-purple-500/30 bg-gradient-to-br from-purple-500/5 via-card/80 to-indigo-500/5">
         <div className="flex items-center gap-3 border-b border-purple-500/20 pb-3">
           <div className="flex size-8 items-center justify-center rounded-lg bg-purple-500/20 text-purple-300">
             <Sparkles className="size-4" />
@@ -561,8 +440,8 @@ export function ProfilObjectivesTab({ profil, onChange }: Props) {
               </Badge>
             </h3>
             <p className="text-xs text-muted-foreground">
-              Expliquez avec vos propres mots ce qui vous motive, vos ambitions
-              et le type d'équipe idéale
+              Décrivez librement vos attentes et le type d'équipe idéal pour
+              guider l'IA
             </p>
           </div>
         </div>
@@ -570,15 +449,36 @@ export function ProfilObjectivesTab({ profil, onChange }: Props) {
         <Textarea
           value={profil.rechercheVraie || ""}
           onChange={(e) => onChange({ rechercheVraie: e.target.value })}
-          rows={4}
-          placeholder="Ex : Je recherche un stage où je serai au contact direct de la direction ou des fondateurs, avec une vraie autonomie sur les sujets opérationnels. J'aimerais particulièrement travailler sur le lancement de nouveaux produits ou l'expansion internationale, dans une ambiance bienveillante mais stimulante..."
-          className="text-xs leading-relaxed border-purple-500/20 bg-background/50 focus-visible:ring-purple-500"
+          rows={3}
+          placeholder="Ex : Je recherche une opportunité avec une forte autonomie sur des projets stratégiques. Une équipe bienveillante, axée sur l'apprentissage et avec des perspectives de recrutement..."
+          className="text-xs leading-relaxed border-purple-500/20 bg-background/50 focus-visible:ring-purple-500 rounded-xl"
         />
-        <p className="text-[11px] text-muted-foreground">
-          ✨ Ce paragraphe est directement injecté dans le contexte du Match IA,
-          de la rédaction des lettres de motivation, des messages LinkedIn et du
-          Coach d'entretien.
-        </p>
+
+        <div className="grid gap-4 sm:grid-cols-2 pt-2 border-t border-border/40">
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-foreground">
+              Secteurs à éviter
+            </Label>
+            <Input
+              value={profil.secteursEviter || ""}
+              onChange={(e) => onChange({ secteursEviter: e.target.value })}
+              placeholder="Ex : Tabac, Armement, Grande distribution..."
+              className="text-xs rounded-xl border-border/70"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-xs font-medium text-foreground">
+              Critères rédhibitoires
+            </Label>
+            <Input
+              value={profil.redhibitoires || ""}
+              onChange={(e) => onChange({ redhibitoires: e.target.value })}
+              placeholder="Ex : Pas de présentiel à plus d'1h de trajet..."
+              className="text-xs rounded-xl border-border/70"
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

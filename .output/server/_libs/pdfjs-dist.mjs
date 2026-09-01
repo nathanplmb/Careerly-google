@@ -1,5 +1,5 @@
 import { r as __exportAll } from "../_runtime.mjs";
-import { n as globalthis_default } from "./supabase__realtime-js+unenv.mjs";
+import { I as globalthis_default } from "./@firebase/app+[...].mjs";
 import processModule from "node:process";
 import { Buffer } from "node:buffer";
 //#region node_modules/pdfjs-dist/legacy/build/pdf.mjs
