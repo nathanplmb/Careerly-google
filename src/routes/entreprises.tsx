@@ -49,9 +49,7 @@ export const Route = createFileRoute("/entreprises")({
 function EntreprisesPage() {
   const { user, authLoading, items, save } = useCandidatures();
   const profil = useProfil(user);
-  const [contacts, setContacts] = useState<Contact[]>(() =>
-    loadContactsLocal(),
-  );
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const [recherche, setRecherche] = useState("");
   const [editing, setEditing] = useState<Candidature | null>(null);
   const [open, setOpen] = useState(false);

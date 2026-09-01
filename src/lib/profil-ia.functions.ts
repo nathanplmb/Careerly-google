@@ -8,7 +8,7 @@ const SyntheseInput = z.object({
 
 export const genererSyntheseProfil = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => SyntheseInput.parse(data))
+  .validator((data: unknown) => SyntheseInput.parse(data))
   .handler(async ({ data, context }) => {
     const { consommerQuota } = await import("./quota.server");
     await consommerQuota(context.supabase, "profil_synthese").catch(
@@ -25,7 +25,7 @@ const OptimiserInput = z.object({
 
 export const optimiserProfilIA = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => OptimiserInput.parse(data))
+  .validator((data: unknown) => OptimiserInput.parse(data))
   .handler(async ({ data, context }) => {
     const { consommerQuota } = await import("./quota.server");
     await consommerQuota(context.supabase, "profil_audit").catch(

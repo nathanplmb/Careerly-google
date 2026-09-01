@@ -6,7 +6,7 @@ const Input = z.object({ texte: z.string().min(10) });
 
 export const analyserOffre = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => Input.parse(data))
+  .validator((data: unknown) => Input.parse(data))
   .handler(async ({ data, context }) => {
     const { consommerQuota, limiterTexte } = await import("./quota.server");
     await consommerQuota(context.supabase, "offre");

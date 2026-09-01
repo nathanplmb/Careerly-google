@@ -59,7 +59,7 @@ export function calculerCompletudeProfil(p: Profil): BilanCompletude {
 
   categories.push({
     id: "identite",
-    nom: "Identité & Coordonnées",
+    nom: "Identité & Contact",
     tab: "identite",
     statut: statIdentite,
     points: ptsIdentite,
@@ -81,9 +81,13 @@ export function calculerCompletudeProfil(p: Profil): BilanCompletude {
     });
   }
 
-  // 2. Objectifs & Ma Recherche (15 pts)
-  const aMetiers = Boolean(p.metiers?.trim());
-  const aDomaines = Boolean(p.domaines?.trim());
+  // 2. Objectifs & Préférences (15 pts)
+  const aMetiers = Boolean(
+    p.metiers?.trim() || p.preferences?.metiersPrivilegies?.length,
+  );
+  const aDomaines = Boolean(
+    p.domaines?.trim() || p.preferences?.secteursPrivilegies?.length,
+  );
   const aContrat = Boolean(p.contrats?.trim());
   const aAspirations = Boolean(p.rechercheVraie?.trim());
   const aDispo = Boolean(p.dateDebut?.trim() || p.duree?.trim());
@@ -103,14 +107,14 @@ export function calculerCompletudeProfil(p: Profil): BilanCompletude {
         : "manquant";
 
   categories.push({
-    id: "recherche",
-    nom: "Ma recherche & Aspirations",
-    tab: "recherche",
+    id: "preferences",
+    nom: "Objectifs & Préférences",
+    tab: "preferences",
     statut: statRecherche,
     points: ptsRecherche,
     maxPoints: 15,
     detail: aMetiers
-      ? `${p.metiers} (${p.contrats || "Stage"})`
+      ? `${p.metiers || p.preferences?.metiersPrivilegies?.join(", ")} (${p.contrats || "Stage"})`
       : "Métiers cibles & type de contrat",
   });
 
@@ -118,14 +122,68 @@ export function calculerCompletudeProfil(p: Profil): BilanCompletude {
     suggestions.push({
       id: "recherche_sug",
       titre: "Précisez vos aspirations dans « Ce que je recherche vraiment »",
-      tab: "recherche",
+      tab: "preferences",
       gain: 15 - ptsRecherche,
       conseil:
         "L'IA utilise ce texte pour personnaliser les lettres et recommander des opportunités uniques.",
     });
   }
 
-  // 3. Formations & Études (15 pts)
+  // 3. Expériences Professionnelles (20 pts)
+  const nbExp = cv?.experiences?.length ?? 0;
+  const aExpSimple = Boolean(p.experiences?.trim());
+  let ptsExp = 0;
+
+  if (nbExp >= 2) {
+    const aRealisationsCles = cv.experiences.some(
+      (e) =>
+        e.kpi?.trim() ||
+        e.realisationsCles?.trim() ||
+        (e.realisations && e.realisations.length > 0),
+    );
+    ptsExp = aRealisationsCles ? 20 : 16;
+  } else if (nbExp === 1) {
+    const e = cv.experiences?.[0];
+    ptsExp =
+      e?.kpi ||
+      e?.realisationsCles ||
+      (e?.realisations && e.realisations.length > 0)
+        ? 15
+        : 10;
+  } else if (aExpSimple) {
+    ptsExp = 8;
+  }
+
+  const statExp: StatutCategorie =
+    ptsExp >= 16 ? "complet" : ptsExp >= 8 ? "a_ameliorer" : "manquant";
+
+  categories.push({
+    id: "experiences",
+    nom: "Expériences professionnelles",
+    tab: "parcours",
+    statut: statExp,
+    points: ptsExp,
+    maxPoints: 20,
+    detail:
+      nbExp > 0
+        ? `${nbExp} expérience(s) enregistrée(s)`
+        : aExpSimple
+          ? "Texte brut saisi"
+          : "Aucune expérience",
+  });
+
+  if (ptsExp < 16) {
+    suggestions.push({
+      id: "exp_sug",
+      titre: "Ajoutez vos réalisations chiffrées (KPI) dans vos expériences",
+      tab: "parcours",
+      gain: 20 - ptsExp,
+      conseil:
+        "Les bullets d'impact (ex: '+25% de conversion', '10 000 utilisateurs') boostent radicalement le score ATS.",
+    });
+  }
+
+  // 4. Formations & Études (15 pts)
   const nbFormations = cv?.formations?.length ?? 0;
   const aFormationSimple = Boolean(p.formation?.trim() || p.ecole?.trim());
   let ptsFormation = 0;
@@ -151,7 +209,7 @@ export function calculerCompletudeProfil(p: Profil): BilanCompletude {
   categories.push({
     id: "formation",
     nom: "Études & Formations",
-    tab: "formation",
+    tab: "parcours",
     statut: statFormation,
     points: ptsFormation,
     maxPoints: 15,
@@ -160,71 +218,6 @@ export function calculerCompletudeProfil(p: Profil): BilanCompletude {
         ? `${nbFormations} formation(s) enregistrée(s)`
         : p.formation || "Aucune formation",
   });
-
-  if (ptsFormation < 13) {
-    suggestions.push({
-      id: "formation_sug",
-      titre: "Détaillez vos formations, spécialisations et cours clés",
-      tab: "formation",
-      gain: 15 - ptsFormation,
-      conseil:
-        "Les recruteurs et le Match IA accordent une forte valeur aux matières clés et projets académiques.",
-    });
-  }
-
-  // 4. Expériences Professionnelles (20 pts)
-  const nbExp = cv?.experiences?.length ?? 0;
-  const aExpSimple = Boolean(p.experiences?.trim());
-  let ptsExp = 0;
-
-  if (nbExp >= 2) {
-    const aRealisationsCles = cv.experiences.some(
-      (e) =>
-        e.kpi?.trim() ||
-        e.realisationsCles?.trim() ||
-        e.realisations.length > 0,
-    );
-    ptsExp = aRealisationsCles ? 20 : 16;
-  } else if (nbExp === 1) {
-    const e = cv.experiences?.[0];
-    ptsExp =
-      e?.kpi ||
-      e?.realisationsCles ||
-      (e?.realisations && e.realisations.length > 0)
-        ? 15
-        : 10;
-  } else if (aExpSimple) {
-    ptsExp = 8;
-  }
-
-  const statExp: StatutCategorie =
-    ptsExp >= 16 ? "complet" : ptsExp >= 8 ? "a_ameliorer" : "manquant";
-
-  categories.push({
-    id: "experiences",
-    nom: "Expériences professionnelles",
-    tab: "experiences",
-    statut: statExp,
-    points: ptsExp,
-    maxPoints: 20,
-    detail:
-      nbExp > 0
-        ? `${nbExp} expérience(s) structurée(s)`
-        : aExpSimple
-          ? "Texte brut saisi"
-          : "Aucune expérience",
-  });
-
-  if (ptsExp < 16) {
-    suggestions.push({
-      id: "exp_sug",
-      titre: "Ajoutez vos réalisations chiffrées (KPI) dans vos expériences",
-      tab: "experiences",
-      gain: 20 - ptsExp,
-      conseil:
-        "Les bullets d'impact (ex: '+25% de conversion', '10 000 utilisateurs') boostent radicalement le score ATS.",
-    });
-  }
 
   // 5. Compétences & Outils (15 pts)
   const nbCompStruct = cv?.competences?.length ?? 0;
@@ -292,90 +285,73 @@ export function calculerCompletudeProfil(p: Profil): BilanCompletude {
           : "Non renseigné",
   });
 
-  if (ptsLangues < 4) {
-    suggestions.push({
-      id: "langues_sug",
-      titre:
-        "Indiquez votre niveau d'anglais et certifications (TOEIC, IELTS...)",
-      tab: "langues",
-      gain: 5 - ptsLangues,
-      conseil:
-        "Un score officiel (ex: TOEIC 900+) est un atout déterminant pour les recruteurs.",
-    });
-  }
-
-  // 7. Certifications & Projets (5 pts)
+  // 7. Certifications Professionnelles (5 pts)
   const nbCertifs = cv?.certifications?.length ?? 0;
+  let ptsCertifs = 0;
+  if (nbCertifs >= 2) ptsCertifs = 5;
+  else if (nbCertifs === 1) ptsCertifs = 4;
+
+  const statCertifs: StatutCategorie =
+    ptsCertifs >= 4 ? "complet" : ptsCertifs >= 2 ? "a_ameliorer" : "manquant";
+
+  categories.push({
+    id: "certifications",
+    nom: "Certifications",
+    tab: "certifications",
+    statut: statCertifs,
+    points: ptsCertifs,
+    maxPoints: 5,
+    detail:
+      nbCertifs > 0
+        ? `${nbCertifs} certification(s) validée(s)`
+        : "AMF, Bloomberg, Google, AWS...",
+  });
+
+  // 8. Projets & Engagements (5 pts)
   const nbProjets = cv?.projets?.length ?? 0;
+  const nbBenevolat = cv?.benevolats?.length ?? 0;
+  const nbDistinctions = cv?.distinctions?.length ?? 0;
   let ptsProjets = 0;
-  if (nbCertifs > 0 && nbProjets > 0) ptsProjets = 5;
-  else if (nbCertifs > 0 || nbProjets > 0) ptsProjets = 3;
+  if (nbProjets > 0 || nbBenevolat > 0 || nbDistinctions > 0) ptsProjets = 5;
 
   const statProjets: StatutCategorie =
-    ptsProjets >= 5 ? "complet" : ptsProjets >= 2 ? "a_ameliorer" : "manquant";
+    ptsProjets >= 5 ? "complet" : "a_ameliorer";
 
   categories.push({
     id: "projets",
-    nom: "Certifications & Projets",
+    nom: "Projets & Engagements",
     tab: "projets",
     statut: statProjets,
     points: ptsProjets,
     maxPoints: 5,
-    detail: `${nbCertifs} certif(s) • ${nbProjets} projet(s)`,
+    detail: `${nbProjets} projet(s) • ${nbBenevolat} engagement(s)`,
   });
 
-  if (ptsProjets < 4) {
+  // 9. Documents & CV (5 pts)
+  const aCv = Boolean(p.cv || cv?.documents?.length);
+  const ptsDocs = aCv ? 5 : 0;
+  const statDocs: StatutCategorie = aCv ? "complet" : "manquant";
+
+  categories.push({
+    id: "documents",
+    nom: "Documents & CV",
+    tab: "documents",
+    statut: statDocs,
+    points: ptsDocs,
+    maxPoints: 5,
+    detail: aCv ? "CV principal disponible" : "Aucun document importé",
+  });
+
+  if (!aCv) {
     suggestions.push({
-      id: "projets_sug",
-      titre: "Ajoutez vos projets personnels, hackathons ou certifications",
-      tab: "projets",
-      gain: 5 - ptsProjets,
+      id: "doc_sug",
+      titre: "Importez votre CV PDF pour extraction automatique des données",
+      tab: "documents",
+      gain: 5,
       conseil:
-        "Les projets concrets prouvent vos compétences pratiques bien avant l'entretien.",
+        "L'importation de CV pré-remplit instantanément l'ensemble de votre dossier candidat.",
     });
   }
-
-  // 8. Engagements & Distinctions (5 pts)
-  const nbBenevolat = cv?.benevolats?.length ?? 0;
-  const nbDistinctions = cv?.distinctions?.length ?? 0;
-  let ptsEngagements = 0;
-  if (nbBenevolat > 0 || nbDistinctions > 0) ptsEngagements = 5;
-
-  const statEngagements: StatutCategorie =
-    ptsEngagements >= 5 ? "complet" : "a_ameliorer";
-
-  categories.push({
-    id: "engagements",
-    nom: "Associations & Distinctions",
-    tab: "engagements",
-    statut: statEngagements,
-    points: ptsEngagements,
-    maxPoints: 5,
-    detail: `${nbBenevolat} engagement(s) • ${nbDistinctions} distinction(s)`,
-  });
-
-  // 9. Préférences & Critères (5 pts)
-  const nbCriteres = Object.keys(p.criteres ?? {}).length;
-  const aPrefs = Boolean(
-    p.preferences?.secteursPrivilegies?.length ||
-    p.preferences?.taillesEntreprise?.length,
-  );
-  let ptsPrefs = 0;
-  if (nbCriteres >= 4 || aPrefs) ptsPrefs = 5;
-  else if (nbCriteres >= 1) ptsPrefs = 3;
-
-  const statPrefs: StatutCategorie =
-    ptsPrefs >= 4 ? "complet" : ptsPrefs >= 2 ? "a_ameliorer" : "manquant";
-
-  categories.push({
-    id: "preferences",
-    nom: "Critères & Préférences",
-    tab: "preferences",
-    statut: statPrefs,
-    points: ptsPrefs,
-    maxPoints: 5,
-    detail: `${nbCriteres} critère(s) pondéré(s)`,
-  });
 
   const totalPoints = categories.reduce((sum, c) => sum + c.points, 0);
   const scoreFinal = Math.min(100, Math.max(0, totalPoints));

@@ -10,7 +10,7 @@ const Entree = z.object({
 
 export const genererLettre = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => Entree.parse(data))
+  .validator((data: unknown) => Entree.parse(data))
   .handler(async ({ data, context }) => {
     const { consommerQuota, limiterEntree } = await import("./quota.server");
     await consommerQuota(context.supabase, "redaction");
@@ -20,7 +20,7 @@ export const genererLettre = createServerFn({ method: "POST" })
 
 export const genererLinkedin = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => Entree.parse(data))
+  .validator((data: unknown) => Entree.parse(data))
   .handler(async ({ data, context }) => {
     const { consommerQuota, limiterEntree } = await import("./quota.server");
     await consommerQuota(context.supabase, "redaction");
@@ -30,7 +30,7 @@ export const genererLinkedin = createServerFn({ method: "POST" })
 
 export const genererInterview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => Entree.parse(data))
+  .validator((data: unknown) => Entree.parse(data))
   .handler(async ({ data, context }) => {
     const { consommerQuota, limiterEntree } = await import("./quota.server");
     await consommerQuota(context.supabase, "redaction");

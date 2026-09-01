@@ -57,9 +57,7 @@ function ContactsPage() {
   const isCloudUser = Boolean(session?.user?.id);
   const profil = useProfil(user);
 
-  const [contacts, setContacts] = useState<Contact[]>(() =>
-    loadContactsLocal(),
-  );
+  const [contacts, setContacts] = useState<Contact[]>([]);
   const [candidatures, setCandidatures] = useState<Candidature[]>([]);
   const [chargement, setChargement] = useState(false);
   const [recherche, setRecherche] = useState("");

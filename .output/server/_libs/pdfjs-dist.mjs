@@ -1,5 +1,5 @@
 import { r as __exportAll } from "../_runtime.mjs";
-import { I as globalthis_default } from "./@firebase/app+[...].mjs";
+import { I as globalthis_default, L as init_globalthis } from "./@firebase/app+[...].mjs";
 import processModule from "node:process";
 import { Buffer } from "node:buffer";
 //#region node_modules/pdfjs-dist/legacy/build/pdf.mjs
@@ -67,6 +67,7 @@ var pdf_exports = /* @__PURE__ */ __exportAll({
 	updateUrlHash: () => updateUrlHash,
 	version: () => version
 });
+init_globalthis();
 /**
 * @licstart The following is the entire license notice for the
 * JavaScript code in this page

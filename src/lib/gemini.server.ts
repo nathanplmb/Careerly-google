@@ -30,8 +30,9 @@ export function getGeminiClient(): GoogleGenAI {
   return _ai;
 }
 
-export const GEMINI_MODEL = "gemini-3.7-flash";
+export const GEMINI_MODEL = "gemini-3.6-flash";
 export const GEMINI_FALLBACK_MODELS = [
+  "gemini-3.6-flash",
   "gemini-3.7-flash",
   "gemini-flash-latest",
   "gemini-3.1-pro-preview",

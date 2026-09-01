@@ -13,7 +13,7 @@ const Input = z.object({
 
 export const genererRelance = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: unknown) => Input.parse(data))
+  .validator((data: unknown) => Input.parse(data))
   .handler(async ({ data, context }) => {
     const { consommerQuota, limiterEntree } = await import("./quota.server");
     await consommerQuota(context.supabase, "relance");

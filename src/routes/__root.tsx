@@ -171,13 +171,61 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   useEffect(() => {
+    const handleChunkError = (message: string) => {
+      if (
+        message.includes("Importing a module script failed") ||
+        message.includes("Failed to fetch dynamically imported module") ||
+        message.includes("error loading dynamically imported module") ||
+        message.includes("Unable to preload CSS")
+      ) {
+        const key = "chunk_reload_attempted";
+        const lastAttempt = sessionStorage.getItem(key);
+        const now = Date.now();
+        if (!lastAttempt || now - Number(lastAttempt) > 10000) {
+          sessionStorage.setItem(key, String(now));
+          console.warn(
+            "Stale dynamic chunk detected. Reloading page for fresh assets...",
+          );
+          window.location.reload();
+        }
+      }
+    };
+
     const handlePreloadError = (e: Event) => {
       console.warn("Preload error detected, reloading page...", e);
-      window.location.reload();
+      handleChunkError("Failed to fetch dynamically imported module");
     };
+
+    const handleWindowError = (event: ErrorEvent) => {
+      if (event.message) {
+        handleChunkError(event.message);
+      }
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const reason = event.reason;
+      const msg =
+        reason instanceof Error
+          ? reason.message
+          : typeof reason === "string"
+            ? reason
+            : "";
+      if (msg) {
+        handleChunkError(msg);
+      }
+    };
+
     window.addEventListener("vite:preloadError", handlePreloadError);
+    window.addEventListener("error", handleWindowError);
+    window.addEventListener("unhandledrejection", handleUnhandledRejection);
+
     return () => {
       window.removeEventListener("vite:preloadError", handlePreloadError);
+      window.removeEventListener("error", handleWindowError);
+      window.removeEventListener(
+        "unhandledrejection",
+        handleUnhandledRejection,
+      );
     };
   }, []);
 

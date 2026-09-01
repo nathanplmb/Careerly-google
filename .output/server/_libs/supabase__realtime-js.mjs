@@ -1,6 +1,7 @@
-import { I as globalthis_default } from "./@firebase/app+[...].mjs";
+import { I as globalthis_default, L as init_globalthis } from "./@firebase/app+[...].mjs";
 import { n as Socket, t as Presence } from "./supabase__phoenix.mjs";
 //#region node_modules/@supabase/realtime-js/dist/module/lib/websocket-factory.js
+init_globalthis();
 /**
 * Utilities for creating WebSocket instances across runtimes.
 */

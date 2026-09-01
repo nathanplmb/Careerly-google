@@ -319,7 +319,7 @@ export function nouvelleCompetence(): CompetenceCV {
     nom: "",
     categorie: "Compétence",
     typeCategorie: "hard",
-    niveau: "Intermédiaire",
+    niveau: undefined,
     anneesExperience: "",
   };
 }
