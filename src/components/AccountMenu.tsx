@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
+import { signOut as firebaseSignOut } from "firebase/auth";
+import {
+  auth as firebaseAuth,
+  isFirebaseConfigured,
+} from "@/integrations/firebase/client";
 import {
   Fingerprint,
   LogIn,
@@ -82,6 +87,13 @@ export function AccountMenu({ user }: { user: User | null }) {
     await queryClient.cancelQueries();
     queryClient.clear();
     setCompteActif(null);
+    if (isFirebaseConfigured()) {
+      try {
+        await firebaseSignOut(firebaseAuth);
+      } catch {
+        // Ignoré
+      }
+    }
     try {
       await supabase.auth.signOut();
     } catch {

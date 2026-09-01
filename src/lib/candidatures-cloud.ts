@@ -1,3 +1,12 @@
+import {
+  collection,
+  doc,
+  getDocs,
+  setDoc,
+  deleteDoc,
+  query,
+} from "firebase/firestore";
+import { db, isFirebaseConfigured } from "@/integrations/firebase/client";
 import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
 import {
   emptyPreparation,
@@ -74,7 +83,7 @@ function isUuid(id: string) {
 
 function toRow(c: Candidature, userId: string) {
   return {
-    id: isUuid(c.id) ? c.id : crypto.randomUUID(),
+    id: isUuid(c.id) ? c.id : c.id || crypto.randomUUID(),
     user_id: userId,
     entreprise: c.entreprise,
     poste: c.poste,
@@ -99,49 +108,112 @@ function toRow(c: Candidature, userId: string) {
       profilRecherche: c.profilRecherche,
       modalites: c.modalites,
     } as never,
+    updatedAt: new Date().toISOString(),
   };
 }
 
-export async function fetchCandidatures(): Promise<Candidature[]> {
-  if (!isSupabaseConfigured()) return [];
-  const { data, error } = await supabase
-    .from("candidatures")
-    .select("*")
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return (data as unknown as Row[]).map(toCandidature);
+export async function fetchCandidatures(
+  userId?: string,
+): Promise<Candidature[]> {
+  if (isFirebaseConfigured() && userId) {
+    try {
+      const colRef = collection(db, "users", userId, "candidatures");
+      const snap = await getDocs(query(colRef));
+      const list: Candidature[] = [];
+      snap.forEach((docSnap) => {
+        list.push(toCandidature({ id: docSnap.id, ...docSnap.data() } as Row));
+      });
+      return list;
+    } catch (e) {
+      console.warn("Firestore fetchCandidatures error:", e);
+    }
+  }
+
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase
+      .from("candidatures")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data as unknown as Row[]).map(toCandidature);
+  }
+
+  return [];
 }
 
 export async function upsertCandidature(
   c: Candidature,
   userId: string,
 ): Promise<Candidature> {
-  if (!isSupabaseConfigured()) return c;
   const row = toRow(c, userId);
-  const { data, error } = await supabase
-    .from("candidatures")
-    .upsert(row)
-    .select()
-    .single();
-  if (error) throw error;
-  return toCandidature(data as unknown as Row);
+
+  if (isFirebaseConfigured() && userId) {
+    try {
+      const docRef = doc(db, "users", userId, "candidatures", row.id);
+      await setDoc(docRef, row, { merge: true });
+      return toCandidature(row as unknown as Row);
+    } catch (e) {
+      console.warn("Firestore upsertCandidature error:", e);
+    }
+  }
+
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase
+      .from("candidatures")
+      .upsert(row)
+      .select()
+      .single();
+    if (error) throw error;
+    return toCandidature(data as unknown as Row);
+  }
+
+  return c;
 }
 
-export async function deleteCandidature(id: string) {
-  if (!isSupabaseConfigured()) return;
-  const { error } = await supabase.from("candidatures").delete().eq("id", id);
-  if (error) throw error;
+export async function deleteCandidature(id: string, userId?: string) {
+  if (isFirebaseConfigured() && userId) {
+    try {
+      const docRef = doc(db, "users", userId, "candidatures", id);
+      await deleteDoc(docRef);
+      return;
+    } catch (e) {
+      console.warn("Firestore deleteCandidature error:", e);
+    }
+  }
+
+  if (isSupabaseConfigured()) {
+    const { error } = await supabase.from("candidatures").delete().eq("id", id);
+    if (error) throw error;
+  }
 }
 
 export async function insertManyCandidatures(
   items: Candidature[],
   userId: string,
 ): Promise<Candidature[]> {
-  if (!isSupabaseConfigured() || items.length === 0) return items;
-  const { data, error } = await supabase
-    .from("candidatures")
-    .insert(items.map((c) => toRow(c, userId)))
-    .select();
-  if (error) throw error;
-  return (data as unknown as Row[]).map(toCandidature);
+  if (items.length === 0) return items;
+
+  if (isFirebaseConfigured() && userId) {
+    try {
+      const results: Candidature[] = [];
+      for (const item of items) {
+        const saved = await upsertCandidature(item, userId);
+        results.push(saved);
+      }
+      return results;
+    } catch (e) {
+      console.warn("Firestore insertManyCandidatures error:", e);
+    }
+  }
+
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase
+      .from("candidatures")
+      .insert(items.map((c) => toRow(c, userId)))
+      .select();
+    if (error) throw error;
+    return (data as unknown as Row[]).map(toCandidature);
+  }
+
+  return items;
 }

@@ -1,0 +1,632 @@
+import { r as e, t } from "./jsx-runtime-BkSabwWG.js";
+import { c as n } from "./useStore-D1ICS8_H.js";
+import { a as r, r as i, s as a } from "./Logo-BzB7YJf1.js";
+import { n as o, o as s, t as c } from "./button-Fem7RhN8.js";
+import { t as l, u } from "./AppShell-Cmck22UZ.js";
+import { t as d } from "./bot-DwabmE8k.js";
+import { t as f } from "./external-link-Hum5k663.js";
+import { It as p, Rt as m, kt as h, zt as g } from "./index-C957XaZb.js";
+import { i as _, n as v, r as y, t as b } from "./tabs-QU5WMGYF.js";
+var x = r(`terminal`, [
+    [`path`, { d: `M12 19h8`, key: `baeox8` }],
+    [`path`, { d: `m4 17 6-6-6-6`, key: `1yngyt` }],
+  ]),
+  S = e(n(), 1),
+  C = t(),
+  w = S.forwardRef(({ className: e, ...t }, n) =>
+    (0, C.jsx)(`div`, {
+      ref: n,
+      className: o(`rounded-xl border bg-card text-card-foreground shadow`, e),
+      ...t,
+    }),
+  );
+w.displayName = `Card`;
+var T = S.forwardRef(({ className: e, ...t }, n) =>
+  (0, C.jsx)(`div`, {
+    ref: n,
+    className: o(`flex flex-col space-y-1.5 p-6`, e),
+    ...t,
+  }),
+);
+T.displayName = `CardHeader`;
+var E = S.forwardRef(({ className: e, ...t }, n) =>
+  (0, C.jsx)(`div`, {
+    ref: n,
+    className: o(`font-semibold leading-none tracking-tight`, e),
+    ...t,
+  }),
+);
+E.displayName = `CardTitle`;
+var D = S.forwardRef(({ className: e, ...t }, n) =>
+  (0, C.jsx)(`div`, {
+    ref: n,
+    className: o(`text-sm text-muted-foreground`, e),
+    ...t,
+  }),
+);
+D.displayName = `CardDescription`;
+var O = S.forwardRef(({ className: e, ...t }, n) =>
+  (0, C.jsx)(`div`, { ref: n, className: o(`p-6 pt-0`, e), ...t }),
+);
+O.displayName = `CardContent`;
+var k = S.forwardRef(({ className: e, ...t }, n) =>
+  (0, C.jsx)(`div`, {
+    ref: n,
+    className: o(`flex items-center p-6 pt-0`, e),
+    ...t,
+  }),
+);
+k.displayName = `CardFooter`;
+function A() {
+  let [e, t] = (0, S.useState)(``);
+  return (
+    (0, S.useEffect)(() => {
+      t(new URL(`/mcp`, window.location.origin).toString());
+    }, []),
+    e
+  );
+}
+function j(e) {
+  let t = e
+    .normalize(`NFD`)
+    .replace(/[\u0300-\u036f]/g, ``)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, `-`)
+    .replace(/^-+|-+$/g, ``)
+    .slice(0, 63);
+  return t
+    ? [
+        `workspace`,
+        `computer-use`,
+        `claude-in-chrome`,
+        `claude-preview`,
+        `claude-browser`,
+      ].includes(t)
+      ? `${t}-app`
+      : t
+    : `careerly`;
+}
+function M({ value: e, label: t }) {
+  let [n, r] = (0, S.useState)(!1);
+  return (0, C.jsxs)(`div`, {
+    className: `space-y-2`,
+    children: [
+      (0, C.jsx)(`p`, {
+        className: `text-xs font-medium text-muted-foreground uppercase tracking-wider`,
+        children: t,
+      }),
+      (0, C.jsxs)(`button`, {
+        type: `button`,
+        onClick: async () => {
+          if (e)
+            try {
+              (await navigator.clipboard.writeText(e),
+                r(!0),
+                a.success(`Copié dans le presse-papiers`),
+                setTimeout(() => r(!1), 1500));
+            } catch {
+              a.error(`Impossible de copier automatiquement`);
+            }
+        },
+        className: `group flex w-full items-center gap-3 rounded-xl border border-border/60 bg-card/60 p-3 text-left transition-colors hover:border-primary/40 hover:bg-card`,
+        children: [
+          (0, C.jsx)(`code`, {
+            className: `flex-1 break-all font-mono text-sm text-foreground`,
+            children: e || `Chargement…`,
+          }),
+          (0, C.jsx)(`span`, {
+            className: `shrink-0 rounded-md bg-primary/10 p-2 text-primary transition-colors group-hover:bg-primary/20`,
+            children: n
+              ? (0, C.jsx)(m, { className: `size-4` })
+              : (0, C.jsx)(p, { className: `size-4` }),
+          }),
+        ],
+      }),
+    ],
+  });
+}
+function N({ number: e, children: t }) {
+  return (0, C.jsxs)(`li`, {
+    className: `flex gap-3`,
+    children: [
+      (0, C.jsx)(`span`, {
+        className: `flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-xs font-bold text-primary`,
+        children: e,
+      }),
+      (0, C.jsx)(`span`, {
+        className: `text-sm leading-relaxed text-foreground`,
+        children: t,
+      }),
+    ],
+  });
+}
+function P({ icon: e, name: t, description: n, active: r, onClick: i }) {
+  return (0, C.jsxs)(`button`, {
+    type: `button`,
+    onClick: i,
+    className: o(
+      `flex w-full items-center gap-3 rounded-xl border p-3 text-left transition-all`,
+      r
+        ? `border-primary/50 bg-primary/10 ring-1 ring-primary/30`
+        : `border-border/60 bg-card/40 hover:bg-card/70`,
+    ),
+    children: [
+      (0, C.jsx)(`span`, {
+        className: `grid size-10 shrink-0 place-items-center rounded-lg bg-background`,
+        children: (0, C.jsx)(e, { className: `size-5 text-primary` }),
+      }),
+      (0, C.jsxs)(`div`, {
+        className: `min-w-0 flex-1`,
+        children: [
+          (0, C.jsx)(`p`, {
+            className: `text-sm font-semibold text-foreground`,
+            children: t,
+          }),
+          (0, C.jsx)(`p`, {
+            className: `text-xs text-muted-foreground`,
+            children: n,
+          }),
+        ],
+      }),
+    ],
+  });
+}
+function F() {
+  let e = A(),
+    [t, n] = (0, S.useState)(`claude`),
+    r = (0, S.useMemo)(() => j(`careerly`), []),
+    a = (0, S.useMemo)(
+      () =>
+        e
+          ? `https://claude.ai/customize/connectors?${new URLSearchParams({ modal: `add-custom-connector`, connectorName: `NACORA`, connectorUrl: e }).toString()}`
+          : ``,
+      [e],
+    );
+  return (0, C.jsx)(l, {
+    eyebrow: `AI Studio`,
+    title: `Connecter une IA`,
+    subtitle: `Liez ChatGPT, Claude ou Cursor à votre compte NACORA en quelques clics.`,
+    children: (0, C.jsxs)(`div`, {
+      className: `mx-auto max-w-3xl space-y-6`,
+      children: [
+        (0, C.jsxs)(w, {
+          className: `overflow-hidden border-border/60 bg-card/60`,
+          children: [
+            (0, C.jsx)(T, {
+              className: `pb-4`,
+              children: (0, C.jsxs)(`div`, {
+                className: `flex items-center gap-3`,
+                children: [
+                  (0, C.jsx)(`span`, {
+                    className: `grid size-10 place-items-center rounded-xl bg-primary/15`,
+                    children: (0, C.jsx)(i, {
+                      className: `size-5 text-primary`,
+                    }),
+                  }),
+                  (0, C.jsxs)(`div`, {
+                    children: [
+                      (0, C.jsx)(E, {
+                        className: `text-lg`,
+                        children: `Serveur MCP NACORA`,
+                      }),
+                      (0, C.jsx)(D, {
+                        children: `Votre assistant peut lire et mettre à jour vos candidatures, contacts et profil.`,
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            }),
+            (0, C.jsxs)(O, {
+              className: `space-y-6`,
+              children: [
+                (0, C.jsx)(M, { value: e, label: `URL du serveur MCP` }),
+                (0, C.jsxs)(`div`, {
+                  className: `rounded-xl border border-border/60 bg-background/50 p-4`,
+                  children: [
+                    (0, C.jsx)(`p`, {
+                      className: `mb-3 text-sm font-medium text-foreground`,
+                      children: `Choisir votre assistant`,
+                    }),
+                    (0, C.jsxs)(`div`, {
+                      className: `grid gap-3 sm:grid-cols-2`,
+                      children: [
+                        (0, C.jsx)(P, {
+                          icon: d,
+                          name: `Claude (Anthropic)`,
+                          description: `Meilleure expérience via le web ou Claude Code`,
+                          active: t === `claude`,
+                          onClick: () => n(`claude`),
+                        }),
+                        (0, C.jsx)(P, {
+                          icon: u,
+                          name: `ChatGPT`,
+                          description: `Nécessite le mode développeur activé`,
+                          active: t === `chatgpt`,
+                          onClick: () => n(`chatgpt`),
+                        }),
+                        (0, C.jsx)(P, {
+                          icon: x,
+                          name: `Claude Code`,
+                          description: `En ligne de commande dans votre terminal`,
+                          active: t === `claude-code`,
+                          onClick: () => n(`claude-code`),
+                        }),
+                        (0, C.jsx)(P, {
+                          icon: f,
+                          name: `Autre client MCP`,
+                          description: `Cursor, Windsurf, ou un client personnalisé`,
+                          active: t === `other`,
+                          onClick: () => n(`other`),
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+          ],
+        }),
+        (0, C.jsxs)(b, {
+          value: t,
+          onValueChange: n,
+          className: `w-full`,
+          children: [
+            (0, C.jsxs)(y, {
+              className: `hidden`,
+              children: [
+                (0, C.jsx)(_, { value: `claude`, children: `Claude` }),
+                (0, C.jsx)(_, { value: `chatgpt`, children: `ChatGPT` }),
+                (0, C.jsx)(_, {
+                  value: `claude-code`,
+                  children: `Claude Code`,
+                }),
+                (0, C.jsx)(_, { value: `other`, children: `Autre` }),
+              ],
+            }),
+            (0, C.jsx)(v, {
+              value: `claude`,
+              className: `mt-0`,
+              children: (0, C.jsxs)(w, {
+                className: `border-border/60 bg-card/60`,
+                children: [
+                  (0, C.jsxs)(T, {
+                    children: [
+                      (0, C.jsx)(E, {
+                        className: `text-base`,
+                        children: `Connecter Claude`,
+                      }),
+                      (0, C.jsx)(D, {
+                        children: `Depuis l'interface web de Claude.ai`,
+                      }),
+                    ],
+                  }),
+                  (0, C.jsxs)(O, {
+                    className: `space-y-4`,
+                    children: [
+                      (0, C.jsxs)(`ol`, {
+                        className: `space-y-3`,
+                        children: [
+                          (0, C.jsx)(N, {
+                            number: 1,
+                            children: `Cliquez sur le bouton ci-dessous pour ouvrir Claude avec les champs pré-remplis.`,
+                          }),
+                          (0, C.jsx)(N, {
+                            number: 2,
+                            children: `Vérifiez le nom et l'URL, puis cliquez sur "Add".`,
+                          }),
+                          (0, C.jsx)(N, {
+                            number: 3,
+                            children: `Claude vous redirige vers Careerly pour approuver la connexion.`,
+                          }),
+                          (0, C.jsx)(N, {
+                            number: 4,
+                            children: `Activez le connecteur depuis le composeur de chat, puis demandez à Claude d'utiliser Careerly.`,
+                          }),
+                        ],
+                      }),
+                      (0, C.jsx)(c, {
+                        asChild: !0,
+                        className: `w-full gap-2`,
+                        children: (0, C.jsxs)(`a`, {
+                          href: a,
+                          target: `_blank`,
+                          rel: `noreferrer`,
+                          children: [
+                            (0, C.jsx)(f, { className: `size-4` }),
+                            `Ouvrir Claude avec Careerly pré-rempli`,
+                          ],
+                        }),
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            }),
+            (0, C.jsx)(v, {
+              value: `chatgpt`,
+              className: `mt-0`,
+              children: (0, C.jsxs)(w, {
+                className: `border-border/60 bg-card/60`,
+                children: [
+                  (0, C.jsxs)(T, {
+                    children: [
+                      (0, C.jsx)(E, {
+                        className: `text-base`,
+                        children: `Connecter ChatGPT`,
+                      }),
+                      (0, C.jsx)(D, {
+                        children: `Nécessite le mode développeur de ChatGPT`,
+                      }),
+                    ],
+                  }),
+                  (0, C.jsxs)(O, {
+                    className: `space-y-4`,
+                    children: [
+                      (0, C.jsxs)(`ol`, {
+                        className: `space-y-3`,
+                        children: [
+                          (0, C.jsx)(N, {
+                            number: 1,
+                            children: `Activez le mode développeur dans les paramètres ChatGPT (Advanced > Connectors).`,
+                          }),
+                          (0, C.jsx)(N, {
+                            number: 2,
+                            children: `Ouvrez le formulaire "New plugin" via le lien ci-dessous.`,
+                          }),
+                          (0, C.jsx)(N, {
+                            number: 3,
+                            children: `Collez le nom "Careerly" et l'URL MCP affichée en haut de cette page.`,
+                          }),
+                          (0, C.jsx)(N, {
+                            number: 4,
+                            children: `Cochez la case de confirmation et créez le connecteur.`,
+                          }),
+                          (0, C.jsx)(N, {
+                            number: 5,
+                            children: `Activez Careerly depuis le composeur, puis demandez à ChatGPT d'interagir avec vos candidatures.`,
+                          }),
+                        ],
+                      }),
+                      (0, C.jsx)(c, {
+                        asChild: !0,
+                        variant: `outline`,
+                        className: `w-full gap-2`,
+                        children: (0, C.jsxs)(`a`, {
+                          href: `https://chatgpt.com/plugins#settings/Connectors?create-connector=true&redirectAfter=%2Fplugins`,
+                          target: `_blank`,
+                          rel: `noreferrer`,
+                          children: [
+                            (0, C.jsx)(f, { className: `size-4` }),
+                            `Ouvrir le formulaire ChatGPT`,
+                          ],
+                        }),
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            }),
+            (0, C.jsx)(v, {
+              value: `claude-code`,
+              className: `mt-0`,
+              children: (0, C.jsxs)(w, {
+                className: `border-border/60 bg-card/60`,
+                children: [
+                  (0, C.jsxs)(T, {
+                    children: [
+                      (0, C.jsx)(E, {
+                        className: `text-base`,
+                        children: `Connecter Claude Code`,
+                      }),
+                      (0, C.jsx)(D, {
+                        children: `Dans votre terminal, une seule commande suffit`,
+                      }),
+                    ],
+                  }),
+                  (0, C.jsxs)(O, {
+                    className: `space-y-4`,
+                    children: [
+                      (0, C.jsxs)(`ol`, {
+                        className: `space-y-3`,
+                        children: [
+                          (0, C.jsx)(N, {
+                            number: 1,
+                            children: `Copiez la commande ci-dessous et exécutez-la dans votre terminal.`,
+                          }),
+                          (0, C.jsxs)(N, {
+                            number: 2,
+                            children: [
+                              `Lancez Claude Code et exécutez`,
+                              ` `,
+                              (0, C.jsx)(`code`, {
+                                className: `rounded bg-muted px-1 py-0.5 font-mono text-xs`,
+                                children: `/mcp`,
+                              }),
+                              ` `,
+                              `pour vérifier la connexion.`,
+                            ],
+                          }),
+                          (0, C.jsx)(N, {
+                            number: 3,
+                            children: `Authentifiez-vous avec votre compte Careerly quand Claude Code vous le demande.`,
+                          }),
+                          (0, C.jsx)(N, {
+                            number: 4,
+                            children: `Demandez à Claude Code d'utiliser Careerly.`,
+                          }),
+                        ],
+                      }),
+                      (0, C.jsx)(M, {
+                        value: e
+                          ? `claude mcp add --scope user --transport http ${r} '${e.replace(/'/g, `'"'"'`)}'`
+                          : ``,
+                        label: `Commande d'installation`,
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            }),
+            (0, C.jsx)(v, {
+              value: `other`,
+              className: `mt-0`,
+              children: (0, C.jsxs)(w, {
+                className: `border-border/60 bg-card/60`,
+                children: [
+                  (0, C.jsxs)(T, {
+                    children: [
+                      (0, C.jsx)(E, {
+                        className: `text-base`,
+                        children: `Autre client MCP`,
+                      }),
+                      (0, C.jsx)(D, {
+                        children: `Cursor, Windsurf, ou un client personnalisé`,
+                      }),
+                    ],
+                  }),
+                  (0, C.jsx)(O, {
+                    className: `space-y-4`,
+                    children: (0, C.jsxs)(`ol`, {
+                      className: `space-y-3`,
+                      children: [
+                        (0, C.jsx)(N, {
+                          number: 1,
+                          children: `Ouvrez les paramètres MCP / Connecteurs de votre client.`,
+                        }),
+                        (0, C.jsx)(N, {
+                          number: 2,
+                          children: `Créez un nouveau serveur MCP distant (remote / HTTP).`,
+                        }),
+                        (0, C.jsx)(N, {
+                          number: 3,
+                          children: `Nommez-le "Careerly" et collez l'URL affichée en haut de cette page.`,
+                        }),
+                        (0, C.jsx)(N, {
+                          number: 4,
+                          children: `Validez et suivez la fenêtre d'autorisation Careerly.`,
+                        }),
+                        (0, C.jsx)(N, {
+                          number: 5,
+                          children: `Activez le serveur, puis demandez à l'assistant d'utiliser Careerly.`,
+                        }),
+                      ],
+                    }),
+                  }),
+                ],
+              }),
+            }),
+          ],
+        }),
+        (0, C.jsxs)(w, {
+          className: `border-border/60 bg-card/60`,
+          children: [
+            (0, C.jsxs)(T, {
+              children: [
+                (0, C.jsxs)(`div`, {
+                  className: `flex items-center gap-3`,
+                  children: [
+                    (0, C.jsx)(h, { className: `size-5 text-primary` }),
+                    (0, C.jsx)(E, {
+                      className: `text-base`,
+                      children: `Actualiser après une mise à jour`,
+                    }),
+                  ],
+                }),
+                (0, C.jsx)(D, {
+                  children: `Les assistants mettent en cache la liste des outils. Après une modification de Careerly, actualisez le connecteur.`,
+                }),
+              ],
+            }),
+            (0, C.jsx)(O, {
+              children: (0, C.jsxs)(`ul`, {
+                className: `space-y-2 text-sm text-muted-foreground`,
+                children: [
+                  (0, C.jsxs)(`li`, {
+                    className: `flex gap-2`,
+                    children: [
+                      (0, C.jsx)(`span`, {
+                        className: `text-primary`,
+                        children: `•`,
+                      }),
+                      (0, C.jsxs)(`span`, {
+                        children: [
+                          (0, C.jsx)(`strong`, { children: `Claude :` }),
+                          ` Connectors > Careerly > Refresh / Update tools. Si l'URL a changé, supprimez le connecteur et recréez-le.`,
+                        ],
+                      }),
+                    ],
+                  }),
+                  (0, C.jsxs)(`li`, {
+                    className: `flex gap-2`,
+                    children: [
+                      (0, C.jsx)(`span`, {
+                        className: `text-primary`,
+                        children: `•`,
+                      }),
+                      (0, C.jsxs)(`span`, {
+                        children: [
+                          (0, C.jsx)(`strong`, { children: `ChatGPT :` }),
+                          ` Plugins > Careerly > Information > Refresh. Si l'URL a changé, supprimez l'app et recommencez.`,
+                        ],
+                      }),
+                    ],
+                  }),
+                  (0, C.jsxs)(`li`, {
+                    className: `flex gap-2`,
+                    children: [
+                      (0, C.jsx)(`span`, {
+                        className: `text-primary`,
+                        children: `•`,
+                      }),
+                      (0, C.jsxs)(`span`, {
+                        children: [
+                          (0, C.jsx)(`strong`, { children: `Claude Code :` }),
+                          ` Nouvelle session pour recharger les outils. Si l'URL a changé :`,
+                          ` `,
+                          (0, C.jsxs)(`code`, {
+                            className: `rounded bg-muted px-1 py-0.5 font-mono text-xs`,
+                            children: [`claude mcp remove `, r],
+                          }),
+                          ` `,
+                          `puis réinstallez avec la commande ci-dessus.`,
+                        ],
+                      }),
+                    ],
+                  }),
+                  (0, C.jsxs)(`li`, {
+                    className: `flex gap-2`,
+                    children: [
+                      (0, C.jsx)(`span`, {
+                        className: `text-primary`,
+                        children: `•`,
+                      }),
+                      (0, C.jsxs)(`span`, {
+                        children: [
+                          (0, C.jsx)(`strong`, { children: `Autre client :` }),
+                          ` Rechargez le serveur MCP ou reconnectez-le avec la dernière URL.`,
+                        ],
+                      }),
+                    ],
+                  }),
+                ],
+              }),
+            }),
+          ],
+        }),
+        (0, C.jsxs)(`div`, {
+          className: `flex items-center gap-2 text-sm text-muted-foreground`,
+          children: [
+            (0, C.jsx)(g, { className: `size-4` }),
+            (0, C.jsx)(s, {
+              to: `/`,
+              className: `hover:text-foreground hover:underline`,
+              children: `Retour au tableau de bord`,
+            }),
+          ],
+        }),
+      ],
+    }),
+  });
+}
+export { F as component };

@@ -1,0 +1,73 @@
+import { r as e, t } from "./jsx-runtime-BkSabwWG.js";
+import { c as n } from "./useStore-D1ICS8_H.js";
+import { t as r } from "./button-Fem7RhN8.js";
+import { nn as i, t as a } from "./index-C957XaZb.js";
+var o = e(n()),
+  s = t();
+function c() {
+  let e = a.useLoaderData(),
+    { authorization_id: t } = a.useSearch(),
+    [n, c] = (0, o.useState)(!1),
+    [l, u] = (0, o.useState)(null),
+    d = e?.client?.name ?? `cette application`;
+  async function f(e) {
+    (c(!0), u(null));
+    let { data: n, error: r } = e
+      ? await i.auth.oauth.approveAuthorization(t)
+      : await i.auth.oauth.denyAuthorization(t);
+    if (r) {
+      (c(!1), u(r.message));
+      return;
+    }
+    let a = n?.redirect_url ?? n?.redirect_to;
+    if (!a) {
+      (c(!1), u(`Aucune redirection renvoyée par le serveur d'autorisation.`));
+      return;
+    }
+    window.location.href = a;
+  }
+  return (0, s.jsx)(`main`, {
+    className: `aurora-bg flex min-h-screen items-center justify-center px-5 py-10`,
+    children: (0, s.jsxs)(`div`, {
+      className: `glass-card w-full max-w-md p-6`,
+      children: [
+        (0, s.jsxs)(`h1`, {
+          className: `text-xl font-semibold`,
+          children: [`Connecter `, d, ` à Careerly`],
+        }),
+        (0, s.jsxs)(`p`, {
+          className: `mt-2 text-sm text-muted-foreground`,
+          children: [
+            d,
+            ` pourra lire et modifier vos candidatures, vos contacts et votre profil, en votre nom. Vous pouvez révoquer cet accès à tout moment.`,
+          ],
+        }),
+        l &&
+          (0, s.jsx)(`p`, {
+            role: `alert`,
+            className: `mt-4 text-sm text-destructive`,
+            children: l,
+          }),
+        (0, s.jsxs)(`div`, {
+          className: `mt-6 flex gap-3`,
+          children: [
+            (0, s.jsx)(r, {
+              className: `flex-1`,
+              disabled: n,
+              onClick: () => f(!0),
+              children: `Autoriser`,
+            }),
+            (0, s.jsx)(r, {
+              variant: `outline`,
+              className: `flex-1`,
+              disabled: n,
+              onClick: () => f(!1),
+              children: `Refuser`,
+            }),
+          ],
+        }),
+      ],
+    }),
+  });
+}
+export { c as component };

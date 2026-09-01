@@ -1,0 +1,102 @@
+import { Q as e, nn as t, nt as n, tn as r } from "./index-C957XaZb.js";
+function i(t) {
+  let r =
+      t.match && typeof t.match == `object` && `global` in t.match
+        ? t.match
+        : null,
+    i = t.preparation ?? {},
+    a = { ...e(), ...i };
+  return n({
+    id: t.id,
+    entreprise: t.entreprise ?? ``,
+    poste: t.poste ?? ``,
+    statut: t.statut,
+    lieu: t.lieu ?? ``,
+    lien: t.lien ?? ``,
+    contact: t.contact ?? ``,
+    dateEnvoi: t.date_envoi ?? ``,
+    dateRelance: t.date_relance ?? ``,
+    dateDernierContact: t.date_dernier_contact ?? ``,
+    dateLimite: t.date_limite ?? ``,
+    commentaire: t.commentaire ?? ``,
+    missions: i.missions ?? ``,
+    profilRecherche: i.profilRecherche ?? ``,
+    modalites: i.modalites ?? ``,
+    detail: t.detail ?? ``,
+    priorite: t.priorite || `auto`,
+    source: t.source ?? ``,
+    secteur: t.secteur ?? ``,
+    archive: t.archive ?? !1,
+    match: r,
+    preparation: a,
+  });
+}
+function a(e) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+    e,
+  );
+}
+function o(e, t) {
+  return {
+    id: a(e.id) ? e.id : crypto.randomUUID(),
+    user_id: t,
+    entreprise: e.entreprise,
+    poste: e.poste,
+    statut: e.statut,
+    lieu: e.lieu,
+    lien: e.lien,
+    contact: e.contact,
+    date_envoi: e.dateEnvoi || null,
+    date_relance: e.dateRelance || null,
+    date_dernier_contact: e.dateDernierContact || null,
+    date_limite: e.dateLimite || null,
+    commentaire: e.commentaire,
+    detail: e.detail,
+    priorite: e.priorite,
+    source: e.source,
+    secteur: e.secteur,
+    archive: e.archive,
+    match: e.match ?? {},
+    preparation: {
+      ...e.preparation,
+      missions: e.missions,
+      profilRecherche: e.profilRecherche,
+      modalites: e.modalites,
+    },
+  };
+}
+async function s() {
+  if (!r()) return [];
+  let { data: e, error: n } = await t
+    .from(`candidatures`)
+    .select(`*`)
+    .order(`created_at`, { ascending: !1 });
+  if (n) throw n;
+  return e.map(i);
+}
+async function c(e, n) {
+  if (!r()) return e;
+  let a = o(e, n),
+    { data: s, error: c } = await t
+      .from(`candidatures`)
+      .upsert(a)
+      .select()
+      .single();
+  if (c) throw c;
+  return i(s);
+}
+async function l(e) {
+  if (!r()) return;
+  let { error: n } = await t.from(`candidatures`).delete().eq(`id`, e);
+  if (n) throw n;
+}
+async function u(e, n) {
+  if (!r() || e.length === 0) return e;
+  let { data: a, error: s } = await t
+    .from(`candidatures`)
+    .insert(e.map((e) => o(e, n)))
+    .select();
+  if (s) throw s;
+  return a.map(i);
+}
+export { c as i, s as n, u as r, l as t };

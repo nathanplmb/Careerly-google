@@ -71,7 +71,7 @@ export function ProfilCompetencesTab({ profil, onChange }: Props) {
     current: string,
     tag: string,
   ) => {
-    const list = current
+    const list = (current || "")
       .split(/[,;\n]/)
       .map((s) => s.trim())
       .filter(Boolean);
@@ -83,7 +83,8 @@ export function ProfilCompetencesTab({ profil, onChange }: Props) {
         .filter((s) => s.toLowerCase() !== tag.toLowerCase())
         .join(", ");
     } else {
-      next = list.length > 0 ? `${current.trim()}, ${tag}` : tag;
+      const trimmed = (current || "").trim();
+      next = trimmed.length > 0 ? `${trimmed}, ${tag}` : tag;
     }
     onChange({ [field]: next });
   };

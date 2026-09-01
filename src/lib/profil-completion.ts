@@ -132,9 +132,9 @@ export function calculerCompletudeProfil(p: Profil): BilanCompletude {
 
   if (nbFormations >= 2) ptsFormation = 15;
   else if (nbFormations === 1) {
-    const f = cv.formations[0];
+    const f = cv.formations?.[0];
     ptsFormation =
-      f.specialisation || (f.coursImportants && f.coursImportants.length > 0)
+      f?.specialisation || (f?.coursImportants && f.coursImportants.length > 0)
         ? 14
         : 11;
   } else if (aFormationSimple) {
@@ -186,8 +186,13 @@ export function calculerCompletudeProfil(p: Profil): BilanCompletude {
     );
     ptsExp = aRealisationsCles ? 20 : 16;
   } else if (nbExp === 1) {
-    const e = cv.experiences[0];
-    ptsExp = e.kpi || e.realisationsCles || e.realisations.length > 0 ? 15 : 10;
+    const e = cv.experiences?.[0];
+    ptsExp =
+      e?.kpi ||
+      e?.realisationsCles ||
+      (e?.realisations && e.realisations.length > 0)
+        ? 15
+        : 10;
   } else if (aExpSimple) {
     ptsExp = 8;
   }

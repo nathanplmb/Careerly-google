@@ -1,0 +1,318 @@
+import { r as e, t } from "./jsx-runtime-BkSabwWG.js";
+import { c as n } from "./useStore-D1ICS8_H.js";
+import { s as r } from "./Logo-BzB7YJf1.js";
+import { o as i, t as a } from "./button-Fem7RhN8.js";
+import { i as o, t as s } from "./AppShell-Cmck22UZ.js";
+import { t as c } from "./UsageIaCard-DAiQgCFV.js";
+import { t as l } from "./download-CmU-iR4-.js";
+import { n as u, t as d } from "./log-out-Brxkfa6q.js";
+import {
+  At as f,
+  Dt as p,
+  It as m,
+  M as h,
+  N as g,
+  Nt as _,
+  Ot as v,
+  S as y,
+  an as b,
+  en as x,
+  kt as S,
+  nn as C,
+  st as w,
+} from "./index-C957XaZb.js";
+import { t as T } from "./useProfil-DaZvyt2K.js";
+import { t as E } from "./useCandidatures-kGyisxTi.js";
+import { n as D } from "./contacts-cloud-BVygSWtV.js";
+var O = e(n()),
+  k = t();
+function A({ titre: e, description: t, children: n }) {
+  return (0, k.jsxs)(`section`, {
+    className: `glass-card pop-in p-5`,
+    children: [
+      (0, k.jsx)(`h2`, { className: `text-sm font-semibold`, children: e }),
+      (0, k.jsx)(`p`, {
+        className: `mt-1 text-xs text-muted-foreground`,
+        children: t,
+      }),
+      (0, k.jsx)(`div`, {
+        className: `mt-4 flex flex-wrap gap-2`,
+        children: n,
+      }),
+    ],
+  });
+}
+function j(e, t, n) {
+  let r = URL.createObjectURL(new Blob([t], { type: n })),
+    i = document.createElement(`a`);
+  ((i.href = r), (i.download = e), i.click(), URL.revokeObjectURL(r));
+}
+function M(e) {
+  if (!e.length) return ``;
+  let t = Object.keys(e[0]),
+    n = (e) => `"${String(e ?? ``).replace(/"/g, `""`)}"`;
+  return [t.join(`,`), ...e.map((e) => t.map((t) => n(e[t])).join(`,`))].join(`
+`);
+}
+function N() {
+  let { user: e, authLoading: t, items: n } = E(),
+    N = T(e),
+    P = b(),
+    F = x(),
+    [I, L] = (0, O.useState)(!1),
+    [R, z] = (0, O.useState)(``),
+    [B, V] = (0, O.useState)(``),
+    H = () => {
+      let e = g();
+      (z(e), r.success(`Code de transfert généré !`));
+    },
+    U = async () => {
+      if (R)
+        try {
+          (await navigator.clipboard.writeText(R),
+            r.success(`Code copié dans le presse-papiers !`));
+        } catch {
+          r.info(`Copiez manuellement le code affiché.`);
+        }
+    },
+    W = async () => {
+      if (!B.trim()) {
+        r.error(`Veuillez coller un code de synchronisation valide.`);
+        return;
+      }
+      let e = h(B);
+      e.success
+        ? (r.success(
+            `Synchronisation réussie ! ${e.candidaturesCount} candidatures et ${e.contactsCount} contacts importés.`,
+          ),
+          await F.invalidateQueries(),
+          setTimeout(() => {
+            window.location.reload();
+          }, 500))
+        : r.error(e.message);
+    },
+    G = async () => {
+      (await F.cancelQueries(), F.clear(), w(null));
+      try {
+        await C.auth.signOut();
+      } catch {}
+      (r.success(`Déconnexion réussie`), P({ to: `/auth`, replace: !0 }));
+    },
+    K = async () => {
+      L(!0);
+      try {
+        let t = e ? await D().catch(() => []) : [];
+        (j(
+          `careerly-export-${new Date().toISOString().slice(0, 10)}.json`,
+          JSON.stringify({ profil: N, candidatures: n, contacts: t }, null, 2),
+          `application/json`,
+        ),
+          r.success(`Export téléchargé.`));
+      } finally {
+        L(!1);
+      }
+    };
+  return (0, k.jsx)(s, {
+    eyebrow: `Compte`,
+    title: `Paramètres`,
+    subtitle: `Compte, données et confidentialité`,
+    actions: t
+      ? (0, k.jsx)(f, { className: `size-5 animate-spin opacity-70` })
+      : null,
+    children: (0, k.jsxs)(`div`, {
+      className: `grid gap-4 lg:grid-cols-2`,
+      children: [
+        (0, k.jsx)(A, {
+          titre: `Compte`,
+          description: e
+            ? `Connecté en tant que ${e.email ?? `utilisateur`}. Vos données sont synchronisées entre vos appareils.`
+            : `Vous n'êtes pas connecté : vos données restent sur cet appareil uniquement.`,
+          children: e
+            ? (0, k.jsxs)(k.Fragment, {
+                children: [
+                  (0, k.jsx)(a, {
+                    variant: `secondary`,
+                    asChild: !0,
+                    children: (0, k.jsxs)(i, {
+                      to: `/profil`,
+                      children: [(0, k.jsx)(o, {}), ` Mon profil`],
+                    }),
+                  }),
+                  (0, k.jsxs)(a, {
+                    variant: `outline`,
+                    onClick: () => void G(),
+                    children: [(0, k.jsx)(d, {}), ` Se déconnecter`],
+                  }),
+                ],
+              })
+            : (0, k.jsx)(a, {
+                asChild: !0,
+                children: (0, k.jsxs)(i, {
+                  to: `/auth`,
+                  children: [(0, k.jsx)(u, {}), ` Se connecter`],
+                }),
+              }),
+        }),
+        (0, k.jsx)(A, {
+          titre: `Synchronisation & Transfert (Preview ⇄ Vercel)`,
+          description: `Transférez l'intégralité de vos candidatures, contacts et profil entre la Preview Google AI Studio et votre déploiement Vercel en 1 clic sans aucune configuration serveur.`,
+          children: (0, k.jsxs)(`div`, {
+            className: `w-full space-y-4`,
+            children: [
+              (0, k.jsxs)(`div`, {
+                className: `rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2`,
+                children: [
+                  (0, k.jsxs)(`div`, {
+                    className: `flex items-center justify-between`,
+                    children: [
+                      (0, k.jsx)(`span`, {
+                        className: `text-xs font-semibold`,
+                        children: `1. Exporter vos données de cet appareil`,
+                      }),
+                      (0, k.jsxs)(`div`, {
+                        className: `flex gap-2`,
+                        children: [
+                          (0, k.jsxs)(a, {
+                            size: `sm`,
+                            variant: `secondary`,
+                            onClick: H,
+                            className: `h-7 text-xs gap-1.5`,
+                            children: [
+                              (0, k.jsx)(S, { className: `size-3` }),
+                              ` Générer le code`,
+                            ],
+                          }),
+                          R &&
+                            (0, k.jsxs)(a, {
+                              size: `sm`,
+                              variant: `outline`,
+                              onClick: U,
+                              className: `h-7 text-xs gap-1.5`,
+                              children: [
+                                (0, k.jsx)(m, { className: `size-3` }),
+                                ` Copier`,
+                              ],
+                            }),
+                        ],
+                      }),
+                    ],
+                  }),
+                  R &&
+                    (0, k.jsx)(y, {
+                      readOnly: !0,
+                      rows: 2,
+                      value: R,
+                      className: `font-mono text-[10px] resize-none bg-background/50 select-all`,
+                      onClick: (e) => e.target.select(),
+                    }),
+                ],
+              }),
+              (0, k.jsxs)(`div`, {
+                className: `rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2`,
+                children: [
+                  (0, k.jsx)(`span`, {
+                    className: `text-xs font-semibold`,
+                    children: `2. Importer et écraser/mettre à jour avec un code de transfert`,
+                  }),
+                  (0, k.jsx)(y, {
+                    rows: 2,
+                    placeholder: `Collez le code CAREERLY_SYNC_... généré depuis votre autre environnement`,
+                    value: B,
+                    onChange: (e) => V(e.target.value),
+                    className: `font-mono text-xs resize-none`,
+                  }),
+                  (0, k.jsxs)(a, {
+                    size: `sm`,
+                    onClick: W,
+                    className: `w-full gap-2 mt-1`,
+                    children: [
+                      (0, k.jsx)(_, { className: `size-3.5` }),
+                      ` Appliquer la synchronisation immédiatement`,
+                    ],
+                  }),
+                ],
+              }),
+            ],
+          }),
+        }),
+        (0, k.jsx)(c, { connecte: !!e }),
+        (0, k.jsxs)(A, {
+          titre: `Exporter mes données`,
+          description: `Téléchargez une copie complète de vos candidatures, contacts et profil.`,
+          children: [
+            (0, k.jsxs)(a, {
+              variant: `secondary`,
+              onClick: () => void K(),
+              disabled: I,
+              children: [
+                I
+                  ? (0, k.jsx)(f, { className: `animate-spin` })
+                  : (0, k.jsx)(l, {}),
+                ` Export JSON`,
+              ],
+            }),
+            (0, k.jsxs)(a, {
+              variant: `secondary`,
+              onClick: () => {
+                let e = n.map((e) => ({
+                  entreprise: e.entreprise,
+                  poste: e.poste,
+                  lieu: e.lieu,
+                  statut: e.statut,
+                  dateEnvoi: e.dateEnvoi,
+                  dateRelance: e.dateRelance,
+                  dateLimite: e.dateLimite,
+                  source: e.source,
+                  secteur: e.secteur,
+                  priorite: e.priorite,
+                  match: e.match?.global ?? ``,
+                }));
+                if (!e.length) {
+                  r.info(`Aucune candidature à exporter.`);
+                  return;
+                }
+                j(
+                  `careerly-candidatures-${new Date().toISOString().slice(0, 10)}.csv`,
+                  M(e),
+                  `text/csv;charset=utf-8`,
+                );
+              },
+              children: [(0, k.jsx)(l, {}), ` Candidatures CSV`],
+            }),
+          ],
+        }),
+        (0, k.jsx)(A, {
+          titre: `Confidentialité`,
+          description: `Les analyses IA utilisent uniquement les informations que vous saisissez (profil, offres, contacts). Aucune donnée n'est partagée avec des tiers en dehors du traitement de la demande.`,
+          children: (0, k.jsx)(a, {
+            variant: `secondary`,
+            asChild: !0,
+            children: (0, k.jsxs)(i, {
+              to: `/assistant/connect`,
+              children: [(0, k.jsx)(v, {}), ` Connexions IA`],
+            }),
+          }),
+        }),
+        (0, k.jsx)(A, {
+          titre: `Données de cet appareil`,
+          description: `Efface la copie locale (profil, candidatures hors ligne, lettres). Vos données cloud restent intactes si vous êtes connecté.`,
+          children: (0, k.jsxs)(a, {
+            variant: `destructive`,
+            onClick: () => {
+              confirm(`Effacer les données enregistrées sur cet appareil ?`) &&
+                (Object.keys(localStorage)
+                  .filter(
+                    (e) =>
+                      e.startsWith(`careerly.`) || e.startsWith(`suivit-stage`),
+                  )
+                  .forEach((e) => localStorage.removeItem(e)),
+                r.success(`Données locales effacées. Rechargez la page.`));
+            },
+            children: [(0, k.jsx)(p, {}), ` Effacer les données locales`],
+          }),
+        }),
+      ],
+    }),
+  });
+}
+export { N as component };

@@ -20,9 +20,9 @@ import {
  * Partagé par toutes les pages (dashboard, candidatures, calendrier…).
  */
 export function useCandidatures() {
-  const { session, user, loading: authLoading } = useSession();
-  const isCloudUser = Boolean(session?.user?.id);
-  const userId = session?.user?.id || user?.id;
+  const { user, loading: authLoading } = useSession();
+  const userId = user?.id;
+  const isCloudUser = Boolean(userId);
   const [items, setItems] = useState<Candidature[]>(SEED);
   const [ready, setReady] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -32,7 +32,7 @@ export function useCandidatures() {
     if (authLoading) return;
     let cancelled = false;
 
-    if (!isCloudUser) {
+    if (!isCloudUser || !userId) {
       setItems(loadCandidatures());
       setReady(true);
       return;
@@ -42,21 +42,16 @@ export function useCandidatures() {
     setSyncing(true);
     (async () => {
       try {
-        const cloud = await fetchCandidatures();
+        const cloud = await fetchCandidatures(userId);
         const local = loadCandidatures();
-        if (
-          cloud.length === 0 &&
-          local.length > 0 &&
-          !migre.current &&
-          userId
-        ) {
+        if (cloud.length === 0 && local.length > 0 && !migre.current) {
           migre.current = true;
           const migrated = await insertManyCandidatures(local, userId);
           if (!cancelled) {
             setItems(migrated);
             window.localStorage.removeItem(STORAGE_KEY);
             toast.success(
-              "Vos candidatures ont été transférées sur votre compte.",
+              "Vos candidatures ont été transférées sur votre compte cloud.",
             );
           }
         } else if (!cancelled) {
@@ -82,10 +77,10 @@ export function useCandidatures() {
 
   // Multi-appareils : on relit le cloud au retour sur l'onglet si connecté au cloud
   useEffect(() => {
-    if (!isCloudUser) return;
+    if (!isCloudUser || !userId) return;
     const refresh = () => {
       if (document.visibilityState !== "visible") return;
-      void fetchCandidatures()
+      void fetchCandidatures(userId)
         .then(setItems)
         .catch(() => undefined);
     };
@@ -95,7 +90,7 @@ export function useCandidatures() {
       window.removeEventListener("focus", refresh);
       document.removeEventListener("visibilitychange", refresh);
     };
-  }, [isCloudUser]);
+  }, [isCloudUser, userId]);
 
   useEffect(() => {
     if (ready && !isCloudUser) saveCandidatures(items);
@@ -103,12 +98,12 @@ export function useCandidatures() {
 
   const pushCloud = useCallback(
     (c: Candidature) => {
-      if (!isCloudUser || !session?.user?.id) return;
-      void upsertCandidature(c, session.user.id).catch(() =>
+      if (!isCloudUser || !userId) return;
+      void upsertCandidature(c, userId).catch(() =>
         toast.error("Enregistrement en ligne impossible."),
       );
     },
-    [isCloudUser, session?.user?.id],
+    [isCloudUser, userId],
   );
 
   const patch = useCallback(
@@ -127,20 +122,20 @@ export function useCandidatures() {
   const remove = useCallback(
     (id: string) => {
       setItems((prev) => prev.filter((p) => p.id !== id));
-      if (isCloudUser)
-        void deleteCandidature(id).catch(() =>
+      if (isCloudUser && userId)
+        void deleteCandidature(id, userId).catch(() =>
           toast.error("Suppression en ligne impossible."),
         );
     },
-    [isCloudUser],
+    [isCloudUser, userId],
   );
 
   const save = useCallback(
     async (c: Candidature) => {
       let saved = c;
-      if (isCloudUser && session?.user?.id) {
+      if (isCloudUser && userId) {
         try {
-          saved = await upsertCandidature(c, session.user.id);
+          saved = await upsertCandidature(c, userId);
         } catch {
           // Ne bloque pas la sauvegarde locale
         }
@@ -152,7 +147,7 @@ export function useCandidatures() {
       );
       return saved;
     },
-    [isCloudUser, session?.user?.id],
+    [isCloudUser, userId],
   );
 
   return {

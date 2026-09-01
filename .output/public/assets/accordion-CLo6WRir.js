@@ -1,0 +1,409 @@
+import { r as e, t } from "./jsx-runtime-BkSabwWG.js";
+import { c as n } from "./useStore-D1ICS8_H.js";
+import { a as r, n as i } from "./button-Fem7RhN8.js";
+import { p as a } from "./AppShell-Cmck22UZ.js";
+import {
+  _ as o,
+  b as s,
+  f as c,
+  v as l,
+  w as u,
+  x as d,
+  y as f,
+} from "./index-C957XaZb.js";
+import { n as p, t as m } from "./dist-Cgt23J8B.js";
+var h = e(n(), 1),
+  g = t(),
+  _ = Object.defineProperty,
+  v = (e, t) => _(e, `name`, { value: t, configurable: !0 }),
+  y = `Collapsible`,
+  [b, x] = s(y),
+  [S, C] = b(y),
+  w = h.forwardRef(
+    v(function (e, t) {
+      let {
+          __scopeCollapsible: n,
+          open: r,
+          defaultOpen: i,
+          disabled: a,
+          onOpenChange: s,
+          ...c
+        } = e,
+        [d, f] = o({ prop: r, defaultProp: i ?? !1, onChange: s, caller: y });
+      return (0, g.jsx)(S, {
+        scope: n,
+        disabled: a,
+        contentId: l(),
+        open: d,
+        onOpenToggle: h.useCallback(() => f((e) => !e), [f]),
+        children: (0, g.jsx)(u.div, {
+          "data-state": O(d),
+          "data-disabled": a ? `` : void 0,
+          ...c,
+          ref: t,
+        }),
+      });
+    }, `Collapsible`),
+  ),
+  ee = `CollapsibleTrigger`,
+  te = h.forwardRef(
+    v(function (e, t) {
+      let { __scopeCollapsible: n, ...r } = e,
+        i = C(ee, n);
+      return (0, g.jsx)(u.button, {
+        type: `button`,
+        "aria-controls": i.open ? i.contentId : void 0,
+        "aria-expanded": i.open || !1,
+        "data-state": O(i.open),
+        "data-disabled": i.disabled ? `` : void 0,
+        disabled: i.disabled,
+        ...r,
+        ref: t,
+        onClick: d(e.onClick, i.onOpenToggle),
+      });
+    }, `CollapsibleTrigger`),
+  ),
+  T = `CollapsibleContent`,
+  E = h.forwardRef(
+    v(function (e, t) {
+      let { forceMount: n, ...r } = e,
+        i = C(T, e.__scopeCollapsible);
+      return (0, g.jsx)(c, {
+        present: n || i.open,
+        children: ({ present: e }) =>
+          (0, g.jsx)(D, { ...r, ref: t, present: e }),
+      });
+    }, `CollapsibleContent`),
+  ),
+  D = h.forwardRef(
+    v(function (e, t) {
+      let { __scopeCollapsible: n, present: i, children: a, ...o } = e,
+        s = C(T, n),
+        [c, l] = h.useState(i),
+        d = h.useRef(null),
+        p = r(t, d),
+        m = h.useRef(0),
+        _ = m.current,
+        v = h.useRef(0),
+        y = v.current,
+        b = s.open || c,
+        x = h.useRef(b),
+        S = h.useRef(void 0);
+      return (
+        h.useEffect(() => {
+          let e = requestAnimationFrame(() => (x.current = !1));
+          return () => cancelAnimationFrame(e);
+        }, []),
+        f(() => {
+          let e = d.current;
+          if (e) {
+            ((S.current = S.current || {
+              transitionDuration: e.style.transitionDuration,
+              animationName: e.style.animationName,
+            }),
+              (e.style.transitionDuration = `0s`),
+              (e.style.animationName = `none`));
+            let t = e.getBoundingClientRect();
+            ((m.current = t.height),
+              (v.current = t.width),
+              x.current ||
+                ((e.style.transitionDuration = S.current.transitionDuration),
+                (e.style.animationName = S.current.animationName)),
+              l(i));
+          }
+        }, [s.open, i]),
+        (0, g.jsx)(u.div, {
+          "data-state": O(s.open),
+          "data-disabled": s.disabled ? `` : void 0,
+          id: s.contentId,
+          hidden: !b,
+          ...o,
+          ref: p,
+          style: {
+            "--radix-collapsible-content-height": _ ? `${_}px` : void 0,
+            "--radix-collapsible-content-width": y ? `${y}px` : void 0,
+            ...e.style,
+          },
+          children: b && a,
+        })
+      );
+    }, `CollapsibleContentImpl`),
+  );
+function O(e) {
+  return e ? `open` : `closed`;
+}
+v(O, `getState`);
+var k = w,
+  ne = te,
+  re = E,
+  A = Object.defineProperty,
+  j = (e, t) => A(e, `name`, { value: t, configurable: !0 }),
+  M = `Accordion`,
+  ie = [`Home`, `End`, `ArrowDown`, `ArrowUp`, `ArrowLeft`, `ArrowRight`],
+  [N, ae, oe] = p(M),
+  [P, se] = s(M, [oe, x]),
+  F = x(),
+  ce = h.forwardRef(
+    j(function (e, t) {
+      let { type: n, ...r } = e,
+        i = r,
+        a = r;
+      return (0, g.jsx)(N.Provider, {
+        scope: e.__scopeAccordion,
+        children:
+          n === `multiple`
+            ? (0, g.jsx)(V, { ...a, ref: t })
+            : (0, g.jsx)(B, { ...i, ref: t }),
+      });
+    }, `Accordion`),
+  ),
+  [I, L] = P(M),
+  [R, z] = P(M, { collapsible: !1 }),
+  B = h.forwardRef(
+    j(function (e, t) {
+      let {
+          value: n,
+          defaultValue: r,
+          onValueChange: i = j(() => {}, `onValueChange`),
+          collapsible: a = !1,
+          ...s
+        } = e,
+        [c, l] = o({ prop: n, defaultProp: r ?? ``, onChange: i, caller: M });
+      return (0, g.jsx)(I, {
+        scope: e.__scopeAccordion,
+        value: h.useMemo(() => (c ? [c] : []), [c]),
+        onItemOpen: l,
+        onItemClose: h.useCallback(() => a && l(``), [a, l]),
+        children: (0, g.jsx)(R, {
+          scope: e.__scopeAccordion,
+          collapsible: a,
+          children: (0, g.jsx)(W, { ...s, ref: t }),
+        }),
+      });
+    }, `AccordionImplSingle`),
+  ),
+  V = h.forwardRef(
+    j(function (e, t) {
+      let {
+          value: n,
+          defaultValue: r,
+          onValueChange: i = j(() => {}, `onValueChange`),
+          ...a
+        } = e,
+        [s, c] = o({ prop: n, defaultProp: r ?? [], onChange: i, caller: M }),
+        l = h.useCallback((e) => c((t = []) => [...t, e]), [c]),
+        u = h.useCallback((e) => c((t = []) => t.filter((t) => t !== e)), [c]);
+      return (0, g.jsx)(I, {
+        scope: e.__scopeAccordion,
+        value: s,
+        onItemOpen: l,
+        onItemClose: u,
+        children: (0, g.jsx)(R, {
+          scope: e.__scopeAccordion,
+          collapsible: !0,
+          children: (0, g.jsx)(W, { ...a, ref: t }),
+        }),
+      });
+    }, `AccordionImplMultiple`),
+  ),
+  [H, U] = P(M),
+  W = h.forwardRef(
+    j(function (e, t) {
+      let {
+          __scopeAccordion: n,
+          disabled: i,
+          dir: a,
+          orientation: o = `vertical`,
+          ...s
+        } = e,
+        c = h.useRef(null),
+        l = r(c, t),
+        f = ae(n),
+        p = m(a) === `ltr`,
+        _ = d(e.onKeyDown, (e) => {
+          if (!ie.includes(e.key)) return;
+          let t = e.target,
+            n = f().filter((e) => !e.ref.current?.disabled),
+            r = n.findIndex((e) => e.ref.current === t),
+            i = n.length;
+          if (r === -1) return;
+          e.preventDefault();
+          let a = r,
+            s = i - 1,
+            c = j(() => {
+              ((a = r + 1), a > s && (a = 0));
+            }, `moveNext`),
+            l = j(() => {
+              ((a = r - 1), a < 0 && (a = s));
+            }, `movePrev`);
+          switch (e.key) {
+            case `Home`:
+              a = 0;
+              break;
+            case `End`:
+              a = s;
+              break;
+            case `ArrowRight`:
+              o === `horizontal` && (p ? c() : l());
+              break;
+            case `ArrowDown`:
+              o === `vertical` && c();
+              break;
+            case `ArrowLeft`:
+              o === `horizontal` && (p ? l() : c());
+              break;
+            case `ArrowUp`:
+              o === `vertical` && l();
+          }
+          n[a % i].ref.current?.focus();
+        });
+      return (0, g.jsx)(H, {
+        scope: n,
+        disabled: i,
+        direction: a,
+        orientation: o,
+        children: (0, g.jsx)(N.Slot, {
+          scope: n,
+          children: (0, g.jsx)(u.div, {
+            ...s,
+            "data-orientation": o,
+            ref: l,
+            onKeyDown: i ? void 0 : _,
+          }),
+        }),
+      });
+    }, `AccordionImpl`),
+  ),
+  G = `AccordionItem`,
+  [le, K] = P(G),
+  ue = h.forwardRef(
+    j(function (e, t) {
+      let { __scopeAccordion: n, value: r, ...i } = e,
+        a = U(G, n),
+        o = L(G, n),
+        s = F(n),
+        c = l(),
+        u = (r && o.value.includes(r)) || !1,
+        d = a.disabled || e.disabled;
+      return (0, g.jsx)(le, {
+        scope: n,
+        open: u,
+        disabled: d,
+        triggerId: c,
+        children: (0, g.jsx)(k, {
+          "data-orientation": a.orientation,
+          "data-state": J(u),
+          ...s,
+          ...i,
+          ref: t,
+          disabled: d,
+          open: u,
+          onOpenChange: (e) => {
+            e ? o.onItemOpen(r) : o.onItemClose(r);
+          },
+        }),
+      });
+    }, `AccordionItem`),
+  ),
+  de = `AccordionHeader`,
+  fe = h.forwardRef(
+    j(function (e, t) {
+      let { __scopeAccordion: n, ...r } = e,
+        i = U(M, n),
+        a = K(de, n);
+      return (0, g.jsx)(u.h3, {
+        "data-orientation": i.orientation,
+        "data-state": J(a.open),
+        "data-disabled": a.disabled ? `` : void 0,
+        ...r,
+        ref: t,
+      });
+    }, `AccordionHeader`),
+  ),
+  q = `AccordionTrigger`,
+  pe = h.forwardRef(
+    j(function (e, t) {
+      let { __scopeAccordion: n, ...r } = e,
+        i = U(M, n),
+        a = K(q, n),
+        o = z(q, n),
+        s = F(n);
+      return (0, g.jsx)(N.ItemSlot, {
+        scope: n,
+        children: (0, g.jsx)(ne, {
+          "aria-disabled": (a.open && !o.collapsible) || void 0,
+          "data-orientation": i.orientation,
+          id: a.triggerId,
+          ...s,
+          ...r,
+          ref: t,
+        }),
+      });
+    }, `AccordionTrigger`),
+  ),
+  me = `AccordionContent`,
+  he = h.forwardRef(
+    j(function (e, t) {
+      let { __scopeAccordion: n, ...r } = e,
+        i = U(M, n),
+        a = K(me, n),
+        o = F(n);
+      return (0, g.jsx)(re, {
+        role: `region`,
+        "aria-labelledby": a.triggerId,
+        "data-orientation": i.orientation,
+        ...o,
+        ...r,
+        ref: t,
+        style: {
+          "--radix-accordion-content-height": `var(--radix-collapsible-content-height)`,
+          "--radix-accordion-content-width": `var(--radix-collapsible-content-width)`,
+          ...e.style,
+        },
+      });
+    }, `AccordionContent`),
+  );
+function J(e) {
+  return e ? `open` : `closed`;
+}
+j(J, `getState`);
+var ge = ce,
+  _e = ue,
+  ve = fe,
+  Y = pe,
+  X = he,
+  ye = ge,
+  Z = h.forwardRef(({ className: e, ...t }, n) =>
+    (0, g.jsx)(_e, { ref: n, className: i(`border-b`, e), ...t }),
+  );
+Z.displayName = `AccordionItem`;
+var Q = h.forwardRef(({ className: e, children: t, ...n }, r) =>
+  (0, g.jsx)(ve, {
+    className: `flex`,
+    children: (0, g.jsxs)(Y, {
+      ref: r,
+      className: i(
+        `flex flex-1 items-center justify-between py-4 text-sm font-medium cursor-pointer transition-all hover:underline text-left [&[data-state=open]>svg]:rotate-180`,
+        e,
+      ),
+      ...n,
+      children: [
+        t,
+        (0, g.jsx)(a, {
+          className: `h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200`,
+        }),
+      ],
+    }),
+  }),
+);
+Q.displayName = Y.displayName;
+var $ = h.forwardRef(({ className: e, children: t, ...n }, r) =>
+  (0, g.jsx)(X, {
+    ref: r,
+    className: `overflow-hidden text-sm data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down`,
+    ...n,
+    children: (0, g.jsx)(`div`, { className: i(`pb-4 pt-0`, e), children: t }),
+  }),
+);
+$.displayName = X.displayName;
+export { Q as i, $ as n, Z as r, ye as t };

@@ -1,3 +1,12 @@
+import {
+  collection,
+  doc,
+  getDocs,
+  setDoc,
+  deleteDoc,
+  query,
+} from "firebase/firestore";
+import { db, isFirebaseConfigured } from "@/integrations/firebase/client";
 import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
 import {
   emptyContact,
@@ -46,7 +55,7 @@ function toContact(r: Row): Contact {
 
 function toRow(c: Contact, userId: string) {
   return {
-    id: c.id,
+    id: c.id || crypto.randomUUID(),
     user_id: userId,
     nom: c.nom,
     entreprise: c.entreprise,
@@ -61,35 +70,79 @@ function toRow(c: Contact, userId: string) {
     date_prochaine_action: c.dateProchaineAction || null,
     notes: c.notes,
     historique: c.historique as never,
+    updatedAt: new Date().toISOString(),
   };
 }
 
-export async function fetchContacts(): Promise<Contact[]> {
-  if (!isSupabaseConfigured()) return [];
-  const { data, error } = await supabase
-    .from("contacts")
-    .select("*")
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return (data as unknown as Row[]).map(toContact);
+export async function fetchContacts(userId?: string): Promise<Contact[]> {
+  if (isFirebaseConfigured() && userId) {
+    try {
+      const colRef = collection(db, "users", userId, "contacts");
+      const snap = await getDocs(query(colRef));
+      const list: Contact[] = [];
+      snap.forEach((docSnap) => {
+        list.push(toContact({ id: docSnap.id, ...docSnap.data() } as Row));
+      });
+      return list;
+    } catch (e) {
+      console.warn("Firestore fetchContacts error:", e);
+    }
+  }
+
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase
+      .from("contacts")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return (data as unknown as Row[]).map(toContact);
+  }
+
+  return [];
 }
 
 export async function upsertContact(
   c: Contact,
   userId: string,
 ): Promise<Contact> {
-  if (!isSupabaseConfigured()) return c;
-  const { data, error } = await supabase
-    .from("contacts")
-    .upsert(toRow(c, userId))
-    .select()
-    .single();
-  if (error) throw error;
-  return toContact(data as unknown as Row);
+  const row = toRow(c, userId);
+
+  if (isFirebaseConfigured() && userId) {
+    try {
+      const docRef = doc(db, "users", userId, "contacts", row.id);
+      await setDoc(docRef, row, { merge: true });
+      return toContact(row as unknown as Row);
+    } catch (e) {
+      console.warn("Firestore upsertContact error:", e);
+    }
+  }
+
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase
+      .from("contacts")
+      .upsert(row)
+      .select()
+      .single();
+    if (error) throw error;
+    return toContact(data as unknown as Row);
+  }
+
+  return c;
 }
 
-export async function deleteContact(id: string) {
-  if (!isSupabaseConfigured()) return;
-  const { error } = await supabase.from("contacts").delete().eq("id", id);
-  if (error) throw error;
+export async function deleteContact(id: string, userId?: string) {
+  if (isFirebaseConfigured() && userId) {
+    try {
+      const docRef = doc(db, "users", userId, "contacts", id);
+      await deleteDoc(docRef);
+      return;
+    } catch (e) {
+      console.warn("Firestore deleteContact error:", e);
+    }
+  }
+
+  if (isSupabaseConfigured()) {
+    const { error } = await supabase.from("contacts").delete().eq("id", id);
+    if (error) throw error;
+  }
 }

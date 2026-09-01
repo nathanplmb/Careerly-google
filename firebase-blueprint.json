@@ -1,0 +1,56 @@
+{
+  "entities": {
+    "Profil": {
+      "title": "Profil",
+      "description": "Profil professionnel du candidat",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "prenom": { "type": "string" },
+        "nom": { "type": "string" },
+        "titre": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["user_id"]
+    },
+    "Candidature": {
+      "title": "Candidature",
+      "description": "Suivi d'une candidature",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "entreprise": { "type": "string" },
+        "poste": { "type": "string" },
+        "statut": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["user_id", "entreprise", "poste"]
+    },
+    "Contact": {
+      "title": "Contact",
+      "description": "Contact réseau du candidat",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "nom": { "type": "string" },
+        "entreprise": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["user_id", "nom"]
+    }
+  },
+  "firestore": {
+    "/profils/{userId}": {
+      "schema": { "$ref": "#/entities/Profil" },
+      "description": "Profil individuel par utilisateur"
+    },
+    "/users/{userId}/candidatures/{candidatureId}": {
+      "schema": { "$ref": "#/entities/Candidature" },
+      "description": "Candidatures appartenant à un utilisateur"
+    },
+    "/users/{userId}/contacts/{contactId}": {
+      "schema": { "$ref": "#/entities/Contact" },
+      "description": "Contacts réseau appartenant à un utilisateur"
+    }
+  }
+}

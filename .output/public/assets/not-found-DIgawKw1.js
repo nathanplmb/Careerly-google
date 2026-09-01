@@ -1,1 +1,4 @@
-function e(e){return e?.isNotFound===!0}export{e as t};
+function e(e) {
+  return e?.isNotFound === !0;
+}
+export { e as t };

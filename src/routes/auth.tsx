@@ -26,6 +26,18 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
 import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
 import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  updateProfile,
+  signInWithPopup,
+  GoogleAuthProvider,
+  sendPasswordResetEmail,
+} from "firebase/auth";
+import {
+  auth as firebaseAuth,
+  isFirebaseConfigured,
+} from "@/integrations/firebase/client";
+import {
   connecterUtilisateurLocal,
   getComptesEnregistres,
   inscrireUtilisateurLocal,
@@ -116,7 +128,7 @@ const SCHOOL_SUGGESTIONS = [
   "Autre école / Université",
 ];
 
-export function AuthPage() {
+function AuthPage() {
   const navigate = useNavigate();
   const { next } = Route.useSearch();
   const target = safeNext(next);
@@ -256,7 +268,21 @@ export function AuthPage() {
     }
     setLoading(true);
 
-    // 1. Tentative Supabase si configuré
+    // 1. Firebase Auth si configuré
+    if (isFirebaseConfigured()) {
+      try {
+        await signInWithEmailAndPassword(firebaseAuth, email.trim(), password);
+        setLoading(false);
+        toast.success("Connexion réussie ! Bienvenue sur NACORA.");
+        rediriger();
+        return;
+      } catch (fErr: unknown) {
+        console.warn("Firebase signIn error:", fErr);
+        // Si l'utilisateur a créé un compte localement auparavant, basculer sur l'auth locale
+      }
+    }
+
+    // 2. Tentative Supabase si configuré
     if (isSupabaseConfigured()) {
       try {
         const { error } = await supabase.auth.signInWithPassword({
@@ -274,7 +300,7 @@ export function AuthPage() {
       }
     }
 
-    // 2. Connexion locale autonome optimisée
+    // 3. Connexion locale autonome optimisée
     const user = connecterUtilisateurLocal(email, password);
     setLoading(false);
     toast.success(
@@ -300,7 +326,31 @@ export function AuthPage() {
 
     setLoading(true);
 
-    // 1. Tentative Supabase si configuré
+    // 1. Firebase Auth si configuré
+    if (isFirebaseConfigured()) {
+      try {
+        const res = await createUserWithEmailAndPassword(
+          firebaseAuth,
+          email.trim(),
+          password,
+        );
+        if (res.user) {
+          await updateProfile(res.user, {
+            displayName: `${prenom} ${nom}`.trim() || "Membre",
+          });
+          setLoading(false);
+          toast.success(
+            "Compte cloud créé avec succès ! Bienvenue sur NACORA.",
+          );
+          rediriger();
+          return;
+        }
+      } catch (fErr: unknown) {
+        console.warn("Firebase signUp error:", fErr);
+      }
+    }
+
+    // 2. Tentative Supabase si configuré
     if (isSupabaseConfigured()) {
       try {
         const { data, error } = await supabase.auth.signUp({
@@ -334,7 +384,7 @@ export function AuthPage() {
       }
     }
 
-    // 2. Inscription locale autonome
+    // 3. Inscription locale autonome
     const user = inscrireUtilisateurLocal({
       email: email.trim(),
       motDePasse: password,
@@ -357,6 +407,14 @@ export function AuthPage() {
     }
     setLoading(true);
 
+    if (isFirebaseConfigured()) {
+      try {
+        await sendPasswordResetEmail(firebaseAuth, email.trim());
+      } catch {
+        // Ignorer
+      }
+    }
+
     if (isSupabaseConfigured()) {
       try {
         await supabase.auth.resetPasswordForEmail(email.trim(), {
@@ -377,7 +435,25 @@ export function AuthPage() {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-      // 1. Tentative Supabase OAuth SEULEMENT si Supabase est réellement configuré
+      // 1. Firebase Google Auth
+      if (isFirebaseConfigured()) {
+        try {
+          const provider = new GoogleAuthProvider();
+          const res = await signInWithPopup(firebaseAuth, provider);
+          if (res.user) {
+            setLoading(false);
+            toast.success(
+              `Bienvenue ${res.user.displayName || res.user.email} ! Connecté via Google (Firebase Cloud).`,
+            );
+            rediriger();
+            return;
+          }
+        } catch (fErr) {
+          console.warn("Firebase Google popup error, falling back:", fErr);
+        }
+      }
+
+      // 2. Tentative Supabase OAuth SEULEMENT si Supabase est réellement configuré
       if (isSupabaseConfigured()) {
         try {
           const { error } = await supabase.auth.signInWithOAuth({
@@ -912,7 +988,9 @@ export function AuthPage() {
                           <div className="flex items-center gap-2.5 min-w-0">
                             <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 font-bold text-primary text-[11px]">
                               {(
-                                compte.prenom?.[0] || compte.email[0]
+                                compte.prenom?.[0] ||
+                                compte.email?.[0] ||
+                                "U"
                               ).toUpperCase()}
                             </div>
                             <div className="min-w-0 truncate">

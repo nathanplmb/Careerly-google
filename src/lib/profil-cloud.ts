@@ -1,3 +1,5 @@
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db, isFirebaseConfigured } from "@/integrations/firebase/client";
 import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
 import {
   emptyProfil,
@@ -107,8 +109,7 @@ function toRow(p: Profil, userId: string) {
       ...p.cvStructure.preferences,
       ...p.preferences,
       teletravailPrefere:
-        (p.modeTravail as
-          "full_remote" | "hybride" | "presentiel" | "indifferent") ||
+        (p.modeTravail as "full_remote" | "hybride" | "presentiel") ||
         p.cvStructure.preferences?.teletravailPrefere ||
         "hybride",
     },
@@ -145,29 +146,58 @@ function toRow(p: Profil, userId: string) {
     criteres: p.criteres as never,
     cv: (p.cv ?? null) as never,
     cv_structure: cvStructure as never,
+    updatedAt: new Date().toISOString(),
   };
 }
 
-export async function fetchProfil(): Promise<Profil | null> {
-  if (!isSupabaseConfigured()) return null;
-  const { data, error } = await supabase
-    .from("profils")
-    .select("*")
-    .maybeSingle();
-  if (error) throw error;
-  return data ? toProfil(data as Row) : null;
+export async function fetchProfil(userId?: string): Promise<Profil | null> {
+  if (isFirebaseConfigured() && userId) {
+    try {
+      const snap = await getDoc(doc(db, "profils", userId));
+      if (snap.exists()) {
+        return toProfil(snap.data() as Row);
+      }
+    } catch (e) {
+      console.warn("Firestore fetchProfil error:", e);
+    }
+  }
+
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase
+      .from("profils")
+      .select("*")
+      .maybeSingle();
+    if (error) throw error;
+    return data ? toProfil(data as Row) : null;
+  }
+
+  return null;
 }
 
 export async function saveProfilCloud(
   p: Profil,
   userId: string,
 ): Promise<Profil> {
-  if (!isSupabaseConfigured()) return p;
-  const { data, error } = await supabase
-    .from("profils")
-    .upsert(toRow(p, userId), { onConflict: "user_id" })
-    .select()
-    .single();
-  if (error) throw error;
-  return toProfil(data as Row);
+  const rowData = toRow(p, userId);
+
+  if (isFirebaseConfigured()) {
+    try {
+      await setDoc(doc(db, "profils", userId), rowData, { merge: true });
+      return toProfil(rowData as Row);
+    } catch (e) {
+      console.warn("Firestore saveProfilCloud error:", e);
+    }
+  }
+
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase
+      .from("profils")
+      .upsert(rowData, { onConflict: "user_id" })
+      .select()
+      .single();
+    if (error) throw error;
+    return toProfil(data as Row);
+  }
+
+  return p;
 }

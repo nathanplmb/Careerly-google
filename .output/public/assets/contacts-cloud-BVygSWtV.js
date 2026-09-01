@@ -1,0 +1,64 @@
+import { nn as e, tn as t, z as n } from "./index-C957XaZb.js";
+function r(e) {
+  return {
+    ...n(),
+    id: e.id,
+    nom: e.nom ?? ``,
+    entreprise: e.entreprise ?? ``,
+    poste: e.poste ?? ``,
+    email: e.email ?? ``,
+    telephone: e.telephone ?? ``,
+    linkedin: e.linkedin ?? ``,
+    type: e.type || `Recruteur`,
+    candidatureId: e.candidature_id ?? ``,
+    derniereInteraction: e.derniere_interaction ?? ``,
+    prochaineAction: e.prochaine_action ?? ``,
+    dateProchaineAction: e.date_prochaine_action ?? ``,
+    notes: e.notes ?? ``,
+    historique: Array.isArray(e.historique) ? e.historique : [],
+  };
+}
+function i(e, t) {
+  return {
+    id: e.id,
+    user_id: t,
+    nom: e.nom,
+    entreprise: e.entreprise,
+    poste: e.poste,
+    email: e.email,
+    telephone: e.telephone,
+    linkedin: e.linkedin,
+    type: e.type,
+    candidature_id: e.candidatureId || null,
+    derniere_interaction: e.derniereInteraction || null,
+    prochaine_action: e.prochaineAction,
+    date_prochaine_action: e.dateProchaineAction || null,
+    notes: e.notes,
+    historique: e.historique,
+  };
+}
+async function a() {
+  if (!t()) return [];
+  let { data: n, error: i } = await e
+    .from(`contacts`)
+    .select(`*`)
+    .order(`created_at`, { ascending: !1 });
+  if (i) throw i;
+  return n.map(r);
+}
+async function o(n, a) {
+  if (!t()) return n;
+  let { data: o, error: s } = await e
+    .from(`contacts`)
+    .upsert(i(n, a))
+    .select()
+    .single();
+  if (s) throw s;
+  return r(o);
+}
+async function s(n) {
+  if (!t()) return;
+  let { error: r } = await e.from(`contacts`).delete().eq(`id`, n);
+  if (r) throw r;
+}
+export { a as n, o as r, s as t };
