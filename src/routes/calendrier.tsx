@@ -40,6 +40,7 @@ export const Route = createFileRoute("/calendrier")({
 type Evenement = {
   date: string;
   type: "Date limite" | "Relance" | "Entretien" | "Envoi";
+  titre?: string;
   candidature: Candidature;
 };
 
@@ -51,6 +52,14 @@ const COULEURS: Record<Evenement["type"], string> = {
 };
 
 const JOURS = ["L", "M", "M", "J", "V", "S", "D"];
+
+function extraireDateIso(raw?: string | null): string | null {
+  if (!raw || typeof raw !== "string") return null;
+  const trimmed = raw.trim();
+  const match = trimmed.match(/^(\d{4}-\d{2}-\d{2})/);
+  if (match && match[1]) return match[1];
+  return null;
+}
 
 function moisLabel(annee: number, mois: number) {
   return new Date(annee, mois, 1).toLocaleDateString("fr-FR", {
@@ -76,21 +85,47 @@ function CalendrierPage() {
   const evenements = useMemo(() => {
     const list: Evenement[] = [];
     for (const c of items) {
-      if (c.dateLimite && c.statut === "Je vais postuler")
-        list.push({ date: c.dateLimite, type: "Date limite", candidature: c });
-      if (
-        c.dateRelance &&
-        (c.statut === "J'ai postulé" || c.statut === "J'ai relancé")
-      )
-        list.push({ date: c.dateRelance, type: "Relance", candidature: c });
-      if (c.statut === "J'ai un entretien" && c.dateDernierContact)
+      // 1. Date limite / Deadline de candidature (Opportunity.applicationDeadline en priorité)
+      const deadline = extraireDateIso(c.applicationDeadline || c.dateLimite);
+      if (deadline) {
+        const nomPoste = c.poste || c.title || c.entreprise || "Candidature";
         list.push({
-          date: c.dateDernierContact,
+          date: deadline,
+          type: "Date limite",
+          titre: `Deadline — ${nomPoste}`,
+          candidature: c,
+        });
+      }
+
+      // 2. Relance
+      const dateRelance = extraireDateIso(c.dateRelance || c.followUpDate);
+      if (
+        dateRelance &&
+        (c.statut === "Candidature envoyée" || c.statut === "Relancée")
+      ) {
+        list.push({ date: dateRelance, type: "Relance", candidature: c });
+      }
+
+      // 3. Entretien
+      const dateEntretien = extraireDateIso(
+        c.interviewDate || c.dateDernierContact || c.lastContactDate,
+      );
+      if (
+        (c.statut === "Entretien" || c.statut === "Deuxième entretien") &&
+        dateEntretien
+      ) {
+        list.push({
+          date: dateEntretien,
           type: "Entretien",
           candidature: c,
         });
-      if (c.dateEnvoi)
-        list.push({ date: c.dateEnvoi, type: "Envoi", candidature: c });
+      }
+
+      // 4. Envoi
+      const dateEnvoi = extraireDateIso(c.dateEnvoi || c.appliedAt);
+      if (dateEnvoi) {
+        list.push({ date: dateEnvoi, type: "Envoi", candidature: c });
+      }
     }
     return list.sort((a, b) => a.date.localeCompare(b.date));
   }, [items]);
@@ -235,9 +270,11 @@ function CalendrierPage() {
                             "truncate rounded-md border px-1 py-0.5 text-[9.5px] font-medium",
                             COULEURS[e.type],
                           )}
-                          title={`${e.type} — ${e.candidature.entreprise}`}
+                          title={
+                            e.titre || `${e.type} — ${e.candidature.entreprise}`
+                          }
                         >
-                          {e.candidature.entreprise || e.type}
+                          {e.titre || e.candidature.entreprise || e.type}
                         </button>
                       ))}
                       {evts.length > 2 && (
@@ -283,10 +320,12 @@ function CalendrierPage() {
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[13.5px] font-medium">
-                      {e.candidature.entreprise}
+                      {e.titre || e.candidature.entreprise}
                     </span>
                     <span className="block truncate text-xs text-muted-foreground">
-                      {e.candidature.poste}
+                      {e.titre
+                        ? e.candidature.entreprise || e.candidature.poste
+                        : e.candidature.poste}
                     </span>
                   </span>
                   <span className="shrink-0 text-xs text-muted-foreground">

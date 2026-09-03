@@ -1,6 +1,6 @@
 import { c as registerVersion } from "./@firebase/app+[...].mjs";
-import "./@firebase/firestore+[...].mjs";
 import "./firebase__auth.mjs";
+import "./@firebase/firestore+[...].mjs";
 //#region node_modules/firebase/app/dist/esm/index.esm.js
 /**
 * @license

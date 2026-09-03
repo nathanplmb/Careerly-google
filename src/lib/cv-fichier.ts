@@ -1,4 +1,5 @@
 /** Extraction du texte d'un CV côté navigateur. Aucun fichier n'est envoyé au serveur. */
+import { initPolyfills, patchReadableStreamInstance } from "@/lib/polyfills";
 
 export const TYPES_ACCEPTES = ".pdf,.docx,.txt,.md,.rtf";
 
@@ -29,6 +30,7 @@ export async function extraireTexteFichier(file: File): Promise<string> {
 }
 
 async function extrairePdf(file: File): Promise<string> {
+  initPolyfills();
   // Le build legacy inclut les compatibilités nécessaires à Safari/iOS plus ancien.
   const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
   const workerUrl = (
@@ -42,6 +44,23 @@ async function extrairePdf(file: File): Promise<string> {
 
   for (let i = 1; i <= doc.numPages; i++) {
     const page = await doc.getPage(i);
+
+    // Patch défensif pour Safari/WebKit où ReadableStream.prototype[Symbol.asyncIterator] n'est pas implémenté
+    const origStreamTextContent = (
+      page as unknown as { streamTextContent?: (...args: unknown[]) => unknown }
+    ).streamTextContent;
+    if (typeof origStreamTextContent === "function") {
+      (
+        page as unknown as {
+          streamTextContent: (...args: unknown[]) => unknown;
+        }
+      ).streamTextContent = function (...args: unknown[]) {
+        const stream = origStreamTextContent.apply(this, args);
+        patchReadableStreamInstance(stream);
+        return stream;
+      };
+    }
+
     const content = await page.getTextContent();
 
     interface RawItem {
@@ -152,7 +171,7 @@ async function extrairePdf(file: File): Promise<string> {
 }
 
 async function extraireDocx(file: File): Promise<string> {
-  const mammoth = await import("mammoth/mammoth.browser.js");
+  const mammoth = await import("mammoth/mammoth.browser.js" as any);
   const buffer = await file.arrayBuffer();
   const res = await (
     mammoth as unknown as {

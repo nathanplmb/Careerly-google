@@ -87,8 +87,7 @@ function toProfil(r: Row): Profil {
       base.criteres,
     cv: (r.cv as Profil["cv"]) ?? null,
     cvStructure,
-    preferences: cvStructure.preferences,
-    syntheseIa: cvStructure.syntheseIa,
+    preferences: cvStructure.preferences || {},
   };
 }
 
@@ -113,7 +112,6 @@ function toRow(p: Profil, userId: string) {
         p.cvStructure.preferences?.teletravailPrefere ||
         "hybride",
     },
-    syntheseIa: p.syntheseIa || p.cvStructure.syntheseIa,
     ...(p.rechercheVraie ? { rechercheVraie: p.rechercheVraie } : {}),
     ...(p.environnements ? { environnements: p.environnements } : {}),
     ...(p.prioritesRecherche
@@ -146,8 +144,14 @@ function toRow(p: Profil, userId: string) {
     criteres: p.criteres as never,
     cv: (p.cv ?? null) as never,
     cv_structure: cvStructure as never,
-    updatedAt: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   };
+}
+
+function sanitizeForFirestore<T>(data: T): T {
+  return JSON.parse(
+    JSON.stringify(data, (_, v) => (v === undefined ? null : v)),
+  );
 }
 
 export async function fetchProfil(userId?: string): Promise<Profil | null> {
@@ -178,14 +182,15 @@ export async function saveProfilCloud(
   p: Profil,
   userId: string,
 ): Promise<Profil> {
-  const rowData = toRow(p, userId);
+  const rawRowData = toRow(p, userId);
+  const rowData = sanitizeForFirestore(rawRowData);
 
   if (isFirebaseConfigured()) {
     try {
       await setDoc(doc(db, "profils", userId), rowData, { merge: true });
       return toProfil(rowData as Row);
     } catch (e) {
-      console.warn("Firestore saveProfilCloud error:", e);
+      console.error("Firestore saveProfilCloud error:", e);
     }
   }
 

@@ -27,7 +27,6 @@ import {
   appliquerCodeTransfert,
   genererCodeTransfert,
 } from "@/lib/sync-transfert";
-import { UsageIaCard } from "@/components/UsageIaCard";
 
 export const Route = createFileRoute("/parametres")({
   head: () => ({
@@ -172,7 +171,6 @@ function ParametresPage() {
       source: c.source,
       secteur: c.secteur,
       priorite: c.priorite,
-      match: c.match?.global ?? "",
     }));
     if (!rows.length) {
       toast.info("Aucune candidature à exporter.");
@@ -298,8 +296,6 @@ function ParametresPage() {
           </div>
         </Carte>
 
-        <UsageIaCard connecte={!!user} />
-
         <Carte
           titre="Exporter mes données"
           description="Téléchargez une copie complète de vos candidatures, contacts et profil."
@@ -321,11 +317,7 @@ function ParametresPage() {
           titre="Confidentialité"
           description="Les analyses IA utilisent uniquement les informations que vous saisissez (profil, offres, contacts). Aucune donnée n'est partagée avec des tiers en dehors du traitement de la demande."
         >
-          <Button variant="secondary" asChild>
-            <Link to="/assistant/connect">
-              <ShieldCheck /> Connexions IA
-            </Link>
-          </Button>
+          <Button variant="secondary" asChild></Button>
         </Carte>
 
         <Carte

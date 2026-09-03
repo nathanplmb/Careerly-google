@@ -1,403 +1,663 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import {
   AlertTriangle,
   Bell,
   CalendarClock,
   CalendarDays,
-  ChevronLeft,
-  ChevronRight,
-  ExternalLink,
-  Loader2,
-  Mail,
+  CheckCircle2,
+  Clock,
+  Eye,
   Pencil,
-  Send,
+  RefreshCw,
   Sparkles,
   Star,
-  Timer,
   UserRound,
-  Wand2,
 } from "lucide-react";
-import { useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
-import { texteErreurIA } from "@/lib/ai-erreurs";
-import {
-  autoDejaTente,
-  chargerBriefCache,
-  faitsDuJour,
-  hashFaits,
-  marquerAutoTente,
-  sauverBriefCache,
-  type ActionBrief,
-  type Brief,
-  type CategorieBrief,
-  type ElementBrief,
-} from "@/lib/brief";
-import { lancerBrief } from "@/lib/brief-run";
-import { getNextBestAction, type Candidature } from "@/lib/candidatures";
-import type { Profil } from "@/lib/profil";
+import { todayIso, type Candidature } from "@/lib/candidatures";
+import { Button } from "@/components/ui/button";
+import type {
+  BriefItem,
+  DailyBriefData,
+  DailyBriefInputData,
+  OpportunityInputForBrief,
+} from "@/ai/daily-brief/dailyBrief.types";
+import { generateDeterministicDailyBrief } from "@/ai/daily-brief/dailyBrief.service";
+import { genererDailyBriefServerFn } from "@/ai/daily-brief/dailyBrief.server-fn";
 
-type Props = {
+type DailyBriefProps = {
   items: Candidature[];
-  profil: Profil | null;
-  pret: boolean;
-  onPostuler: (c: Candidature) => void;
-  onRelancer: (c: Candidature) => void;
-  onOuvrir: (c: Candidature) => void;
-  onAnalyser: (c: Candidature) => void;
+  userPrenom?: string;
+  onOuvrir?: (item: Candidature) => void;
+  ready?: boolean;
 };
 
-type Meta = {
-  libelle: string;
-  icone: typeof Bell;
-  coin: typeof Mail;
-  tone: string;
+const CACHE_KEY = "nacora_daily_brief_cache_v3";
+
+type CacheEntry = {
+  date: string;
+  hash: string;
+  brief: DailyBriefData;
+  timestamp: number;
 };
 
-const META: Record<CategorieBrief, Meta> = {
-  urgent: {
-    libelle: "Urgent",
-    icone: AlertTriangle,
-    coin: Timer,
-    tone: "var(--destructive)",
-  },
-  relance: {
-    libelle: "Relance",
-    icone: Bell,
-    coin: Mail,
-    tone: "var(--primary)",
-  },
-  entretien: {
-    libelle: "Entretien",
-    icone: UserRound,
-    coin: CalendarDays,
-    tone: "var(--warning)",
-  },
-  deadline: {
-    libelle: "Deadline",
-    icone: CalendarClock,
-    coin: Timer,
-    tone: "var(--success)",
-  },
-  opportunite: {
-    libelle: "Opportunité",
-    icone: Sparkles,
-    coin: Star,
-    tone: "var(--pink)",
-  },
-  finaliser: {
-    libelle: "À finaliser",
-    icone: Pencil,
-    coin: Pencil,
-    tone: "var(--lilac)",
-  },
-};
-
-const ACTION_META: Record<
-  ActionBrief,
-  { libelle: string; icone: typeof Bell }
-> = {
-  relancer: { libelle: "Relancer avec l'IA", icone: Wand2 },
-  postuler: { libelle: "Marquer postulé", icone: Send },
-  analyser: { libelle: "Voir l'analyse", icone: Sparkles },
-  voir_offre: { libelle: "Voir l'offre", icone: ExternalLink },
-  ouvrir: { libelle: "Préparer", icone: Pencil },
-};
-
-/** Découpe la raison en deux lignes courtes façon maquette. */
-function lignes(raison: string) {
-  const t = raison.trim();
-  if (t.length <= 42) return [t];
-  const coupe = t.lastIndexOf(" ", 42);
-  const i = coupe > 18 ? coupe : 42;
-  return [t.slice(0, i), t.slice(i).trim()];
+function sanitizeBriefData(raw: unknown): DailyBriefData | null {
+  if (!raw || typeof raw !== "object") return null;
+  const b = raw as Partial<DailyBriefData>;
+  return {
+    greeting: typeof b.greeting === "string" ? b.greeting : "Bonjour",
+    summary:
+      typeof b.summary === "string"
+        ? b.summary
+        : "Voici ce qui mérite votre attention aujourd'hui.",
+    today: Array.isArray(b.today) ? b.today : [],
+    watch: Array.isArray(b.watch) ? b.watch : [],
+    upcoming: Array.isArray(b.upcoming) ? b.upcoming : [],
+    recent: Array.isArray(b.recent) ? b.recent : [],
+    generatedAt:
+      typeof b.generatedAt === "string"
+        ? b.generatedAt
+        : new Date().toISOString(),
+    isFallback: Boolean(b.isFallback),
+  };
 }
 
-function CartePriorite({
-  element,
-  index,
-  actif,
-  onAgir,
-}: {
-  element: ElementBrief;
-  index: number;
-  actif: boolean;
-  onAgir: () => void;
-}) {
-  const meta = META[element.categorie];
-  const action = ACTION_META[element.action];
-  const Icone = meta.icone;
-  const Coin = meta.coin;
-  const BtnIcone = action.icone;
+function computeOpportunitiesHash(
+  items: Candidature[],
+  currentDate: string,
+): string {
+  const parts = items
+    .filter((c) => !c.archive)
+    .map(
+      (c) =>
+        `${c.id}|${c.statut}|${c.applicationDeadline || c.dateLimite || ""}|${
+          c.followUpDate || c.dateRelance || ""
+        }|${c.interviewDate || ""}|${c.savedAt || ""}`,
+    )
+    .sort()
+    .join(";");
+  return `${currentDate}::${parts}`;
+}
 
-  return (
-    <article
-      style={
-        {
-          "--tone": meta.tone,
-          animationDelay: `${index * 70}ms`,
-        } as React.CSSProperties
-      }
-      className={cn(
-        "tone-card pop-in flex min-h-[188px] w-[min(80vw,272px)] shrink-0 flex-col p-4 sm:min-h-[212px] sm:w-auto",
-        actif &&
-          "ring-1 ring-[color-mix(in_oklab,var(--tone)_55%,transparent)]",
-      )}
-    >
-      <header className="flex items-start justify-between gap-2">
-        <span className="flex items-center gap-2">
-          <span className="tone-chip size-7 shrink-0">
-            <Icone className="size-3.5" />
-          </span>
-          <span
-            className="text-[11px] font-bold uppercase tracking-[0.14em]"
-            style={{ color: "var(--tone)" }}
-          >
-            {meta.libelle}
-          </span>
-        </span>
-        <Coin className="size-4 shrink-0 text-muted-foreground/70" />
-      </header>
+function getItemIcon(type: BriefItem["type"]) {
+  switch (type) {
+    case "deadline":
+      return CalendarClock;
+    case "relance":
+      return Bell;
+    case "entretien":
+      return UserRound;
+    case "preparation":
+      return Pencil;
+    case "opportunite":
+      return Star;
+    default:
+      return Clock;
+  }
+}
 
-      <h3 className="mt-4 text-[17px] font-bold leading-tight tracking-tight">
-        {element.titre}
-      </h3>
-      <div className="mt-1.5 space-y-0.5 text-[13px] leading-snug text-muted-foreground">
-        {lignes(element.raison).map((l) => (
-          <p key={l} className="line-clamp-2">
-            {l}
-          </p>
-        ))}
-      </div>
-
-      <button
-        type="button"
-        onClick={onAgir}
-        className="tone-btn mt-auto inline-flex w-fit items-center gap-2 rounded-xl px-3.5 py-2.5 text-[13px] font-semibold"
-      >
-        <BtnIcone className="size-4" />
-        {action.libelle}
-      </button>
-    </article>
-  );
+function getPriorityBadge(priority: BriefItem["priority"]) {
+  switch (priority) {
+    case "high":
+      return "border-destructive/30 bg-destructive/10 text-destructive";
+    case "medium":
+      return "border-warning/30 bg-warning/10 text-warning";
+    case "low":
+    default:
+      return "border-primary/30 bg-primary/10 text-primary";
+  }
 }
 
 export function DailyBrief({
   items,
-  profil,
-  pret,
-  onPostuler,
-  onRelancer,
+  userPrenom,
   onOuvrir,
-  onAnalyser,
-}: Props) {
-  const [brief, setBrief] = useState<Brief | null>(null);
-  const [chargement, setChargement] = useState(false);
-  const [erreur, setErreur] = useState<string | null>(null);
-  const [page, setPage] = useState(0);
-  const rangee = useRef<HTMLDivElement>(null);
+  ready = true,
+}: DailyBriefProps) {
+  const navigate = useNavigate();
+  const currentDate = useMemo(() => todayIso(), []);
+  const currentHash = useMemo(
+    () => computeOpportunitiesHash(items, currentDate),
+    [items, currentDate],
+  );
 
-  const faits = useMemo(() => faitsDuJour(items), [items]);
-  const hash = useMemo(() => hashFaits(faits), [faits]);
-  const [autoFait, setAutoFait] = useState(false);
-  const cacheLu = useRef(false);
+  const [brief, setBrief] = useState<DailyBriefData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Réutilisation du brief en cache dès que les faits sont identiques : zéro crédit.
-  useEffect(() => {
-    if (!pret || cacheLu.current) return;
-    cacheLu.current = true;
-    const cache = chargerBriefCache(hash);
-    if (cache) {
-      setBrief(cache);
-      setAutoFait(true);
+  // Protection contre double exécution et gestion des requêtes concurrentes
+  const isMountedRef = useRef(true);
+  const lastFetchedHashRef = useRef<string | null>(null);
+  const activeRequestIdRef = useRef(0);
+
+  // Transformation des candidatures en format input pour l'IA
+  const inputData: DailyBriefInputData = useMemo(() => {
+    const opps: OpportunityInputForBrief[] = items.map((c) => ({
+      id: c.id,
+      entreprise: c.entreprise || c.company || c.companyName || "",
+      poste: c.poste || c.title || "",
+      statut: c.statut || "Sauvegardée",
+      lieu: c.lieu || c.location || undefined,
+      applicationDeadline: c.applicationDeadline || c.dateLimite || null,
+      dateLimite: c.dateLimite || c.applicationDeadline || null,
+      appliedAt: c.appliedAt || c.dateEnvoi || null,
+      dateEnvoi: c.dateEnvoi || c.appliedAt || null,
+      followUpDate: c.followUpDate || c.dateRelance || null,
+      dateRelance: c.dateRelance || c.followUpDate || null,
+      lastContactDate: c.lastContactDate || c.dateDernierContact || null,
+      interviewDate: c.interviewDate || null,
+      secondInterviewDate: c.secondInterviewDate || null,
+      currentWorkflowStep: c.currentWorkflowStep || null,
+      savedAt: c.savedAt || null,
+      preparedAt: c.preparedAt || null,
+      offerReceivedAt: c.offerReceivedAt || null,
+      acceptedAt: c.acceptedAt || null,
+      rejectedAt: c.rejectedAt || null,
+      notes: c.commentaire || c.personalNotes || null,
+      archive: Boolean(c.archive),
+    }));
+
+    return {
+      userPrenom,
+      currentDate,
+      opportunities: opps,
+    };
+  }, [items, userPrenom, currentDate]);
+
+  // Exécution du brief (avec cache local et fallback robuste)
+  const executerBrief = async (forcerRecalcul = false) => {
+    const requestId = ++activeRequestIdRef.current;
+    setLoading(true);
+    setErrorMessage(null);
+
+    // 1. Vérification du cache
+    if (!forcerRecalcul) {
+      try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (raw) {
+          const cached: CacheEntry = JSON.parse(raw);
+          const sanitizedCached = sanitizeBriefData(cached?.brief);
+          if (
+            sanitizedCached &&
+            cached.date === currentDate &&
+            cached.hash === currentHash
+          ) {
+            setBrief(sanitizedCached);
+            setLoading(false);
+            lastFetchedHashRef.current = currentHash;
+            return;
+          } else if (!sanitizedCached) {
+            localStorage.removeItem(CACHE_KEY);
+          }
+        }
+      } catch {
+        // Ignorer erreur de lecture cache
+      }
     }
-  }, [pret, hash]);
 
-  // Génération automatique : une seule fois par jour, jamais à chaque rechargement.
-  useEffect(() => {
-    if (autoFait || !pret || brief || chargement || faits.length === 0) return;
-    if (!cacheLu.current) return;
-    setAutoFait(true);
-    if (autoDejaTente()) return;
-    marquerAutoTente();
-    void generer();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoFait, pret, brief, chargement, faits.length]);
-
-  const generer = async () => {
-    setChargement(true);
-    setErreur(null);
     try {
-      const b = await lancerBrief(items, profil);
-      setBrief(b);
-      sauverBriefCache(b, hash);
-      marquerAutoTente();
-      setPage(0);
-    } catch (e) {
-      setErreur(texteErreurIA(e));
+      // 2. Appel serveur sécurisé
+      const resultat = await genererDailyBriefServerFn({ data: inputData });
+
+      if (isMountedRef.current && requestId === activeRequestIdRef.current) {
+        const sanitized = sanitizeBriefData(resultat);
+        if (sanitized) {
+          setBrief(sanitized);
+          lastFetchedHashRef.current = currentHash;
+          try {
+            const entry: CacheEntry = {
+              date: currentDate,
+              hash: currentHash,
+              brief: sanitized,
+              timestamp: Date.now(),
+            };
+            localStorage.setItem(CACHE_KEY, JSON.stringify(entry));
+          } catch {
+            // LocalStorage plein ou indisponible
+          }
+        }
+      }
+    } catch (err: unknown) {
+      if (requestId !== activeRequestIdRef.current) {
+        // Requête supplantée, ignorer
+        return;
+      }
+
+      const isAbort =
+        err instanceof Error &&
+        (err.name === "AbortError" ||
+          err.message?.includes("aborted") ||
+          err.message?.includes("AbortError"));
+
+      if (isAbort) {
+        // Annulation propre, ignorer sans afficher d'erreur alarmante
+        return;
+      }
+
+      console.warn(
+        "[Daily Brief] Erreur lors de l'appel IA, utilisation du repli déterministe :",
+        err,
+      );
+      if (isMountedRef.current) {
+        // Repli transparent déterministe basé sur les faits réels
+        const repli = sanitizeBriefData(
+          generateDeterministicDailyBrief(inputData, true),
+        );
+        if (repli) {
+          setBrief(repli);
+        }
+        setErrorMessage("Le Brief IA est temporairement indisponible.");
+      }
     } finally {
-      setChargement(false);
+      if (isMountedRef.current && requestId === activeRequestIdRef.current) {
+        setLoading(false);
+      }
     }
   };
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    isMountedRef.current = true;
 
-  const agir = (id: string, action: ActionBrief) => {
-    const c = items.find((i) => i.id === id);
-    if (!c) return;
-    if (action === "voir_offre" && c.lien) {
-      window.open(c.lien, "_blank");
+    // Si les données de candidatures sont encore en cours de chargement initial, attendre
+    if (!ready) {
       return;
     }
-    const nba = getNextBestAction(c);
-    void navigate({
-      to: "/assistant",
-      search: { oppId: c.id, step: nba.step } as Record<string, unknown>,
-    });
+
+    // Charger immédiatement le cache si disponible pour éviter tout flash
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      if (raw) {
+        const cached: CacheEntry = JSON.parse(raw);
+        const sanitizedCached = sanitizeBriefData(cached?.brief);
+        if (
+          sanitizedCached &&
+          cached.date === currentDate &&
+          cached.hash === currentHash
+        ) {
+          setBrief(sanitizedCached);
+          lastFetchedHashRef.current = currentHash;
+          return;
+        }
+      }
+    } catch {
+      // Ignorer
+    }
+
+    // Si le hash a changé ou pas encore chargé, déclencher la génération une seule fois
+    if (lastFetchedHashRef.current !== currentHash && !loading) {
+      lastFetchedHashRef.current = currentHash;
+      executerBrief(false);
+    }
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, [currentHash, currentDate, ready]);
+
+  const handleAction = (item: BriefItem) => {
+    if (item.opportunityId) {
+      const cand = items.find((c) => c.id === item.opportunityId);
+      if (cand && onOuvrir) {
+        onOuvrir(cand);
+        return;
+      }
+    }
+
+    if (item.actionType === "view_calendar") {
+      navigate({ to: "/calendrier" });
+      return;
+    }
+
+    // Par défaut vers la page des opportunités
+    navigate({ to: "/opportunites" });
   };
 
-  const elements = brief?.elements ?? [];
-  const pages = Math.max(1, Math.ceil(elements.length / 4));
-  const visibles = elements.slice(page * 4, page * 4 + 4);
+  if (!brief && loading) {
+    return (
+      <section
+        id="daily-brief-loading"
+        className="mb-8 rounded-2xl border border-border/70 bg-card/60 p-6 backdrop-blur-sm"
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="grid size-10 place-items-center rounded-xl bg-primary/10 text-primary">
+              <RefreshCw className="size-5 animate-spin" />
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-foreground">
+                Génération de votre Daily Brief...
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                Analyse de vos opportunités, deadlines et entretiens du jour.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
-  const glisser = (sens: -1 | 1) => {
-    setPage((p) => (p + sens + pages) % pages);
-    rangee.current?.scrollTo({ left: 0, behavior: "smooth" });
-  };
+  if (!brief) return null;
+
+  const safeToday = Array.isArray(brief.today) ? brief.today : [];
+  const safeWatch = Array.isArray(brief.watch) ? brief.watch : [];
+  const safeUpcoming = Array.isArray(brief.upcoming) ? brief.upcoming : [];
+  const safeRecent = Array.isArray(brief.recent) ? brief.recent : [];
+
+  const aDesActions =
+    safeToday.length > 0 ||
+    safeWatch.length > 0 ||
+    safeUpcoming.length > 0 ||
+    safeRecent.length > 0;
 
   return (
-    <section className="mb-6">
-      <div className="mb-3 flex items-end justify-between gap-3">
+    <section
+      id="daily-brief-module"
+      className="mb-8 rounded-2xl border border-border/80 bg-card/75 p-5 shadow-sm backdrop-blur-sm sm:p-6"
+    >
+      {/* En-tête du Brief */}
+      <header className="mb-6 flex flex-col justify-between gap-3 border-b border-border/50 pb-4 sm:flex-row sm:items-center">
         <div>
-          <h2 className="text-[15px] font-bold tracking-tight">
-            Vos priorités
-          </h2>
-          <p className="mt-0.5 hidden text-xs text-muted-foreground sm:block">
-            {brief
-              ? brief.resume
-              : faits.length > 0
-                ? `${faits.length} point${faits.length > 1 ? "s" : ""} détecté${
-                    faits.length > 1 ? "s" : ""
-                  } aujourd'hui`
-                : "Aucune action urgente aujourd'hui."}
+          <div className="flex items-center gap-2">
+            <h2 className="text-lg font-bold tracking-tight text-foreground sm:text-xl">
+              {brief.greeting}
+            </h2>
+            {brief.isFallback && (
+              <span className="rounded-md border border-border/60 bg-muted/50 px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                Mode factuel
+              </span>
+            )}
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+            {brief.summary || "Voici ce qui mérite ton attention aujourd'hui."}
           </p>
         </div>
 
-        <div className="flex items-center gap-1.5">
-          {pages > 1 && (
-            <>
-              <button
-                type="button"
-                aria-label="Priorités précédentes"
-                onClick={() => glisser(-1)}
-                className="press grid size-8 place-items-center rounded-full border border-border/70 bg-card/60 text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <ChevronLeft className="size-4" />
-              </button>
-              <button
-                type="button"
-                aria-label="Priorités suivantes"
-                onClick={() => glisser(1)}
-                className="press grid size-8 place-items-center rounded-full border border-border/70 bg-card/60 text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <ChevronRight className="size-4" />
-              </button>
-            </>
+        <div className="flex items-center gap-2">
+          {errorMessage && (
+            <span className="text-xs text-amber-400/90">{errorMessage}</span>
           )}
-          <button
-            type="button"
-            aria-label={brief ? "Actualiser le brief" : "Générer mon brief"}
-            title={brief ? "Actualiser le brief" : "Générer mon brief"}
-            onClick={() => void generer()}
-            disabled={chargement || !pret || faits.length === 0}
-            className="press grid size-8 place-items-center rounded-full border border-primary/40 bg-primary/12 text-primary transition-colors hover:bg-primary/20 disabled:opacity-50"
+          <Button
+            id="daily-brief-refresh-button"
+            variant="outline"
+            size="sm"
+            disabled={loading}
+            onClick={() => executerBrief(true)}
+            className="h-8 gap-2 rounded-xl text-xs font-medium"
           >
-            {chargement ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <Sparkles className="size-4" />
-            )}
-          </button>
-        </div>
-      </div>
-
-      {erreur && (
-        <p className="mb-3 rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-          {erreur}
-        </p>
-      )}
-
-      {chargement && !brief && (
-        <div className="snap-row sm:grid sm:grid-cols-2 sm:gap-3 sm:overflow-visible lg:grid-cols-4">
-          {[0, 1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="h-[188px] w-[min(80vw,272px)] shrink-0 animate-pulse rounded-2xl border border-border/50 bg-card/40 sm:h-[212px] sm:w-auto"
+            <RefreshCw
+              className={cn("size-3.5", loading && "animate-spin text-primary")}
             />
-          ))}
+            {loading ? "Actualisation..." : "Actualiser le Brief"}
+          </Button>
         </div>
-      )}
+      </header>
 
-      {!chargement && !brief && faits.length === 0 && (
-        <div className="glass-card flex items-center gap-3 p-5 text-sm text-muted-foreground">
-          <span className="tone-chip size-9 shrink-0">
-            <Sparkles className="size-4" />
-          </span>
-          Rien d'urgent aujourd'hui. Ajoutez une candidature pour alimenter
-          votre brief.
-        </div>
-      )}
-
-      {visibles.length > 0 && (
+      {/* État "Rien à faire" */}
+      {!aDesActions ? (
         <div
-          ref={rangee}
-          className="snap-row sm:grid sm:grid-cols-2 sm:gap-3 sm:overflow-visible lg:grid-cols-4"
+          id="daily-brief-empty-state"
+          className="flex flex-col items-center justify-center py-8 text-center"
         >
-          {visibles.map((e, i) => (
-            <CartePriorite
-              key={e.id + e.categorie}
-              element={e}
-              index={i}
-              actif={i === 0}
-              onAgir={() => agir(e.id, e.action)}
-            />
-          ))}
+          <div className="mb-3 grid size-12 place-items-center rounded-2xl border border-primary/20 bg-primary/10 text-primary">
+            <CheckCircle2 className="size-6" />
+          </div>
+          <h3 className="text-base font-semibold text-foreground">
+            Tout est à jour.
+          </h3>
+          <p className="mt-1 max-w-sm text-xs text-muted-foreground sm:text-sm">
+            Aucune action urgente aujourd'hui. Vos candidatures et relances sont
+            parfaitement en ordre.
+          </p>
         </div>
-      )}
+      ) : (
+        <div className="space-y-6">
+          {/* SECTION 1 : À FAIRE AUJOURD'HUI */}
+          {safeToday.length > 0 && (
+            <div id="daily-brief-section-today">
+              <div className="mb-3 flex items-center gap-2">
+                <span className="grid size-5 place-items-center rounded-md bg-destructive/15 text-destructive">
+                  <AlertTriangle className="size-3" />
+                </span>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  À faire aujourd'hui ({safeToday.length})
+                </h3>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {safeToday.map((item) => {
+                  const Icon = getItemIcon(item.type);
+                  return (
+                    <article
+                      key={item.id}
+                      className="group relative flex flex-col justify-between rounded-xl border border-border/80 bg-background/60 p-4 transition-all hover:border-primary/40 hover:bg-background/90 hover:shadow-md"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                            <Icon className="size-3.5 text-primary" />
+                            <span className="truncate">{item.company}</span>
+                          </span>
+                          {item.dateContext && (
+                            <span
+                              className={cn(
+                                "rounded-md border px-2 py-0.5 text-[10px] font-bold tracking-tight",
+                                getPriorityBadge(item.priority),
+                              )}
+                            >
+                              {item.dateContext}
+                            </span>
+                          )}
+                        </div>
 
-      {pages > 1 && (
-        <div className="mt-3 flex justify-center gap-1.5">
-          {Array.from({ length: pages }).map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              aria-label={`Page ${i + 1}`}
-              onClick={() => setPage(i)}
-              className={cn(
-                "h-1.5 rounded-full transition-all",
-                i === page ? "w-6 bg-primary" : "w-1.5 bg-border",
-              )}
-            />
-          ))}
+                        <h4 className="mt-2 text-sm font-bold leading-snug tracking-tight text-foreground">
+                          {item.title}
+                        </h4>
+
+                        <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                          {item.message}
+                        </p>
+                      </div>
+
+                      <div className="mt-4 pt-2">
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => handleAction(item)}
+                          className="h-7 w-full justify-center gap-1.5 rounded-lg text-xs font-medium"
+                        >
+                          <Eye className="size-3.5" />
+                          {item.actionLabel || "Voir l'opportunité"}
+                        </Button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 2 : À SURVEILLER */}
+          {safeWatch.length > 0 && (
+            <div id="daily-brief-section-watch">
+              <div className="mb-3 flex items-center gap-2">
+                <span className="grid size-5 place-items-center rounded-md bg-warning/15 text-warning">
+                  <Clock className="size-3" />
+                </span>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  À surveiller ({safeWatch.length})
+                </h3>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {safeWatch.map((item) => {
+                  const Icon = getItemIcon(item.type);
+                  return (
+                    <article
+                      key={item.id}
+                      className="group relative flex flex-col justify-between rounded-xl border border-border/70 bg-background/50 p-4 transition-all hover:border-warning/40 hover:bg-background/80"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                            <Icon className="size-3.5 text-warning" />
+                            <span className="truncate">{item.company}</span>
+                          </span>
+                          {item.dateContext && (
+                            <span className="rounded-md border border-warning/30 bg-warning/10 px-2 py-0.5 text-[10px] font-bold text-warning">
+                              {item.dateContext}
+                            </span>
+                          )}
+                        </div>
+
+                        <h4 className="mt-2 text-sm font-semibold leading-snug tracking-tight text-foreground">
+                          {item.title}
+                        </h4>
+
+                        <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                          {item.message}
+                        </p>
+                      </div>
+
+                      <div className="mt-4 pt-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAction(item)}
+                          className="h-7 w-full justify-center gap-1.5 rounded-lg text-xs font-medium"
+                        >
+                          <Eye className="size-3.5" />
+                          {item.actionLabel || "Voir l'opportunité"}
+                        </Button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 3 : À VENIR */}
+          {safeUpcoming.length > 0 && (
+            <div id="daily-brief-section-upcoming">
+              <div className="mb-3 flex items-center gap-2">
+                <span className="grid size-5 place-items-center rounded-md bg-success/15 text-success">
+                  <CalendarDays className="size-3" />
+                </span>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  À venir ({safeUpcoming.length})
+                </h3>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {safeUpcoming.map((item) => {
+                  const Icon = getItemIcon(item.type);
+                  return (
+                    <article
+                      key={item.id}
+                      className="group relative flex flex-col justify-between rounded-xl border border-border/70 bg-background/50 p-4 transition-all hover:border-success/40 hover:bg-background/80"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                            <Icon className="size-3.5 text-success" />
+                            <span className="truncate">{item.company}</span>
+                          </span>
+                          {item.dateContext && (
+                            <span className="rounded-md border border-success/30 bg-success/10 px-2 py-0.5 text-[10px] font-bold text-success">
+                              {item.dateContext}
+                            </span>
+                          )}
+                        </div>
+
+                        <h4 className="mt-2 text-sm font-semibold leading-snug tracking-tight text-foreground">
+                          {item.title}
+                        </h4>
+
+                        <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                          {item.message}
+                        </p>
+                      </div>
+
+                      <div className="mt-4 pt-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAction(item)}
+                          className="h-7 w-full justify-center gap-1.5 rounded-lg text-xs font-medium"
+                        >
+                          <CalendarDays className="size-3.5" />
+                          {item.actionLabel || "Voir le calendrier"}
+                        </Button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 4 : ACTIVITÉ RÉCENTE */}
+          {safeRecent.length > 0 && (
+            <div id="daily-brief-section-recent">
+              <div className="mb-3 flex items-center gap-2">
+                <span className="grid size-5 place-items-center rounded-md bg-primary/15 text-primary">
+                  <Sparkles className="size-3" />
+                </span>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Activité récente ({safeRecent.length})
+                </h3>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {safeRecent.map((item) => {
+                  const Icon = getItemIcon(item.type);
+                  return (
+                    <article
+                      key={item.id}
+                      className="group relative flex flex-col justify-between rounded-xl border border-border/70 bg-background/40 p-4 transition-all hover:border-primary/40 hover:bg-background/70"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                            <Icon className="size-3.5 text-primary" />
+                            <span className="truncate">{item.company}</span>
+                          </span>
+                          {item.dateContext && (
+                            <span className="rounded-md border border-border/60 bg-muted/40 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                              {item.dateContext}
+                            </span>
+                          )}
+                        </div>
+
+                        <h4 className="mt-2 text-sm font-semibold leading-snug tracking-tight text-foreground">
+                          {item.title}
+                        </h4>
+
+                        <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+                          {item.message}
+                        </p>
+                      </div>
+
+                      <div className="mt-4 pt-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleAction(item)}
+                          className="h-7 w-full justify-center gap-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground"
+                        >
+                          <Eye className="size-3.5" />
+                          {item.actionLabel || "Voir l'opportunité"}
+                        </Button>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
-      )}
-
-      {brief && brief.recommandations.length > 0 && (
-        <details className="glass-card mt-3 hidden p-3 sm:block">
-          <summary className="cursor-pointer list-none text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground transition-colors hover:text-foreground">
-            Recommandations ({brief.recommandations.length})
-          </summary>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-            {brief.recommandations.map((r) => (
-              <li key={r}>{r}</li>
-            ))}
-          </ul>
-        </details>
-      )}
-
-      {brief?.repli && (
-        <p className="mt-2 text-xs text-muted-foreground">
-          Brief factuel généré sans IA.
-        </p>
       )}
     </section>
   );

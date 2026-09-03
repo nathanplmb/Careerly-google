@@ -219,19 +219,19 @@ export function mappingAutoCandidature(colonnes: string[]): Mapping {
 }
 
 const ALIAS_STATUT: { mots: string[]; statut: Statut }[] = [
-  { mots: ["entretien", "interview", "rdv"], statut: "J'ai un entretien" },
-  { mots: ["relance", "relancé", "follow"], statut: "J'ai relancé" },
+  { mots: ["entretien", "interview", "rdv"], statut: "Entretien" },
+  { mots: ["relance", "relancé", "follow"], statut: "Relancée" },
   {
     mots: ["refus", "negati", "rejet", "ko", "decline"],
-    statut: "J'ai reçu une réponse négative",
+    statut: "Refusée",
   },
   {
     mots: ["sans reponse", "aucune reponse", "no answer", "attente", "pending"],
-    statut: "Je n'ai pas reçu de réponse",
+    statut: "Sans réponse",
   },
   {
     mots: ["postul", "envoy", "applied", "candidature envoyee"],
-    statut: "J'ai postulé",
+    statut: "Candidature envoyée",
   },
   {
     mots: [
@@ -242,18 +242,18 @@ const ALIAS_STATUT: { mots: string[]; statut: Statut }[] = [
       "wishlist",
       "interesse",
     ],
-    statut: "Je vais postuler",
+    statut: "À candidater",
   },
 ];
 
 export function normaliserStatut(valeur: string): Statut {
   const v = normaliser(valeur);
-  if (!v) return "Je vais postuler";
+  if (!v) return "À candidater";
   const exact = STATUTS.find((s) => normaliser(s) === v);
   if (exact) return exact;
   for (const a of ALIAS_STATUT)
     if (a.mots.some((m) => v.includes(normaliser(m)))) return a.statut;
-  return "Je vais postuler";
+  return "À candidater";
 }
 
 export function ligneVersCandidature(

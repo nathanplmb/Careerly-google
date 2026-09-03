@@ -193,7 +193,11 @@ export function cvObsolete(cv: CvEtat | null | undefined): boolean {
   return hashTexte(cv.texte) !== cv.hash;
 }
 
-export function niveauCV(score: number): { label: string; badge: string; color: string } {
+export function niveauCV(score: number): {
+  label: string;
+  badge: string;
+  color: string;
+} {
   if (score >= 80)
     return {
       label: "Excellent CV",
@@ -229,4 +233,3 @@ export function labelPriorite(p: CorrectionCV["priorite"]): string {
 
 export const MENTION_CV =
   "Analyse générée par le CV Intelligence Engine de NACORA à partir de vos données réelles. Vérifiez toujours les suggestions avant de les appliquer.";
-

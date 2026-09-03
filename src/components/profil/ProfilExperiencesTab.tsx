@@ -140,9 +140,9 @@ export function ProfilExperiencesTab({ profil, onChange }: Props) {
             exp.poste || exp.entreprise || `Expérience #${idx + 1}`;
           const sousTitre = [
             exp.entreprise,
-            exp.typeContrat || "Stage",
+            exp.typeContrat || exp.contrat || "Stage",
             exp.periode || (exp.enCours ? "En cours" : ""),
-            exp.ville,
+            exp.ville || exp.lieu,
           ]
             .filter(Boolean)
             .join(" • ");
@@ -242,9 +242,12 @@ export function ProfilExperiencesTab({ profil, onChange }: Props) {
                         Type de contrat
                       </Label>
                       <Input
-                        value={exp.typeContrat || "Stage"}
+                        value={exp.typeContrat || exp.contrat || "Stage"}
                         onChange={(e) =>
-                          handleModifier(idx, { typeContrat: e.target.value })
+                          handleModifier(idx, {
+                            typeContrat: e.target.value,
+                            contrat: e.target.value,
+                          })
                         }
                         placeholder="Ex : Stage, Alternance, CDI, Projet..."
                       />
@@ -255,9 +258,12 @@ export function ProfilExperiencesTab({ profil, onChange }: Props) {
                         Ville / Lieu
                       </Label>
                       <Input
-                        value={exp.ville || ""}
+                        value={exp.ville || exp.lieu || ""}
                         onChange={(e) =>
-                          handleModifier(idx, { ville: e.target.value })
+                          handleModifier(idx, {
+                            ville: e.target.value,
+                            lieu: e.target.value,
+                          })
                         }
                         placeholder="Ex : Paris, Lyon, Londres, Remote..."
                       />
@@ -350,9 +356,10 @@ export function ProfilExperiencesTab({ profil, onChange }: Props) {
                       des virgules)
                     </Label>
                     <Input
-                      value={(exp.technologies || []).join(", ")}
+                      value={((exp as any).technologies || []).join(", ")}
                       onChange={(e) =>
                         handleModifier(idx, {
+                          // @ts-ignore
                           technologies: e.target.value
                             .split(",")
                             .map((s) => s.trim())

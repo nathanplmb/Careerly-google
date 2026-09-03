@@ -72,7 +72,8 @@ const SECTION_PATTERNS: SectionHeaderPattern[] = [
   },
   {
     type: "OBJECTIF",
-    regex: /^(?:objectif(?:\s+professionnel)?|projet\s+professionnel|career\s+objective)\b/i,
+    regex:
+      /^(?:objectif(?:\s+professionnel)?|projet\s+professionnel|career\s+objective)\b/i,
     weight: 7,
   },
   // Contact
@@ -111,13 +112,21 @@ export function detectSections(doc: DocumentStructure): DetectedSection[] {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (!line.text || line.text.length > 60) continue;
+    if (
+      !(line ? line.text : "") ||
+      "" ||
+      (line ? line.text : "") ||
+      "".length > 60
+    )
+      continue;
 
     // Élimine les puces ou bullets
-    const cleanHeader = line.text
-      .replace(/^[\s•\-\*–—#]+/, "")
-      .replace(/[:：]$/, "")
-      .trim();
+    const cleanHeader =
+      (line ? line.text : "") ||
+      ""
+        .replace(/^[\s•\-\*–—#]+/, "")
+        .replace(/[:：]$/, "")
+        .trim();
 
     if (!cleanHeader) continue;
 
@@ -131,7 +140,7 @@ export function detectSections(doc: DocumentStructure): DetectedSection[] {
             type: pattern.type,
             rawHeader: cleanHeader,
             lineIndex: i,
-            pageNumber: line.pageNumber,
+            pageNumber: (line ? line.pageNumber : 1) ?? undefined,
             confidence: pattern.weight / 10,
           });
           break;
@@ -157,9 +166,9 @@ export function detectSections(doc: DocumentStructure): DetectedSection[] {
     return result;
   }
 
-  if (detectedHeaders[0].lineIndex > 0) {
+  if ((detectedHeaders[0]?.lineIndex || 0) > 0) {
     const headerLines = lines
-      .slice(0, detectedHeaders[0].lineIndex)
+      .slice(0, detectedHeaders[0]?.lineIndex || 0)
       .map((l) => l.text)
       .filter(Boolean);
     if (headerLines.length > 0) {
@@ -169,7 +178,7 @@ export function detectSections(doc: DocumentStructure): DetectedSection[] {
         confidence: 0.9,
         lines: headerLines,
         startIndex: 0,
-        endIndex: detectedHeaders[0].lineIndex - 1,
+        endIndex: (detectedHeaders[0]?.lineIndex || 0) - 1,
         pageNumber: 1,
       });
     }
@@ -178,7 +187,7 @@ export function detectSections(doc: DocumentStructure): DetectedSection[] {
   for (let i = 0; i < detectedHeaders.length; i++) {
     const header = detectedHeaders[i];
     const nextHeader = detectedHeaders[i + 1];
-    const startIndex = header.lineIndex + 1;
+    const startIndex = (header ? header.lineIndex : 0) || 0 + 1;
     const endIndex = nextHeader ? nextHeader.lineIndex - 1 : lines.length - 1;
 
     const sectionLines = lines
@@ -187,13 +196,13 @@ export function detectSections(doc: DocumentStructure): DetectedSection[] {
       .filter(Boolean);
 
     result.push({
-      type: header.type,
-      rawHeader: header.rawHeader,
-      confidence: header.confidence,
+      type: (header ? header.type : "AUTRES") || "AUTRES",
+      rawHeader: (header ? header.rawHeader : "") || "",
+      confidence: (header ? header.confidence : 0) || 0,
       lines: sectionLines,
       startIndex,
       endIndex,
-      pageNumber: header.pageNumber,
+      pageNumber: header?.pageNumber ?? undefined,
     });
   }
 

@@ -8,6 +8,8 @@ import {
   FileCode,
   Eye,
   CheckCircle2,
+  UploadCloud,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,16 +17,17 @@ import { toast } from "sonner";
 import type { Profil } from "@/lib/profil";
 import { cvStructureEnTexte, normaliserCvStructure } from "@/lib/cv-structure";
 import { CvBuilder } from "@/components/CvBuilder";
+import { CvImporter } from "@/components/cv-import/CvImporter";
 
 type Props = {
   profil: Profil;
   onChange: (patch: Partial<Profil>) => void;
-  onOpenCvModal: () => void;
 };
 
-export function ProfilDocumentsTab({ profil, onChange, onOpenCvModal }: Props) {
+export function ProfilDocumentsTab({ profil, onChange }: Props) {
   const [modeVue, setModeVue] = useState<"editeur" | "texte">("editeur");
   const [copie, setCopie] = useState(false);
+  const [showImporter, setShowImporter] = useState(false);
 
   const cv = normaliserCvStructure(profil.cvStructure);
   const texteCv = cvStructureEnTexte(cv);
@@ -64,25 +67,24 @@ export function ProfilDocumentsTab({ profil, onChange, onOpenCvModal }: Props) {
           </div>
           <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
             <Sparkles className="size-4 text-purple-400" />
-            CV Structuré & Export de données
+            CV Structuré & Import / Export
           </h3>
           <p className="text-xs text-muted-foreground max-w-xl">
-            Importez un CV existant pour extraire automatiquement les
-            informations ou téléchargez votre profil pour l'utiliser sur
-            d'autres plateformes.
+            Importez un CV existant (PDF, Word ou texte collé) pour extraire
+            automatiquement et fidèlement toutes vos informations dans votre
+            profil NACORA.
           </p>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
           <Button
             size="sm"
-            onClick={onOpenCvModal}
-            className="gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-xs"
+            onClick={() => setShowImporter(true)}
+            className="gap-1.5 bg-purple-600 hover:bg-purple-500 text-white text-xs shadow-sm shadow-purple-600/30"
           >
-            <FileText className="size-4" />
-            Importer un CV (PDF / Word)
+            <UploadCloud className="size-3.5" />
+            Importer un CV
           </Button>
-
           <Button
             size="sm"
             variant="outline"
@@ -94,6 +96,45 @@ export function ProfilDocumentsTab({ profil, onChange, onOpenCvModal }: Props) {
           </Button>
         </div>
       </div>
+
+      {/* Panneau d'importation CV */}
+      {showImporter && (
+        <div className="glass-card p-6 border-purple-500/40 bg-card/95 shadow-xl relative animate-in fade-in slide-in-from-top-4">
+          <div className="flex justify-between items-center mb-4 pb-3 border-b border-border/50">
+            <div className="flex items-center gap-2">
+              <span className="flex size-7 rounded-lg bg-purple-500/20 text-purple-400 items-center justify-center">
+                <UploadCloud className="size-4" />
+              </span>
+              <div>
+                <h3 className="text-sm font-bold text-foreground">
+                  Module CV Importer IA
+                </h3>
+                <p className="text-[11px] text-muted-foreground">
+                  Extraction exhaustive sans perte, compatible PDF, DOCX et
+                  texte.
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowImporter(false)}
+              className="size-8 text-muted-foreground hover:text-foreground"
+            >
+              <X className="size-4" />
+            </Button>
+          </div>
+
+          <CvImporter
+            existingProfil={profil}
+            onImportComplete={(patch) => {
+              onChange(patch);
+              setShowImporter(false);
+            }}
+            onCancel={() => setShowImporter(false)}
+          />
+        </div>
+      )}
 
       {/* Switcher Editeur Rapide / Vue Texte IA */}
       <div className="flex items-center justify-between">

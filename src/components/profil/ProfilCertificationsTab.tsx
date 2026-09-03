@@ -115,7 +115,7 @@ export function ProfilCertificationsTab({ profil, onChange }: Props) {
           <div className="flex flex-wrap gap-1.5">
             {SUGGESTIONS_CERTIFS.map((sug) => {
               const alreadyAdded = certifs.some(
-                (c) => c.nom.toLowerCase() === sug.toLowerCase(),
+                (c) => c.nom || "".toLowerCase() === sug.toLowerCase(),
               );
               return (
                 <button
@@ -232,7 +232,7 @@ export function ProfilCertificationsTab({ profil, onChange }: Props) {
                       <Award className="size-3.5" />
                     </div>
                     <span className="text-xs font-bold text-foreground">
-                      {c.nom}
+                      {c.nom || ""}
                     </span>
                   </div>
 
@@ -246,7 +246,7 @@ export function ProfilCertificationsTab({ profil, onChange }: Props) {
                   </Button>
                 </div>
 
-                <div className="space-y-1 text-xs text-muted-foreground">
+                <div className="space-y-1.5 text-xs text-muted-foreground">
                   {c.organisme && (
                     <p className="flex items-center gap-1.5">
                       <Building className="size-3 text-muted-foreground/70" />
@@ -258,6 +258,17 @@ export function ProfilCertificationsTab({ profil, onChange }: Props) {
                       <Calendar className="size-3 text-muted-foreground/70" />
                       <span>Obtenu en : {c.date}</span>
                     </p>
+                  )}
+                  {c.score && (
+                    <div className="flex items-center gap-1.5 text-xs text-purple-300 font-semibold bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20 w-fit">
+                      <span>Score obtenu : {c.score}</span>
+                      {c.niveau && <span>({c.niveau})</span>}
+                    </div>
+                  )}
+                  {!c.score && c.niveau && (
+                    <div className="flex items-center gap-1.5 text-xs text-cyan-300 font-medium">
+                      <span>Niveau attesté : {c.niveau}</span>
+                    </div>
                   )}
                   {c.identifiant && (
                     <p className="text-[11px] font-mono text-purple-300">

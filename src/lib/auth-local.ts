@@ -146,7 +146,8 @@ export function inscrireUtilisateurLocal(opts: {
     prenom:
       opts.prenom?.trim() ||
       existant?.prenom ||
-      propre.split("@")[0].split(".")[0],
+      (propre.split("@")[0] || "").split(".")[0] ||
+      "",
     nom: opts.nom?.trim() || existant?.nom || "",
     ecole: opts.ecole?.trim() || existant?.ecole || "",
     motDePasseHash: opts.motDePasse ? btoa(opts.motDePasse) : undefined,

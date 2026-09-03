@@ -21,27 +21,24 @@ import {
 const NIVEAUX_LANGUES: { value: NiveauLangue; label: string; desc: string }[] =
   [
     { value: "Langue maternelle", label: "Langue maternelle", desc: "Natif" },
+    { value: "C2", label: "C2 (Bilingue)", desc: "Aisance totale et fluide" },
     {
-      value: "Bilingue",
-      label: "Bilingue (C2)",
-      desc: "Aisance totale et fluide",
-    },
-    {
-      value: "Courant",
-      label: "Courant (C1)",
+      value: "C1",
+      label: "C1 (Courant)",
       desc: "Capacité à négocier et travailler",
     },
     {
-      value: "Professionnel",
-      label: "Professionnel (B2)",
+      value: "B2",
+      label: "B2 (Professionnel)",
       desc: "Autonomie en réunion et à l'écrit",
     },
     {
-      value: "Intermédiaire",
-      label: "Intermédiaire (B1)",
+      value: "B1",
+      label: "B1 (Intermédiaire)",
       desc: "Compréhension et échanges simples",
     },
-    { value: "Notions", label: "Notions (A2/A1)", desc: "Bases élémentaires" },
+    { value: "A2", label: "A2 (Élémentaire)", desc: "Bases élémentaires" },
+    { value: "A1", label: "A1 (Débutant)", desc: "Premières notions" },
   ];
 
 const SUGGESTIONS_LANGUES = [
@@ -67,7 +64,7 @@ export function ProfilLanguagesTab({ profil, onChange }: Props) {
   const langues = cv?.langues || [];
 
   const [nouvelleLangueNom, setNouvelleLangueNom] = useState("");
-  const [nouveauNiveau, setNouveauNiveau] = useState<NiveauLangue>("Courant");
+  const [nouveauNiveau, setNouveauNiveau] = useState<NiveauLangue>("B2");
   const [nouvelleCertif, setNouvelleCertif] = useState("");
   const [nouveauScore, setNouveauScore] = useState("");
 
@@ -257,10 +254,25 @@ export function ProfilLanguagesTab({ profil, onChange }: Props) {
                     {l.niveau}
                   </Badge>
                 </div>
-                {l.score && (
-                  <span className="text-xs text-purple-300 block font-medium">
-                    🏆 {l.score}
-                  </span>
+                {(l.certification || l.score || l.attestation) && (
+                  <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                    {l.certification && (
+                      <span className="text-[11px] text-purple-300 font-medium bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20">
+                        {l.certification}
+                        {l.score ? ` : ${l.score}` : ""}
+                      </span>
+                    )}
+                    {!l.certification && l.score && (
+                      <span className="text-[11px] text-purple-300 font-medium">
+                        🏆 {l.score}
+                      </span>
+                    )}
+                    {l.attestation && (
+                      <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                        ✓ {l.attestation}
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
 

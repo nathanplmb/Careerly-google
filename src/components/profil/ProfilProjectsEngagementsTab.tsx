@@ -19,7 +19,7 @@ import {
   nouveauBenevolat,
   nouveauProjet,
   type CvBenevolat,
-  type CvDistinction,
+  type DistinctionCV,
   type CvProjet,
 } from "@/lib/cv-structure";
 
@@ -52,7 +52,7 @@ export function ProfilProjectsEngagementsTab({ profil, onChange }: Props) {
     });
   };
 
-  const updateDistinctions = (nouv: CvDistinction[]) => {
+  const updateDistinctions = (nouv: DistinctionCV[]) => {
     onChange({
       cvStructure: {
         ...cv,
@@ -132,9 +132,9 @@ export function ProfilProjectsEngagementsTab({ profil, onChange }: Props) {
             >
               <div className="flex items-center justify-between gap-2">
                 <Input
-                  value={p.titre}
+                  value={p.nom || ""}
                   onChange={(e) =>
-                    handleModifierProjet(p.id, { titre: e.target.value })
+                    handleModifierProjet(p.id, { nom: e.target.value })
                   }
                   placeholder="Nom du projet (ex: Lancement d'un e-commerce, Hackathon IA...)"
                   className="text-xs font-semibold"
@@ -167,11 +167,39 @@ export function ProfilProjectsEngagementsTab({ profil, onChange }: Props) {
                   className="text-xs"
                 />
                 <Input
-                  value={p.url || ""}
+                  value={p.lien || ""}
                   onChange={(e) =>
-                    handleModifierProjet(p.id, { url: e.target.value })
+                    handleModifierProjet(p.id, { lien: e.target.value })
                   }
                   placeholder="Lien / Demo (ex: github.com/...)"
+                  className="text-xs"
+                />
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Input
+                  value={p.contexte || ""}
+                  onChange={(e) =>
+                    handleModifierProjet(p.id, { contexte: e.target.value })
+                  }
+                  placeholder="Cadre / Contexte (ex: BUT Techniques de Commercialisation...)"
+                  className="text-xs"
+                />
+                <Input
+                  value={(p.technologies || p.outils || []).join(", ")}
+                  onChange={(e) =>
+                    handleModifierProjet(p.id, {
+                      technologies: e.target.value
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean),
+                      outils: e.target.value
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean),
+                    })
+                  }
+                  placeholder="Technologies & outils (ex: Canva, CapCut...)"
                   className="text-xs"
                 />
               </div>
@@ -270,6 +298,30 @@ export function ProfilProjectsEngagementsTab({ profil, onChange }: Props) {
                 />
               </div>
 
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Input
+                  value={b.equipe || ""}
+                  onChange={(e) =>
+                    handleModifierBenevolat(b.id, { equipe: e.target.value })
+                  }
+                  placeholder="Équipe / Management (ex: Management 24 membres)"
+                  className="text-xs"
+                />
+                <Input
+                  value={(b.outils || []).join(", ")}
+                  onChange={(e) =>
+                    handleModifierBenevolat(b.id, {
+                      outils: e.target.value
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean),
+                    })
+                  }
+                  placeholder="Outils mobilisés (ex: Canva, Premiere...)"
+                  className="text-xs"
+                />
+              </div>
+
               <Textarea
                 rows={2}
                 value={b.description || ""}
@@ -302,12 +354,12 @@ export function ProfilProjectsEngagementsTab({ profil, onChange }: Props) {
         </div>
 
         <Input
-          value={(cv?.centresInteret || []).join(", ")}
+          value={(cv?.interets || []).join(", ")}
           onChange={(e) =>
             onChange({
               cvStructure: {
                 ...cv,
-                centresInteret: e.target.value
+                interets: e.target.value
                   .split(",")
                   .map((s) => s.trim())
                   .filter(Boolean),

@@ -64,7 +64,6 @@ export type Profil = {
   cvStructure: CvStructure;
   cv?: CvEtat | null;
   preferences?: Partial<PreferencesCandidature>;
-  syntheseIa?: SyntheseProfilIA | null;
 };
 
 export const PROFIL_STORAGE_KEY = "neoma-profil-v1";
@@ -118,7 +117,6 @@ export function emptyProfil(): Profil {
     cvStructure: emptyCvStructure(),
     cv: null,
     preferences: defaultPreferences(),
-    syntheseIa: null,
   };
 }
 
@@ -169,9 +167,9 @@ export function saveProfilLocal(p: Profil) {
     telephone: p.telephone || p.cvStructure.telephone,
     linkedin: p.linkedin || p.cvStructure.linkedin,
     portfolio: p.portfolio || p.cvStructure.portfolio,
-    github: p.github || p.cvStructure.github,
+    github: p.github || p.cvStructure.github || "",
     permis: p.permis || p.cvStructure.permis,
-    photoUrl: p.photoUrl || p.cvStructure.photoUrl,
+    photoUrl: p.photoUrl || p.cvStructure.photoUrl || "",
     ville: p.localisation || p.cvStructure.ville,
   });
 

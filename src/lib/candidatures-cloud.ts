@@ -16,6 +16,7 @@ import {
   type Preparation,
   type PrioriteChoix,
 } from "./candidatures";
+import type { WorkflowEvent, WorkflowStepKey } from "./workflow";
 
 type Row = {
   id: string;
@@ -37,6 +38,15 @@ type Row = {
   archive?: boolean | null;
   match?: unknown;
   preparation?: unknown;
+  current_workflow_step?: string | null;
+  workflow_events?: unknown;
+  saved_at?: string | null;
+  prepared_at?: string | null;
+  interview_date?: string | null;
+  second_interview_date?: string | null;
+  offer_received_at?: string | null;
+  accepted_at?: string | null;
+  rejected_at?: string | null;
 };
 
 function toCandidature(r: Row): Candidature {
@@ -49,11 +59,28 @@ function toCandidature(r: Row): Candidature {
     ...emptyPreparation(),
     ...(prepRaw as Partial<Preparation>),
   };
+  const rawObj = r as Record<string, unknown>;
+  const rawEvents = (r.workflow_events ||
+    rawObj.workflowEvents ||
+    []) as WorkflowEvent[];
+  const rawStep = (r.current_workflow_step ||
+    rawObj.currentWorkflowStep) as WorkflowStepKey;
+
   return normalizeCandidature({
     id: r.id,
     entreprise: r.entreprise ?? "",
     poste: r.poste ?? "",
     statut: r.statut,
+    currentWorkflowStep: rawStep,
+    workflowEvents: Array.isArray(rawEvents) ? rawEvents : undefined,
+    savedAt: (r.saved_at ?? rawObj.savedAt) as string,
+    preparedAt: (r.prepared_at ?? rawObj.preparedAt) as string,
+    interviewDate: (r.interview_date ?? rawObj.interviewDate) as string,
+    secondInterviewDate: (r.second_interview_date ??
+      rawObj.secondInterviewDate) as string,
+    offerReceivedAt: (r.offer_received_at ?? rawObj.offerReceivedAt) as string,
+    acceptedAt: (r.accepted_at ?? rawObj.acceptedAt) as string,
+    rejectedAt: (r.rejected_at ?? rawObj.rejectedAt) as string,
     lieu: r.lieu ?? "",
     lien: r.lien ?? "",
     contact: r.contact ?? "",
@@ -62,9 +89,9 @@ function toCandidature(r: Row): Candidature {
     dateDernierContact: r.date_dernier_contact ?? "",
     dateLimite: r.date_limite ?? "",
     commentaire: r.commentaire ?? "",
-    missions: (prepRaw.missions as string) ?? "",
-    profilRecherche: (prepRaw.profilRecherche as string) ?? "",
-    modalites: (prepRaw.modalites as string) ?? "",
+    missions: (prepRaw["missions"] as string) ?? "",
+    profilRecherche: (prepRaw["profilRecherche"] as string) ?? "",
+    modalites: (prepRaw["modalites"] as string) ?? "",
     detail: r.detail ?? "",
     priorite: (r.priorite as PrioriteChoix) || "auto",
     source: r.source ?? "",
@@ -104,11 +131,19 @@ function toRow(c: Candidature, userId: string) {
     match: (c.match ?? {}) as never,
     preparation: {
       ...c.preparation,
-      missions: c.missions,
-      profilRecherche: c.profilRecherche,
-      modalites: c.modalites,
+      missions: c["missions"],
+      profilRecherche: c["profilRecherche"],
+      modalites: c["modalites"],
     } as never,
-    updatedAt: new Date().toISOString(),
+    current_workflow_step: c.currentWorkflowStep || null,
+    workflow_events: c.workflowEvents || [],
+    saved_at: c.savedAt || null,
+    prepared_at: c.preparedAt || null,
+    interview_date: c.interviewDate || null,
+    second_interview_date: c.secondInterviewDate || null,
+    offer_received_at: c.offerReceivedAt || null,
+    accepted_at: c.acceptedAt || null,
+    rejected_at: c.rejectedAt || null,
   };
 }
 

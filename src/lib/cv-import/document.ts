@@ -1,27 +1,11 @@
 import type { DocumentStructure, DocumentPage, TextBlockItem } from "./types";
+import { initPolyfills, patchReadableStreamInstance } from "@/lib/polyfills";
 
 export const ACCEPTED_CV_TYPES = ".pdf,.docx,.txt,.md,.rtf";
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
 
 export async function readCVDocument(file: File): Promise<DocumentStructure> {
-  // Polyfill pour les environnements où ReadableStream n'a pas [Symbol.asyncIterator]
-  if (
-    typeof ReadableStream !== "undefined" &&
-    !ReadableStream.prototype[Symbol.asyncIterator]
-  ) {
-    ReadableStream.prototype[Symbol.asyncIterator] = async function* () {
-      const reader = this.getReader();
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) return;
-          yield value;
-        }
-      } finally {
-        reader.releaseLock();
-      }
-    };
-  }
+  initPolyfills();
 
   const fileName = file.name || "document";
   const fileSize = file.size;
@@ -31,7 +15,9 @@ export async function readCVDocument(file: File): Promise<DocumentStructure> {
     throw new Error("Ce fichier est vide.");
   }
   if (fileSize > MAX_FILE_SIZE) {
-    throw new Error("Ce fichier dépasse 20 Mo. Veuillez utiliser un fichier plus léger.");
+    throw new Error(
+      "Ce fichier dépasse 20 Mo. Veuillez utiliser un fichier plus léger.",
+    );
   }
 
   let fileType: DocumentStructure["fileType"] = "autre";
@@ -98,6 +84,22 @@ async function readPdfDocument(
 
   for (let i = 1; i <= doc.numPages; i++) {
     const page = await doc.getPage(i);
+
+    const origStreamTextContent = (
+      page as unknown as { streamTextContent?: (...args: unknown[]) => unknown }
+    ).streamTextContent;
+    if (typeof origStreamTextContent === "function") {
+      (
+        page as unknown as {
+          streamTextContent: (...args: unknown[]) => unknown;
+        }
+      ).streamTextContent = function (...args: unknown[]) {
+        const stream = origStreamTextContent.apply(this, args);
+        patchReadableStreamInstance(stream);
+        return stream;
+      };
+    }
+
     const content = await page.getTextContent();
 
     const items: TextBlockItem[] = [];
@@ -200,14 +202,17 @@ async function readPdfDocument(
     });
   }
 
-  const plainText = pages.map((p) => p.text).join("\n\n").trim();
+  const plainText = pages
+    .map((p) => p.text)
+    .join("\n\n")
+    .trim();
   return { pages, plainText };
 }
 
 async function readDocxDocument(
   file: File,
 ): Promise<{ pages: DocumentPage[]; plainText: string }> {
-  const mammoth = await import("mammoth/mammoth.browser.js");
+  const mammoth = await import("mammoth/mammoth.browser.js" as any);
   const buffer = await file.arrayBuffer();
   const res = await (
     mammoth as unknown as {

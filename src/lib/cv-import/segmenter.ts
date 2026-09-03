@@ -1,8 +1,4 @@
-import type {
-  DetectedSection,
-  RawEntityBlock,
-  SegmentedBlocks,
-} from "./types";
+import type { DetectedSection, RawEntityBlock, SegmentedBlocks } from "./types";
 
 const DATE_RANGE_REGEX =
   /(?:(?:janv|f[eé]vr|mars|avr|mai|juin|juil|ao[uû]t|sept|oct|nov|d[eé]c)\.?\s*\d{4}|\d{4})\s*(?:[–—\-\/]|(?:[aà]|au)\s*)\s*(?:(?:janv|f[eé]vr|mars|avr|mai|juin|juil|ao[uû]t|sept|oct|nov|d[eé]c)\.?\s*\d{4}|\d{4}|aujourd['’]hui|actuellement|en cours|présent)/i;
@@ -56,7 +52,9 @@ export function segmentBlocks(sections: DetectedSection[]): SegmentedBlocks {
         break;
 
       case "PROJETS":
-        projectBlocks.push(...segmentMultiLineBlocks(section, isProjectBoundary));
+        projectBlocks.push(
+          ...segmentMultiLineBlocks(section, isProjectBoundary),
+        );
         break;
 
       case "CENTRES_INTERET":
@@ -120,10 +118,21 @@ function isExperienceBoundary(
 
   // Si la ligne précédente était une date ou un titre et que cette ligne est courte et distincte
   const isUpperOrTitle = /^[A-Z0-9À-ÖØ-ß]/.test(line);
-  const containsSeparator = line.includes("—") || line.includes("–") || line.includes(" | ") || line.includes(" - ");
-  const containsRoleKeyword = /\b(stage|alternan|responsable|assistant|charg[eé]|directeur|chef|consultant|d[eé]veloppeur|manager|membre|ing[eé]nieur|vendeur|op[eé]rateur|carrossier|employ[eé])\b/i.test(line);
+  const containsSeparator =
+    line.includes("—") ||
+    line.includes("–") ||
+    line.includes(" | ") ||
+    line.includes(" - ");
+  const containsRoleKeyword =
+    /\b(stage|alternan|responsable|assistant|charg[eé]|directeur|chef|consultant|d[eé]veloppeur|manager|membre|ing[eé]nieur|vendeur|op[eé]rateur|carrossier|employ[eé])\b/i.test(
+      line,
+    );
 
-  if (isUpperOrTitle && (containsSeparator || containsRoleKeyword) && accumulatedLines.length >= 2) {
+  if (
+    isUpperOrTitle &&
+    (containsSeparator || containsRoleKeyword) &&
+    accumulatedLines.length >= 2
+  ) {
     return true;
   }
 
@@ -169,7 +178,10 @@ function isProjectBoundary(
 
   // Ligne numérotée ou contenant un nom de projet distinct
   if (/^(?:\d+[\.\)]|[•\-\*]\s+[A-Z])/.test(line)) return true;
-  if (/^(?:projet|podcast|[eé]tude|strat[eé]gie|d[eé]veloppement)\b/i.test(line)) return true;
+  if (
+    /^(?:projet|podcast|[eé]tude|strat[eé]gie|d[eé]veloppement)\b/i.test(line)
+  )
+    return true;
 
   return false;
 }
@@ -197,15 +209,15 @@ function segmentMultiLineBlocks(
   let currentLines: string[] = [];
 
   for (let i = 0; i < section.lines.length; i++) {
-    const line = section.lines[i];
-    const prevLine = i > 0 ? section.lines[i - 1] : null;
+    const line = section.lines[i] || "";
+    const prevLine = i > 0 ? section.lines[i - 1] || "" : null;
 
     if (currentLines.length > 0 && boundaryFn(line, prevLine, currentLines)) {
       blocks.push({
         sectionType: section.type,
         rawText: currentLines.join("\n"),
         lines: [...currentLines],
-        headerLine: currentLines[0],
+        headerLine: currentLines[0] || "",
         source: {
           text: currentLines.slice(0, 2).join("\n"),
           page: section.pageNumber,
@@ -223,7 +235,7 @@ function segmentMultiLineBlocks(
       sectionType: section.type,
       rawText: currentLines.join("\n"),
       lines: [...currentLines],
-      headerLine: currentLines[0],
+      headerLine: currentLines[0] || "",
       source: {
         text: currentLines.slice(0, 2).join("\n"),
         page: section.pageNumber,

@@ -47,7 +47,7 @@ export const requireSupabaseAuth = createMiddleware({
       context: {
         supabase: null as unknown as ReturnType<typeof createClient<Database>>,
         userId: "local-user",
-        claims: { sub: "local-user" },
+        claims: { sub: "local-user" } as any,
       },
     });
   }
@@ -59,7 +59,7 @@ export const requireSupabaseAuth = createMiddleware({
       context: {
         supabase: null as unknown as ReturnType<typeof createClient<Database>>,
         userId: "local-user",
-        claims: { sub: "local-user" },
+        claims: { sub: "local-user" } as any,
       },
     });
   }
@@ -71,7 +71,7 @@ export const requireSupabaseAuth = createMiddleware({
       context: {
         supabase: null as unknown as ReturnType<typeof createClient<Database>>,
         userId: "local-user",
-        claims: { sub: "local-user" },
+        claims: { sub: "local-user" } as any,
       },
     });
   }
@@ -82,7 +82,7 @@ export const requireSupabaseAuth = createMiddleware({
       context: {
         supabase: null as unknown as ReturnType<typeof createClient<Database>>,
         userId: "local-user",
-        claims: { sub: "local-user" },
+        claims: { sub: "local-user" } as any,
       },
     });
   }
@@ -112,7 +112,7 @@ export const requireSupabaseAuth = createMiddleware({
         context: {
           supabase,
           userId: "local-user",
-          claims: { sub: "local-user" },
+          claims: { sub: "local-user" } as any,
         },
       });
     }
@@ -121,7 +121,7 @@ export const requireSupabaseAuth = createMiddleware({
       context: {
         supabase,
         userId: data.claims.sub,
-        claims: data.claims,
+        claims: data.claims as any,
       },
     });
   } catch {
@@ -129,7 +129,7 @@ export const requireSupabaseAuth = createMiddleware({
       context: {
         supabase: null as unknown as ReturnType<typeof createClient<Database>>,
         userId: "local-user",
-        claims: { sub: "local-user" },
+        claims: { sub: "local-user" } as any,
       },
     });
   }

@@ -1,6 +1,5 @@
 import { ChevronRight, Sparkles } from "lucide-react";
 import { Link } from "@tanstack/react-router";
-import { niveauMatch } from "@/lib/matching";
 import { formatDate, type Candidature } from "@/lib/candidatures";
 import { cn } from "@/lib/utils";
 
@@ -38,8 +37,7 @@ export function RecentCandidatures({
       <header className="mb-3 flex items-center justify-between gap-3">
         <h2 className="text-[15px] font-bold">Mes candidatures récentes</h2>
         <Link
-          to="/"
-          hash="candidatures"
+          to="/opportunites"
           className="rounded-full bg-accent/50 px-3 py-1 text-[11.5px] font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
           Voir tout
@@ -53,7 +51,6 @@ export function RecentCandidatures({
           </li>
         )}
         {recentes.map((c, i) => {
-          const n = c.match ? niveauMatch(c.match.global) : null;
           return (
             <li
               key={c.id}
@@ -81,13 +78,13 @@ export function RecentCandidatures({
                     <span
                       className={cn(
                         "num rounded-md border px-1.5 py-0.5 text-[12px] font-bold",
-                        n.badge,
+                        (n as any)?.badge,
                       )}
                     >
                       {c.match.global}%
                     </span>
                     <span className="hidden text-[12px] text-muted-foreground lg:block">
-                      {n.label}
+                      {(n as any)?.label}
                     </span>
                   </span>
                 )}
@@ -119,7 +116,6 @@ export function MatchSpotlight({
 }) {
   const match = candidature?.match ?? null;
   const score = match?.global ?? 0;
-  const n = niveauMatch(score);
   const R = 52;
   const C = 2 * Math.PI * R;
 
@@ -170,7 +166,7 @@ export function MatchSpotlight({
 
           <div className="min-w-0 flex-1">
             <h3 className="flex items-center justify-center gap-1.5 text-[17px] font-bold xl:justify-start">
-              {n.label} <span className="text-primary">✦</span>
+              {(n as any)?.label} <span className="text-primary">✦</span>
             </h3>
             <p className="mt-1 line-clamp-2 text-[13px] text-muted-foreground">
               {match.explication ||
@@ -187,9 +183,9 @@ export function MatchSpotlight({
         </div>
       )}
 
-      {match && match.details.length > 0 && (
+      {match && (match.criteres?.length || 0) > 0 && (
         <ul className="mt-5 flex flex-col gap-2.5">
-          {match.details.slice(0, 6).map((d, i) => (
+          {match.criteres.slice(0, 6).map((d, i) => (
             <li key={d.critere} className="flex items-center gap-3">
               <span className="w-28 shrink-0 truncate text-[12.5px] text-muted-foreground">
                 {d.critere}

@@ -37,14 +37,26 @@ type Props = {
 };
 
 export function ProfilSkillsTab({ profil, onChange }: Props) {
-  const cv = profil.cvStructure;
-  const competencesList = cv?.competences || [];
+  const allCompetences = cv?.competences || [];
+  const hardSkillsList = allCompetences.filter(
+    (c) =>
+      c.typeCategorie !== "soft" &&
+      c.categorie !== "Soft Skill" &&
+      c.categorie !== "Comportemental",
+  );
+  const softSkillsList = allCompetences.filter(
+    (c) =>
+      c.typeCategorie === "soft" ||
+      c.categorie === "Soft Skill" ||
+      c.categorie === "Comportemental",
+  );
 
   const [nouvelleHardSkill, setNouvelleHardSkill] = useState("");
   const [niveauHardSkill, setNiveauHardSkill] =
     useState<NiveauCompetence>("Intermédiaire");
 
-  const updateCompetences = (nouvelles: CvCompetence[]) => {
+  const updateHardSkills = (nouvelles: CvCompetence[]) => {
+    const merged = [...nouvelles, ...softSkillsList];
     const resumeText = nouvelles
       .map((c) => `${c.nom} (${c.niveau || "Intermédiaire"})`)
       .join(", ");
@@ -52,7 +64,7 @@ export function ProfilSkillsTab({ profil, onChange }: Props) {
       competences: resumeText || profil.competences,
       cvStructure: {
         ...cv,
-        competences: nouvelles,
+        competences: merged,
       },
     });
   };
@@ -64,19 +76,47 @@ export function ProfilSkillsTab({ profil, onChange }: Props) {
       nom: nouvelleHardSkill.trim(),
       niveau: niveauHardSkill,
       categorie: "Hard Skill",
+      typeCategorie: "hard",
     };
-    updateCompetences([...competencesList, nc]);
+    updateHardSkills([...hardSkillsList, nc]);
     setNouvelleHardSkill("");
   };
 
   const handleSupprimerCompetence = (id: string) => {
-    updateCompetences(competencesList.filter((c) => c.id !== id));
+    updateHardSkills(hardSkillsList.filter((c) => c.id !== id));
   };
 
   const handleModifierNiveau = (id: string, niveau: NiveauCompetence) => {
-    updateCompetences(
-      competencesList.map((c) => (c.id === id ? { ...c, niveau } : c)),
+    updateHardSkills(
+      hardSkillsList.map((c) => (c.id === id ? { ...c, niveau } : c)),
     );
+  };
+
+  const handleSoftSkillsChange = (val: string) => {
+    const names = val
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const newSofts: CvCompetence[] = names.map((nom) => {
+      const existing = softSkillsList.find(
+        (s) => s.nom.toLowerCase() === nom.toLowerCase(),
+      );
+      return (
+        existing || {
+          id: crypto.randomUUID(),
+          nom,
+          niveau: "Avancé",
+          categorie: "Soft Skill",
+          typeCategorie: "soft",
+        }
+      );
+    });
+    onChange({
+      cvStructure: {
+        ...cv,
+        competences: [...hardSkillsList, ...newSofts],
+      },
+    });
   };
 
   return (
@@ -89,7 +129,7 @@ export function ProfilSkillsTab({ profil, onChange }: Props) {
           </div>
           <div>
             <h3 className="text-sm font-semibold text-foreground">
-              Hard Skills & Compétences Techniques ({competencesList.length})
+              Hard Skills & Compétences Techniques ({hardSkillsList.length})
             </h3>
             <p className="text-xs text-muted-foreground">
               Définissez votre niveau de maîtrise pour affiner le calcul de
@@ -151,7 +191,7 @@ export function ProfilSkillsTab({ profil, onChange }: Props) {
           valeurActuelle={profil.competences}
           onSelectSuggestion={(nom) => {
             if (
-              !competencesList.some(
+              !hardSkillsList.some(
                 (c) => c.nom.toLowerCase() === nom.toLowerCase(),
               )
             ) {
@@ -161,15 +201,15 @@ export function ProfilSkillsTab({ profil, onChange }: Props) {
                 niveau: "Intermédiaire",
                 categorie: "Hard Skill",
               };
-              updateCompetences([...competencesList, nc]);
+              updateHardSkills([...hardSkillsList, nc]);
             }
           }}
         />
 
         {/* Liste des compétences qualifiées */}
-        {competencesList.length > 0 && (
+        {hardSkillsList.length > 0 && (
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 pt-2">
-            {competencesList.map((comp) => (
+            {hardSkillsList.map((comp) => (
               <div
                 key={comp.id}
                 className="flex items-center justify-between gap-2 rounded-xl border border-border/70 bg-card/60 p-2.5 px-3 transition-colors hover:border-purple-500/30"
@@ -282,18 +322,8 @@ export function ProfilSkillsTab({ profil, onChange }: Props) {
             Vos atouts relationnels et méthodes de travail
           </Label>
           <Input
-            value={(cv?.softSkills || []).join(", ")}
-            onChange={(e) =>
-              onChange({
-                cvStructure: {
-                  ...cv,
-                  softSkills: e.target.value
-                    .split(",")
-                    .map((s) => s.trim())
-                    .filter(Boolean),
-                },
-              })
-            }
+            value={softSkillsList.map((c) => c.nom).join(", ")}
+            onChange={(e) => handleSoftSkillsChange(e.target.value)}
             placeholder="Ex : Aisance relationnelle, Esprit d'analyse, Rigueur, Leadership, Autonomie, Adaptabilité, Esprit d'équipe..."
           />
         </div>

@@ -11,15 +11,13 @@ import { AppShell } from "@/components/AppShell";
 
 import { Button } from "@/components/ui/button";
 import { CandidatureSheet } from "@/components/CandidatureSheet";
-import { ImportIaDialog } from "@/components/ImportIaDialog";
-import { MatchBadge } from "@/components/MatchBadge";
 import { useCandidatures } from "@/hooks/useCandidatures";
 import { useProfil } from "@/hooks/useProfil";
 import {
   addDays,
   emptyCandidature,
   formatDate,
-  STATUTS,
+  STATUTS_OPPORTUNITE,
   todayIso,
   type Candidature,
   type Statut,
@@ -61,13 +59,12 @@ function OpportunitesPage() {
   const profil = useProfil(user);
   const [editing, setEditing] = useState<Candidature | null>(null);
   const [open, setOpen] = useState(false);
-  const [iaOpen, setIaOpen] = useState(false);
 
   const today = todayIso();
 
   const colonnes = useMemo(
     () =>
-      STATUTS.map((s) => ({
+      STATUTS_OPPORTUNITE.map((s) => ({
         statut: s,
         liste: items.filter((c) => c.statut === s),
       })),
@@ -103,9 +100,6 @@ function OpportunitesPage() {
       }}
       headerExtra={
         <>
-          <Button variant="secondary" onClick={() => setIaOpen(true)}>
-            <Sparkles /> Analyser une offre (IA)
-          </Button>
           <Button
             onClick={() => {
               setEditing(emptyCandidature());
@@ -192,7 +186,6 @@ function OpportunitesPage() {
                   </p>
                 </button>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                  {c.match && <MatchBadge match={c.match} />}
                   {c.lieu && (
                     <span className="text-[11px] text-muted-foreground">
                       {c.lieu}
@@ -223,7 +216,7 @@ function OpportunitesPage() {
                   )}
                 </div>
                 <div className="mt-2 flex flex-wrap gap-1.5">
-                  {STATUTS.filter((s) => s !== statut)
+                  {STATUTS_OPPORTUNITE.filter((s) => s !== statut)
                     .slice(0, 2)
                     .map((s: Statut) => (
                       <button
@@ -242,20 +235,16 @@ function OpportunitesPage() {
         ))}
       </div>
 
-      <ImportIaDialog
-        open={iaOpen}
-        onOpenChange={setIaOpen}
-        onResult={(c) => {
-          setEditing(c);
-          setOpen(true);
-        }}
-      />
-
       <CandidatureSheet
         open={open}
         onOpenChange={setOpen}
         value={editing}
         profil={profil}
+        existingItems={items}
+        onOpenExisting={(c) => {
+          setEditing(c);
+          setOpen(true);
+        }}
         onSave={async (c) => {
           await save(c);
           setOpen(false);

@@ -1,46 +1,39 @@
-import { Loader2, FileText, Layout, ScanText, CheckCircle2 } from "lucide-react";
-import type { CVImportFlowStatus } from "@/lib/cv-import/types";
+import { Loader2, FileText, Search, Layers, CheckCircle2 } from "lucide-react";
+import type { CvImportStep } from "@/ai/cv-import/cvImport.types";
 
 interface CvAnalysisProgressProps {
-  status: CVImportFlowStatus;
+  status: CvImportStep;
 }
 
 export function CvAnalysisProgress({ status }: CvAnalysisProgressProps) {
   const steps = [
     {
       id: "reading",
-      label: "Lecture du document",
+      label: "Lecture de votre CV...",
       icon: FileText,
       activeStatus: ["reading"],
-      completedStatus: [
-        "segmenting",
-        "analyzing",
-        "validating",
-        "preview",
-        "diff",
-        "confirmed",
-      ],
+      completedStatus: ["identifying", "structuring", "verifying", "preview"],
     },
     {
-      id: "segmenting",
-      label: "Détection des sections",
-      icon: Layout,
-      activeStatus: ["segmenting"],
-      completedStatus: ["analyzing", "validating", "preview", "diff", "confirmed"],
+      id: "identifying",
+      label: "Identification des informations...",
+      icon: Search,
+      activeStatus: ["identifying"],
+      completedStatus: ["structuring", "verifying", "preview"],
     },
     {
-      id: "analyzing",
-      label: "Extraction des données",
-      icon: ScanText,
-      activeStatus: ["analyzing"],
-      completedStatus: ["validating", "preview", "diff", "confirmed"],
+      id: "structuring",
+      label: "Structuration de votre profil...",
+      icon: Layers,
+      activeStatus: ["structuring"],
+      completedStatus: ["verifying", "preview"],
     },
     {
-      id: "validating",
-      label: "Validation de l'intégrité",
+      id: "verifying",
+      label: "Vérification des données...",
       icon: CheckCircle2,
-      activeStatus: ["validating"],
-      completedStatus: ["preview", "diff", "confirmed"],
+      activeStatus: ["verifying"],
+      completedStatus: ["preview"],
     },
   ];
 
@@ -71,9 +64,9 @@ export function CvAnalysisProgress({ status }: CvAnalysisProgressProps) {
               <div
                 className={`relative flex size-10 items-center justify-center rounded-full border-2 shrink-0 transition-colors duration-500 ${
                   isActive
-                    ? "border-purple-500 bg-purple-500/10 text-purple-400"
+                    ? "border-purple-500 bg-purple-500/10 text-purple-400 shadow-sm shadow-purple-500/20"
                     : isCompleted
-                      ? "border-green-500 bg-green-500/10 text-green-400"
+                      ? "border-emerald-500 bg-emerald-500/10 text-emerald-400"
                       : "border-border/50 bg-card text-muted-foreground"
                 }`}
               >
@@ -86,18 +79,21 @@ export function CvAnalysisProgress({ status }: CvAnalysisProgressProps) {
                 )}
                 {idx !== steps.length - 1 && (
                   <div
-                    className={`absolute top-10 left-1/2 -ml-px w-[2px] h-6 ${
-                      isCompleted ? "bg-green-500/50" : "bg-border/50"
+                    className={`absolute -bottom-6 left-1/2 -translate-x-1/2 w-0.5 h-6 transition-colors duration-500 ${
+                      isCompleted ? "bg-emerald-500/40" : "bg-border/40"
                     }`}
                   />
                 )}
               </div>
-              <div className="min-w-0">
+
+              <div>
                 <p
-                  className={`text-sm font-medium truncate ${
-                    isActive || isCompleted
-                      ? "text-foreground"
-                      : "text-muted-foreground"
+                  className={`text-sm font-medium ${
+                    isActive
+                      ? "text-purple-400 font-semibold"
+                      : isCompleted
+                        ? "text-foreground"
+                        : "text-muted-foreground"
                   }`}
                 >
                   {step.label}

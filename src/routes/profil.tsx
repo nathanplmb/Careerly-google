@@ -31,7 +31,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSession } from "@/hooks/useSession";
 import { AppShell } from "@/components/AppShell";
-import { CvAnalyseDialog } from "@/components/CvAnalyseDialog";
 import { normaliserCvStructure } from "@/lib/cv-structure";
 import type { CvEtat } from "@/lib/cv";
 import { fetchProfil, saveProfilCloud } from "@/lib/profil-cloud";
@@ -53,8 +52,6 @@ import { ProfilLanguagesTab } from "@/components/profil/ProfilLanguagesTab";
 import { ProfilCertificationsTab } from "@/components/profil/ProfilCertificationsTab";
 import { ProfilProjectsEngagementsTab } from "@/components/profil/ProfilProjectsEngagementsTab";
 import { ProfilDocumentsTab } from "@/components/profil/ProfilDocumentsTab";
-import { ProfilSummaryIAModal } from "@/components/profil/ProfilSummaryIAModal";
-import { ProfilOptimizerModal } from "@/components/profil/ProfilOptimizerModal";
 
 export const Route = createFileRoute("/profil")({
   head: () => ({
@@ -141,16 +138,27 @@ function ProfilPage() {
   }, [user?.id, authLoading]);
 
   // Mise à jour locale instantanée + persistance
-  const updateProfil = useCallback((patch: Partial<Profil>) => {
-    setProfil((prev) => {
-      const next = { ...prev, ...patch };
-      saveProfilLocal(next);
-      return next;
-    });
-    setLastSavedTime(
-      new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    );
-  }, []);
+  const updateProfil = useCallback(
+    (patch: Partial<Profil>) => {
+      setProfil((prev) => {
+        const next = { ...prev, ...patch };
+        saveProfilLocal(next);
+        if (user?.id) {
+          void saveProfilCloud(next, user.id).catch((err) => {
+            console.warn("Auto-save cloud profil:", err);
+          });
+        }
+        return next;
+      });
+      setLastSavedTime(
+        new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      );
+    },
+    [user?.id],
+  );
 
   // Enregistrement manuel ou via raccourci
   const enregistrer = useCallback(async () => {
@@ -333,185 +341,84 @@ function ProfilPage() {
   return (
     <AppShell
       title="Mon Profil"
-      description="Le dossier candidat central : source de vérité pour le Match IA, l'optimiseur de CV et les coachs de préparation."
-      action={
+      subtitle="Votre dossier candidat."
+      actions={
         <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setSummaryIaOpen(true)}
-            className="gap-1.5 text-xs text-purple-300 hover:text-purple-200 hover:bg-purple-500/10 border-purple-500/30 font-medium hidden sm:inline-flex"
-          >
-            <Sparkles className="size-3.5 text-purple-400" />
-            Synthèse IA
-          </Button>
-
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setCvOpen(true)}
-            className="gap-1.5 text-xs text-foreground hover:bg-card border-border/80"
-          >
-            <FileText className="size-3.5 text-purple-400" />
-            Importer mon CV
-          </Button>
-
-          <Button
-            size="sm"
-            onClick={enregistrer}
-            disabled={saving}
-            className="gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-medium text-xs shadow-xs"
-          >
-            {saving ? (
-              <Loader2 className="size-3.5 animate-spin" />
-            ) : (
-              <Save className="size-3.5" />
-            )}
-            {lastSavedTime ? `Enregistré à ${lastSavedTime}` : "Sauvegarder"}
+          {saving && (
+            <Loader2 className="size-4 animate-spin text-muted-foreground" />
+          )}
+          <Button onClick={enregistrer} size="sm">
+            <Save className="mr-2 size-4" />
+            Enregistrer
           </Button>
         </div>
       }
     >
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Grille des 9 cartes de catégories de profil */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-9 gap-2.5 sm:gap-3">
-          {CATEGORIES.map((cat) => {
-            const Icon = cat.icon;
-            const isActive = activeTab === cat.id;
-
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => handleSelectTab(cat.id)}
-                className={`relative flex flex-col justify-between p-3 sm:p-3.5 rounded-2xl text-left transition-all duration-200 border ${
-                  isActive
-                    ? "border-purple-500/90 ring-2 ring-purple-500/40 bg-purple-950/25 shadow-lg shadow-purple-950/40"
-                    : "border-border/70 bg-card/70 hover:bg-card hover:border-border/90"
-                }`}
-              >
-                {/* Ligne haute : Icône et indicateur de statut */}
-                <div className="flex items-center justify-between w-full mb-2">
-                  <div
-                    className={`flex size-8 sm:size-9 items-center justify-center rounded-xl border ${cat.colorClass}`}
-                  >
-                    <Icon className="size-4" />
+      <div className="flex gap-4 flex-col lg:flex-row">
+        <aside className="w-full lg:w-64 shrink-0 flex flex-col gap-2">
+          {CATEGORIES.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => handleSelectTab(c.id)}
+              className={`flex items-center justify-between p-3 rounded-lg border text-left transition-colors ${
+                activeTab === c.id
+                  ? "bg-accent border-accent text-accent-foreground"
+                  : "bg-card border-border hover:bg-accent/50"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-md ${c.colorClass}`}>
+                  <c.icon className="size-4" />
+                </div>
+                <div>
+                  <div className="font-medium text-sm">{c.label}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {c.subtitle}
                   </div>
-
-                  {cat.isComplete ? (
-                    <div className="flex size-4 sm:size-4.5 items-center justify-center rounded-full border border-emerald-500/40 bg-emerald-500/15 text-emerald-400">
-                      <Check className="size-2.5 stroke-[2.5]" />
-                    </div>
-                  ) : (
-                    <div className="size-1.5 rounded-full bg-muted-foreground/30" />
-                  )}
                 </div>
+              </div>
+              {c.isComplete && <Check className="size-4 text-emerald-500" />}
+            </button>
+          ))}
+        </aside>
 
-                {/* Textes : Titre simplifié et sous-titre */}
-                <div className="space-y-0.5 min-w-0">
-                  <h4 className="text-xs font-bold text-foreground tracking-tight truncate">
-                    {cat.label}
-                  </h4>
-                  <p className="text-[10px] sm:text-[11px] text-muted-foreground truncate">
-                    {cat.subtitle}
-                  </p>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Contenu principal de l'onglet actif */}
-        <div className="animate-in fade-in-50 duration-200">
+        <main className="flex-1 glass-card p-6 min-h-[500px]">
           {activeTab === "apercu" && (
             <ProfilOverviewTab
               profil={profil}
               bilan={bilan}
-              onNavigateTab={handleNavigateFromSuggestions}
-              onOpenCvModal={() => setCvOpen(true)}
-              onOpenSummaryIaModal={() => setSummaryIaOpen(true)}
-              onOpenOptimizerModal={() => setOptimizerOpen(true)}
-              onUpdateProfil={updateProfil}
+              onNavigate={handleNavigateFromSuggestions}
             />
           )}
-
           {activeTab === "identite" && (
             <ProfilIdentityTab profil={profil} onChange={updateProfil} />
           )}
-
           {activeTab === "objectifs" && (
             <ProfilObjectivesTab profil={profil} onChange={updateProfil} />
           )}
-
           {activeTab === "parcours" && (
             <ProfilJourneyTab profil={profil} onChange={updateProfil} />
           )}
-
           {activeTab === "competences" && (
             <ProfilSkillsTab profil={profil} onChange={updateProfil} />
           )}
-
           {activeTab === "langues" && (
             <ProfilLanguagesTab profil={profil} onChange={updateProfil} />
           )}
-
           {activeTab === "certifications" && (
             <ProfilCertificationsTab profil={profil} onChange={updateProfil} />
           )}
-
           {activeTab === "engagements" && (
             <ProfilProjectsEngagementsTab
               profil={profil}
               onChange={updateProfil}
             />
           )}
-
           {activeTab === "documents" && (
-            <ProfilDocumentsTab
-              profil={profil}
-              onChange={updateProfil}
-              onOpenCvModal={() => setCvOpen(true)}
-            />
+            <ProfilDocumentsTab profil={profil} onChange={updateProfil} />
           )}
-        </div>
+        </main>
       </div>
-
-      {/* Modal d'analyse / Import IA de CV */}
-      <CvAnalyseDialog
-        open={cvOpen}
-        onOpenChange={setCvOpen}
-        profil={profil}
-        cv={profil.cv ?? null}
-        onSaveCv={(cv: CvEtat) => {
-          const next = { ...profil, cv };
-          updateProfil(next);
-          if (user?.id)
-            void saveProfilCloud(next, user.id).catch(() => undefined);
-        }}
-        onAppliquerProfil={(patch) => {
-          const next = { ...profil, ...patch };
-          updateProfil(next);
-          if (user?.id)
-            void saveProfilCloud(next, user.id).catch(() => undefined);
-          toast.success("Profil mis à jour automatiquement depuis le CV !");
-        }}
-      />
-
-      {/* Modal de Synthèse Stratégique IA */}
-      <ProfilSummaryIAModal
-        open={summaryIaOpen}
-        onOpenChange={setSummaryIaOpen}
-        profil={profil}
-        onUpdateProfil={updateProfil}
-      />
-
-      {/* Modal d'Audit & Optimisation IA */}
-      <ProfilOptimizerModal
-        open={optimizerOpen}
-        onOpenChange={setOptimizerOpen}
-        profil={profil}
-        onNavigateTab={handleNavigateFromSuggestions}
-      />
     </AppShell>
   );
 }

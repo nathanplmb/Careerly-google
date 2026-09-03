@@ -1,13 +1,42 @@
+import type {
+  OpportunityCompanyMetric,
+  OpportunityLanguage,
+} from "@/ai/opportunity/opportunity.types";
+import {
+  buildInitialWorkflowEvents,
+  extractDatesFromWorkflowEvents,
+  statutToWorkflowStepKey,
+  type WorkflowEvent,
+  type WorkflowStepKey,
+} from "./workflow";
+
+export const STATUTS_OPPORTUNITE = [
+  "Sauvegardée",
+  "À préparer",
+  "À étudier",
+  "À candidater",
+] as const;
+
+export const STATUTS_CANDIDATURE = [
+  "Candidature envoyée",
+  "Relancée",
+  "Entretien",
+  "Deuxième entretien",
+  "Offre reçue",
+  "Acceptée",
+  "Refusée",
+  "Sans réponse",
+  "Clôturée",
+] as const;
+
 export const STATUTS = [
-  "Je vais postuler",
-  "J'ai postulé",
-  "J'ai relancé",
-  "J'ai un entretien",
-  "J'ai reçu une réponse négative",
-  "Je n'ai pas reçu de réponse",
+  ...STATUTS_OPPORTUNITE,
+  ...STATUTS_CANDIDATURE,
 ] as const;
 
 export type Statut = (typeof STATUTS)[number];
+export type StatutOpportunite = (typeof STATUTS_OPPORTUNITE)[number];
+export type StatutCandidature = (typeof STATUTS_CANDIDATURE)[number];
 
 export const PRIORITES = ["Haute", "Moyenne", "Faible"] as const;
 export type Priorite = (typeof PRIORITES)[number];
@@ -27,65 +56,13 @@ export const SOURCES = [
 ] as const;
 export type Source = (typeof SOURCES)[number];
 
-export type MatchDetail = {
-  critere: string;
-  score: number;
-  /** Phrase d'explication du sous-score (facultative sur les anciennes analyses). */
-  explication?: string;
-};
-
 /** Codes de recommandation (les anciennes analyses peuvent contenir un libellé libre). */
-export const RECOMMANDATIONS = [
-  "postuler",
-  "postuler_si_interet",
-  "secondaire",
-  "peu_prioritaire",
-] as const;
-export type RecommandationCode = (typeof RECOMMANDATIONS)[number];
-export type Recommandation = RecommandationCode | (string & {});
-
-export type CompetencesMatch = {
-  correspondances: string[];
-  aRenforcer: string[];
-  nonRenseignees: string[];
-};
-
-export type MatchScore = {
-  global: number;
-  details: MatchDetail[];
-  pointsForts: string[];
-  vigilance: string[];
-  competencesManquantes: string[];
-  recommandation: Recommandation;
-  explication: string;
-  genereLe: string; // ISO
-  /** V2.2 — champs facultatifs pour rester rétrocompatible. */
-  confiance?: number; // 0-100
-  confianceRaison?: string;
-  competences?: CompetencesMatch;
-  profilHash?: string;
-  offreHash?: string;
-  /** Réservé au futur CV Analyzer. */
-  cvHash?: string;
-  modele?: string;
-};
 
 export type Preparation = {
-  // Renseigné par l'utilisateur
   pourquoiEntreprise: string;
   pourquoiPoste: string;
   notes: string;
-  // Généré par l'IA (vide tant que non généré)
-  resumeEntreprise: string;
-  resumePoste: string;
-  competencesRecherchees: string[];
-  questionsRH: string[];
-  questionsComportementales: string[];
-  questionsPoste: string[];
-  questionsARecruteur: string[];
-  argumentsCles: string[];
-  pointsFaibles: string[];
-  genereLe: string;
+  questionsRH?: string;
 };
 
 export function emptyPreparation(): Preparation {
@@ -93,39 +70,25 @@ export function emptyPreparation(): Preparation {
     pourquoiEntreprise: "",
     pourquoiPoste: "",
     notes: "",
-    resumeEntreprise: "",
-    resumePoste: "",
-    competencesRecherchees: [],
-    questionsRH: [],
-    questionsComportementales: [],
-    questionsPoste: [],
-    questionsARecruteur: [],
-    argumentsCles: [],
-    pointsFaibles: [],
-    genereLe: "",
   };
 }
 
-export type WorkflowStepId =
-  "offre" | "match" | "pitch" | "contact" | "interview";
+export type WorkflowStepId = "offre" | "pitch" | "contact" | "interview";
 
 export type WorkflowProgress = {
   currentStep: WorkflowStepId;
   completedSteps: WorkflowStepId[];
   lastUpdated?: string;
-  pitchData?: {
-    pitchAccroche?: string;
-    lettreMotivation?: string;
-    pointsAValoriser?: string[];
-  };
-  contactData?: {
-    emailCandidature?: string;
-    emailRelance?: string;
-    messageLinkedin?: string;
-  };
+};
+
+export type MatchScore = {
+  global: number;
+  explication: string;
+  criteres?: { critere: string; score: number }[];
 };
 
 export type Candidature = {
+  match?: MatchScore;
   id: string;
   entreprise: string;
   poste: string;
@@ -147,10 +110,82 @@ export type Candidature = {
   source: string;
   secteur: string;
   archive: boolean;
-  match: MatchScore | null;
   preparation: Preparation;
   workflowProgress?: WorkflowProgress;
+
+  // Opportunity Intelligence V2 - Données extraites de l'offre
+  title?: string;
+  company?: string;
+  location?: string;
+  country?: string | null;
+  contractType?: string | null;
+  duration?: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  salary?: string | null;
+  salaryMin?: number | null;
+  salaryMax?: number | null;
+  salaryCurrency?: string | null;
+  remotePolicy?: string | null;
+  remoteDetails?: string | null;
+  applicationDeadline?: string | null;
+  jobFunction?: string | null;
+  educationLevel?: string | null;
+  sourceUrl?: string | null;
+
+  missionsList?: string[];
+  responsibilities?: string[];
+
+  requiredSkills?: string[];
+  preferredSkills?: string[];
+  tools?: string[];
+  requiredLanguages?: OpportunityLanguage[];
+  preferredLanguages?: OpportunityLanguage[];
+  qualities?: string[];
+  experienceRequirements?: string | null;
+  educationRequirements?: string[];
+
+  companyName?: string | null;
+  companyDescription?: string | null;
+  companySector?: string | null;
+  companySize?: string | null;
+  companyLocation?: string | null;
+  companyWebsite?: string | null;
+  companyContext?: string[];
+  companyPartners?: string[];
+  companyMetrics?: OpportunityCompanyMetric[];
+
+  recruitmentProcess?: string[];
+  applicationMethod?: string | null;
+  applicationRequirements?: string[];
+
+  benefits?: string[];
+
+  sourceType?: string | null;
+  sourceName?: string | null;
+  sourcePublishedAt?: string | null;
+  extractedAt?: string | null;
+
+  // Suivi & Workflow NACORA
+  status?: Statut;
+  appliedAt?: string | null;
+  followUpDate?: string | null;
+  lastContactDate?: string | null;
+  personalNotes?: string;
+
+  // Workflow de Candidature V2
+  currentWorkflowStep?: WorkflowStepKey;
+  workflowEvents?: WorkflowEvent[];
+  savedAt?: string | null;
+  preparedAt?: string | null;
+  interviewDate?: string | null;
+  secondInterviewDate?: string | null;
+  offerReceivedAt?: string | null;
+  acceptedAt?: string | null;
+  rejectedAt?: string | null;
 };
+
+export type Opportunity = Candidature;
 
 export const STORAGE_KEY = "neoma-suivi-stage-v1";
 
@@ -159,7 +194,7 @@ export function emptyCandidature(): Candidature {
     id: crypto.randomUUID(),
     entreprise: "",
     poste: "",
-    statut: "Je vais postuler",
+    statut: "Sauvegardée",
     lieu: "",
     lien: "",
     contact: "",
@@ -176,12 +211,87 @@ export function emptyCandidature(): Candidature {
     source: "",
     secteur: "",
     archive: false,
-    match: null,
     preparation: emptyPreparation(),
     workflowProgress: {
       currentStep: "offre",
       completedSteps: ["offre"],
     },
+
+    title: "",
+    company: "",
+    location: "",
+    country: null,
+    contractType: null,
+    duration: null,
+    startDate: null,
+    endDate: null,
+    salary: null,
+    salaryMin: null,
+    salaryMax: null,
+    salaryCurrency: null,
+    remotePolicy: null,
+    remoteDetails: null,
+    applicationDeadline: null,
+    jobFunction: null,
+    educationLevel: null,
+    sourceUrl: null,
+
+    missionsList: [],
+    responsibilities: [],
+
+    requiredSkills: [],
+    preferredSkills: [],
+    tools: [],
+    requiredLanguages: [],
+    preferredLanguages: [],
+    qualities: [],
+    experienceRequirements: null,
+    educationRequirements: [],
+
+    companyName: null,
+    companyDescription: null,
+    companySector: null,
+    companySize: null,
+    companyLocation: null,
+    companyWebsite: null,
+    companyContext: [],
+    companyPartners: [],
+    companyMetrics: [],
+
+    recruitmentProcess: [],
+    applicationMethod: null,
+    applicationRequirements: [],
+
+    benefits: [],
+
+    sourceType: null,
+    sourceName: null,
+    sourcePublishedAt: null,
+    extractedAt: null,
+
+    status: "Sauvegardée",
+    appliedAt: null,
+    followUpDate: null,
+    lastContactDate: null,
+    personalNotes: "",
+
+    currentWorkflowStep: "saved",
+    workflowEvents: [
+      {
+        id: crypto.randomUUID(),
+        type: "saved",
+        date: todayIso(),
+        note: "Opportunité ajoutée à NACORA",
+        createdAt: new Date().toISOString(),
+      },
+    ],
+    savedAt: todayIso(),
+    preparedAt: null,
+    interviewDate: null,
+    secondInterviewDate: null,
+    offerReceivedAt: null,
+    acceptedAt: null,
+    rejectedAt: null,
   };
 }
 
@@ -266,13 +376,24 @@ export function extraireSectionsDetail(detail: string): {
   };
 }
 
-/** Complète une candidature venant d'une ancienne version (localStorage / cloud). */
+/** Complète une candidature / opportunité venant du localStorage, cloud ou de l'extraction IA. */
 export function normalizeCandidature(c: Partial<Candidature>): Candidature {
   const base = emptyCandidature();
-  let missions = c.missions ?? "";
-  let profilRecherche = c.profilRecherche ?? "";
-  let modalites = c.modalites ?? "";
-  let detail = c.detail ?? "";
+  let missions = "";
+  if (typeof c.missions === "string") {
+    missions = c.missions;
+  } else if (Array.isArray(c.missions)) {
+    missions = (c.missions as unknown[])
+      .map((m) => String(m ?? "").trim())
+      .filter(Boolean)
+      .map((m) => `• ${m}`)
+      .join("\n");
+  }
+
+  let profilRecherche =
+    typeof c.profilRecherche === "string" ? c.profilRecherche : "";
+  let modalites = typeof c.modalites === "string" ? c.modalites : "";
+  let detail = typeof c.detail === "string" ? c.detail : "";
 
   // Rétrocompatibilité : si les champs dédiés sont vides mais detail contient les sections structurées
   if ((!missions || !profilRecherche) && detail) {
@@ -285,28 +406,293 @@ export function normalizeCandidature(c: Partial<Candidature>): Candidature {
     }
   }
 
+  // Synchronisation des alias titre / poste
+  const poste = c.poste || c.title || base.poste;
+  const title = c.title || c.poste || base.title;
+
+  // Synchronisation des alias entreprise / company
+  const entreprise =
+    c.entreprise || c.company || c.companyName || base.entreprise;
+  const company = c.company || c.companyName || c.entreprise || base.company;
+  const companyName =
+    c.companyName || c.company || c.entreprise || base.companyName;
+
+  // Synchronisation localisation
+  const lieu = c.lieu || c.location || base.lieu;
+  const location = c.location || c.lieu || base.location;
+
+  // Synchronisation lien source
+  const lien = c.lien || c.sourceUrl || base.lien;
+  const sourceUrl = c.sourceUrl || c.lien || base.sourceUrl;
+
+  // Synchronisation dates de suivi
+  const dateLimite = c.dateLimite || c.applicationDeadline || base.dateLimite;
+  const applicationDeadline = c.applicationDeadline || c.dateLimite || null;
+
+  const dateEnvoi = c.dateEnvoi || c.appliedAt || base.dateEnvoi;
+  const appliedAt = c.appliedAt || c.dateEnvoi || null;
+
+  const dateRelance = c.dateRelance || c.followUpDate || base.dateRelance;
+  const followUpDate = c.followUpDate || c.dateRelance || null;
+
+  const dateDernierContact =
+    c.dateDernierContact || c.lastContactDate || base.dateDernierContact;
+  const lastContactDate = c.lastContactDate || c.dateDernierContact || null;
+
+  const commentaire = c.commentaire || c.personalNotes || base.commentaire;
+  const personalNotes = c.personalNotes || c.commentaire || base.personalNotes;
+
+  // Statut
+  const statutRaw = c.statut || c.status || base.statut;
+  const statut = (STATUTS as readonly string[]).includes(statutRaw)
+    ? (statutRaw as Statut)
+    : "Sauvegardée";
+
+  // Missions en liste ou texte
+  const missionsList: string[] =
+    Array.isArray(c.missionsList) && c.missionsList.length > 0
+      ? (c.missionsList as unknown[])
+          .map((m) => String(m ?? "").trim())
+          .filter(Boolean)
+      : Array.isArray(c.missions) && (c.missions as unknown[]).length > 0
+        ? (c.missions as unknown[])
+            .map((m) => String(m ?? "").trim())
+            .filter(Boolean)
+        : typeof missions === "string" && missions.trim().length > 0
+          ? missions
+              .split("\n")
+              .map((m) => m.replace(/^[•\-*]\s*/, "").trim())
+              .filter(Boolean)
+          : [];
+
+  if (!missions && missionsList.length > 0) {
+    missions = missionsList.map((m) => `• ${m}`).join("\n");
+  }
+
+  // Profil
+  const requiredSkills = Array.isArray(c.requiredSkills)
+    ? c.requiredSkills
+    : [];
+  const preferredSkills = Array.isArray(c.preferredSkills)
+    ? c.preferredSkills
+    : [];
+  const tools = Array.isArray(c.tools) ? c.tools : [];
+  const qualities = Array.isArray(c.qualities) ? c.qualities : [];
+
+  if (!profilRecherche && (requiredSkills.length > 0 || tools.length > 0)) {
+    const parts: string[] = [];
+    if (requiredSkills.length > 0)
+      parts.push(`Compétences requises : ${requiredSkills.join(", ")}`);
+    if (preferredSkills.length > 0)
+      parts.push(`Compétences appréciées : ${preferredSkills.join(", ")}`);
+    if (tools.length > 0) parts.push(`Outils : ${tools.join(", ")}`);
+    if (qualities.length > 0) parts.push(`Qualités : ${qualities.join(", ")}`);
+    profilRecherche = parts.join("\n");
+  }
+
+  // Migration & réconciliation du Workflow de Candidature
+  const initialWorkflow = buildInitialWorkflowEvents({
+    statut,
+    savedAt: c.savedAt || c.extractedAt || dateEnvoi,
+    appliedAt,
+    dateEnvoi,
+    followUpDate,
+    dateRelance,
+    interviewDate: c.interviewDate || dateDernierContact,
+    secondInterviewDate: c.secondInterviewDate,
+    dateDernierContact,
+    offerReceivedAt: c.offerReceivedAt,
+    acceptedAt: c.acceptedAt,
+    rejectedAt: c.rejectedAt,
+    contact: c.contact,
+    source: c.source || c.sourceName,
+    personalNotes,
+    commentaire,
+  });
+
+  const workflowEvents: WorkflowEvent[] =
+    Array.isArray(c.workflowEvents) && c.workflowEvents.length > 0
+      ? c.workflowEvents
+      : initialWorkflow.events;
+
+  const currentWorkflowStep: WorkflowStepKey =
+    c.currentWorkflowStep ||
+    initialWorkflow.currentStep ||
+    statutToWorkflowStepKey(statut);
+
+  const syncedDates = extractDatesFromWorkflowEvents(workflowEvents);
+
   return {
     ...base,
     ...c,
     id: c.id ?? base.id,
-    statut: (STATUTS as readonly string[]).includes(c.statut ?? "")
-      ? (c.statut as Statut)
-      : "Je vais postuler",
+    entreprise,
+    company,
+    companyName,
+    poste,
+    title,
+    statut,
+    status: statut,
+    currentWorkflowStep,
+    workflowEvents,
+    lieu,
+    location,
+    lien,
+    sourceUrl,
+    dateLimite,
+    applicationDeadline,
+    dateEnvoi: dateEnvoi || syncedDates.appliedAt || "",
+    appliedAt: appliedAt || syncedDates.appliedAt || null,
+    dateRelance: dateRelance || syncedDates.followUpDate || "",
+    followUpDate: followUpDate || syncedDates.followUpDate || null,
+    dateDernierContact: dateDernierContact || syncedDates.lastContactDate || "",
+    lastContactDate: lastContactDate || syncedDates.lastContactDate || null,
+    savedAt: c.savedAt || syncedDates.savedAt || base.savedAt,
+    preparedAt: c.preparedAt || syncedDates.preparedAt || null,
+    interviewDate: c.interviewDate || syncedDates.interviewDate || null,
+    secondInterviewDate:
+      c.secondInterviewDate || syncedDates.secondInterviewDate || null,
+    offerReceivedAt: c.offerReceivedAt || syncedDates.offerReceivedAt || null,
+    acceptedAt: c.acceptedAt || syncedDates.acceptedAt || null,
+    rejectedAt: c.rejectedAt || syncedDates.rejectedAt || null,
+    commentaire,
+    personalNotes,
     missions,
+    missionsList,
     profilRecherche,
     modalites,
     detail,
     priorite: c.priorite ?? "auto",
-    source: c.source ?? "",
-    secteur: c.secteur ?? "",
+    source: c.source ?? c.sourceName ?? "",
+    secteur: c.secteur ?? c.companySector ?? "",
     archive: c.archive ?? false,
-    match: c.match ?? null,
     preparation: { ...emptyPreparation(), ...(c.preparation ?? {}) },
     workflowProgress: c.workflowProgress ?? {
       currentStep: "offre",
-      completedSteps: c.match ? ["offre", "match"] : ["offre"],
+      completedSteps: ["offre"],
     },
+
+    country: c.country ?? base.country,
+    contractType: c.contractType ?? base.contractType,
+    duration: c.duration ?? base.duration,
+    startDate: c.startDate ?? base.startDate,
+    endDate: c.endDate ?? base.endDate,
+    salary: c.salary ?? base.salary,
+    salaryMin: typeof c.salaryMin === "number" ? c.salaryMin : base.salaryMin,
+    salaryMax: typeof c.salaryMax === "number" ? c.salaryMax : base.salaryMax,
+    salaryCurrency: c.salaryCurrency ?? base.salaryCurrency,
+    remotePolicy: c.remotePolicy ?? base.remotePolicy,
+    remoteDetails: c.remoteDetails ?? base.remoteDetails,
+    jobFunction: c.jobFunction ?? base.jobFunction,
+    educationLevel: c.educationLevel ?? base.educationLevel,
+
+    responsibilities: Array.isArray(c.responsibilities)
+      ? c.responsibilities
+      : base.responsibilities,
+    requiredSkills,
+    preferredSkills,
+    tools,
+    requiredLanguages: Array.isArray(c.requiredLanguages)
+      ? c.requiredLanguages
+      : base.requiredLanguages,
+    preferredLanguages: Array.isArray(c.preferredLanguages)
+      ? c.preferredLanguages
+      : base.preferredLanguages,
+    qualities,
+    experienceRequirements:
+      c.experienceRequirements ?? base.experienceRequirements,
+    educationRequirements: Array.isArray(c.educationRequirements)
+      ? c.educationRequirements
+      : base.educationRequirements,
+
+    companyDescription: c.companyDescription ?? base.companyDescription,
+    companySector: c.companySector ?? c.secteur ?? base.companySector,
+    companySize: c.companySize ?? base.companySize,
+    companyLocation: c.companyLocation ?? base.companyLocation,
+    companyWebsite: c.companyWebsite ?? base.companyWebsite,
+    companyContext: Array.isArray(c.companyContext)
+      ? c.companyContext
+      : base.companyContext,
+    companyPartners: Array.isArray(c.companyPartners)
+      ? c.companyPartners
+      : base.companyPartners,
+    companyMetrics: Array.isArray(c.companyMetrics)
+      ? c.companyMetrics
+      : base.companyMetrics,
+
+    recruitmentProcess: Array.isArray(c.recruitmentProcess)
+      ? c.recruitmentProcess
+      : base.recruitmentProcess,
+    applicationMethod: c.applicationMethod ?? base.applicationMethod,
+    applicationRequirements: Array.isArray(c.applicationRequirements)
+      ? c.applicationRequirements
+      : base.applicationRequirements,
+
+    benefits: Array.isArray(c.benefits) ? c.benefits : base.benefits,
+
+    sourceType: c.sourceType ?? base.sourceType,
+    sourceName: c.sourceName ?? c.source ?? base.sourceName,
+    sourcePublishedAt: c.sourcePublishedAt ?? base.sourcePublishedAt,
+    extractedAt: c.extractedAt ?? base.extractedAt,
   };
+}
+
+/**
+ * Détection des doublons d'opportunité dans NACORA
+ * Compare raisonnablement URL, entreprise, titre, localisation
+ */
+export function findPotentialDuplicate(
+  candidate: Partial<Candidature>,
+  existingList: Candidature[],
+): Candidature | null {
+  if (!existingList || existingList.length === 0) return null;
+
+  const normalizeStr = (s?: string | null) =>
+    (s || "")
+      .toLowerCase()
+      .trim()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]/g, "");
+
+  const cUrl = (candidate.lien || candidate.sourceUrl || "").trim();
+  const cEnt = normalizeStr(candidate.entreprise || candidate.company);
+  const cPos = normalizeStr(candidate.poste || candidate.title);
+
+  for (const item of existingList) {
+    if (candidate.id && item.id === candidate.id) continue;
+
+    const iUrl = (item.lien || item.sourceUrl || "").trim();
+    // 1. URL identique
+    if (
+      cUrl &&
+      iUrl &&
+      cUrl.length > 12 &&
+      (cUrl === iUrl || cUrl.split("?")[0] === iUrl.split("?")[0])
+    ) {
+      return item;
+    }
+
+    const iEnt = normalizeStr(item.entreprise || item.company);
+    const iPos = normalizeStr(item.poste || item.title);
+
+    // 2. Même entreprise et titre très proche
+    if (
+      cEnt &&
+      iEnt &&
+      (cEnt === iEnt || cEnt.includes(iEnt) || iEnt.includes(cEnt))
+    ) {
+      if (
+        cPos &&
+        iPos &&
+        (cPos === iPos || cPos.includes(iPos) || iPos.includes(cPos))
+      ) {
+        return item;
+      }
+    }
+  }
+
+  return null;
 }
 
 export type NextBestAction = {
@@ -320,7 +706,6 @@ export type NextBestAction = {
 
 export function getNextBestAction(c: Candidature): NextBestAction {
   const steps = c.workflowProgress?.completedSteps ?? [];
-  const matchFait = Boolean(c.match || steps.includes("match"));
   const pitchFait = Boolean(steps.includes("pitch"));
   const contactFait = Boolean(steps.includes("contact"));
   const interviewFait = Boolean(
@@ -329,7 +714,7 @@ export function getNextBestAction(c: Candidature): NextBestAction {
   );
 
   // 1. Entretien programmé
-  if (c.statut === "J'ai un entretien") {
+  if (c.statut === "Entretien") {
     return {
       label: "Entretien à préparer",
       step: "interview",
@@ -343,8 +728,8 @@ export function getNextBestAction(c: Candidature): NextBestAction {
 
   // 2. Relance à effectuer
   if (
-    c.statut === "J'ai relancé" ||
-    (c.statut === "J'ai postulé" &&
+    c.statut === "Relancée" ||
+    (c.statut === "Candidature envoyée" &&
       c.dateRelance &&
       new Date(c.dateRelance) <= new Date())
   ) {
@@ -366,7 +751,7 @@ export function getNextBestAction(c: Candidature): NextBestAction {
       diffDays !== null &&
       diffDays >= 0 &&
       diffDays <= 3 &&
-      c.statut === "Je vais postuler"
+      c.statut === "À candidater"
     ) {
       if (!pitchFait) {
         return {
@@ -390,23 +775,12 @@ export function getNextBestAction(c: Candidature): NextBestAction {
   }
 
   // 4. Progression séquentielle du workflow
-  if (!matchFait) {
-    return {
-      label: "Analyser l'offre & Match IA",
-      step: "match",
-      description:
-        "Évaluez le taux de correspondance de votre profil avec le poste.",
-      buttonText: "Calculer le Match IA",
-      badgeText: "Offre récente",
-    };
-  }
 
   if (!pitchFait) {
     return {
       label: "Adapter le CV & Pitch",
       step: "pitch",
-      description:
-        "Match IA effectué. Adaptez votre CV pour répondre parfaitement à l'offre.",
+      description: "Adaptez votre CV pour répondre parfaitement à l'offre.",
       buttonText: "Adapter mon CV",
       badgeText: "CV à optimiser",
     };
@@ -478,7 +852,7 @@ export const SEED: Candidature[] = [
     id: "seed-1",
     entreprise: "Nom entreprise 1",
     poste: "Conseiller(ère) commercial(e) bien-être auprès particuliers (H/F)",
-    statut: "Je vais postuler",
+    statut: "Sauvegardée",
     lieu: "Paris 15e",
     lien: "https://",
     contact: "M. Dupont - email@email.fr",
@@ -491,7 +865,7 @@ export const SEED: Candidature[] = [
     id: "seed-2",
     entreprise: "Nom entreprise 2",
     poste: "Conseiller(ère) commercial(e) bien-être auprès particuliers (H/F)",
-    statut: "J'ai postulé",
+    statut: "Candidature envoyée",
     lieu: "Paris 15e",
     lien: "https://",
     dateEnvoi: "2023-02-09",
@@ -504,7 +878,7 @@ export const SEED: Candidature[] = [
     id: "seed-3",
     entreprise: "Nom entreprise 3",
     poste: "Commerce de gros — fournitures pour la plomberie et le chauffage",
-    statut: "J'ai relancé",
+    statut: "Relancée",
     lieu: "Paris 15e",
     lien: "https://",
     contact: "M. Dupont - email@email.fr - 0600000000",
@@ -518,7 +892,7 @@ export const SEED: Candidature[] = [
     id: "seed-4",
     entreprise: "Nom entreprise 4",
     poste: "Assistant relation franchise (F/H) en alternance (H/F)",
-    statut: "J'ai un entretien",
+    statut: "Entretien",
     lieu: "Saint Herblain",
     lien: "https://",
     dateEnvoi: "2023-01-25",
@@ -531,7 +905,7 @@ export const SEED: Candidature[] = [
     id: "seed-5",
     entreprise: "Nom entreprise 5",
     poste: "Assistant relation franchise (F/H) en alternance (H/F)",
-    statut: "J'ai reçu une réponse négative",
+    statut: "Refusée",
     lieu: "Marseille",
     lien: "https://",
     contact: "M. Dupont - 0132520000",
@@ -545,7 +919,7 @@ export const SEED: Candidature[] = [
     id: "seed-6",
     entreprise: "Nom entreprise 6",
     poste: "Assistant relation franchise (F/H) en alternance (H/F)",
-    statut: "Je n'ai pas reçu de réponse",
+    statut: "Sans réponse",
     lieu: "Marseille",
     lien: "https://",
     contact: "M. Dupont - 0132520000",
@@ -580,7 +954,6 @@ export function toCsv(items: Candidature[]): string {
     "Intitulé du poste",
     "Etat d'avancement",
     "Priorité",
-    "Score de correspondance",
     "Source",
     "Secteur",
     "Lieu",
@@ -603,7 +976,6 @@ export function toCsv(items: Candidature[]): string {
       c.poste,
       c.statut,
       c.priorite === "auto" ? "" : c.priorite,
-      c.match ? `${c.match.global}%` : "",
       c.source,
       c.secteur,
       c.lieu,

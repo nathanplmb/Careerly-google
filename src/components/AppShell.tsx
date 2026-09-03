@@ -7,7 +7,6 @@ import {
   CalendarDays,
   FileText,
   Home,
-  ListChecks,
   Mail,
   MessageSquare,
   Plug,
@@ -38,7 +37,6 @@ type Item = {
 
 const MAIN: Item[] = [
   { label: "Accueil", icon: Home, to: "/" },
-  { label: "Candidatures", icon: ListChecks, to: "/candidatures" },
   { label: "Opportunités", icon: Target, to: "/opportunites" },
   { label: "Entreprises", icon: Building2, to: "/entreprises" },
   { label: "Contacts", icon: Users, to: "/contacts" },
@@ -48,7 +46,6 @@ const MAIN: Item[] = [
 ];
 
 const STUDIO: Item[] = [
-  { label: "Match IA", icon: Sparkles, to: "/assistant/match", sub: true },
   { label: "CV Optimizer", icon: ScanLine, to: "/profil", sub: true },
   { label: "Email Assistant", icon: Mail, to: "/contacts", sub: true },
   {
@@ -403,10 +400,10 @@ export function AppShell({
             active={pathname === "/"}
           />
           <MobileTab
-            to="/candidatures"
-            label="Candidatures"
-            icon={FileText}
-            active={pathname === "/candidatures"}
+            to="/opportunites"
+            label="Opportunités"
+            icon={Target}
+            active={pathname === "/opportunites"}
           />
           <button
             type="button"

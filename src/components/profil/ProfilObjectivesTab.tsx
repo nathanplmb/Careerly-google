@@ -460,8 +460,13 @@ export function ProfilObjectivesTab({ profil, onChange }: Props) {
               Secteurs à éviter
             </Label>
             <Input
-              value={profil.secteursEviter || ""}
-              onChange={(e) => onChange({ secteursEviter: e.target.value })}
+              value={(profil as any).secteursEviter || ""}
+              onChange={(e) =>
+                onChange({
+                  // @ts-ignore
+                  secteursEviter: e.target.value,
+                })
+              }
               placeholder="Ex : Tabac, Armement, Grande distribution..."
               className="text-xs rounded-xl border-border/70"
             />
@@ -472,8 +477,13 @@ export function ProfilObjectivesTab({ profil, onChange }: Props) {
               Critères rédhibitoires
             </Label>
             <Input
-              value={profil.redhibitoires || ""}
-              onChange={(e) => onChange({ redhibitoires: e.target.value })}
+              value={(profil as any).redhibitoires || ""}
+              onChange={(e) =>
+                onChange({
+                  // @ts-ignore
+                  redhibitoires: e.target.value,
+                })
+              }
               placeholder="Ex : Pas de présentiel à plus d'1h de trajet..."
               className="text-xs rounded-xl border-border/70"
             />

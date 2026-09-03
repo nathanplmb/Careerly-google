@@ -1,120 +1,92 @@
 import { GoogleGenAI } from "@google/genai";
 
-let _ai: GoogleGenAI | null = null;
+const ai = new GoogleGenAI({
+  apiKey: process.env["GEMINI_API_KEY"] || "",
+  httpOptions: {
+    headers: {
+      "User-Agent": "aistudio-build",
+    },
+  },
+});
 
-export function getGeminiClient(): GoogleGenAI {
-  const env =
-    typeof import.meta !== "undefined"
-      ? (import.meta as unknown as { env?: { VITE_GEMINI_API_KEY?: string } })
-          .env
-      : undefined;
-  const apiKey =
-    process.env.GEMINI_API_KEY ||
-    process.env.VITE_GEMINI_API_KEY ||
-    env?.VITE_GEMINI_API_KEY;
+type GeminiOptions = {
+  promptSysteme: string;
+  promptUtilisateur: string;
+  temperature?: number;
+  modele?: string;
+  reponseFormat?: "json" | "text";
+};
 
-  if (!apiKey) {
-    throw new Error("Clé AI manquante. Veuillez configurer GEMINI_API_KEY.");
-  }
-
-  if (!_ai) {
-    _ai = new GoogleGenAI({
-      apiKey,
-      httpOptions: {
-        headers: {
-          "User-Agent": "aistudio-build",
-        },
-      },
-    });
-  }
-  return _ai;
-}
-
-export const GEMINI_MODEL = "gemini-3.6-flash";
-export const GEMINI_FALLBACK_MODELS = [
-  "gemini-3.6-flash",
+/**
+ * Ordre de puissance décroissante :
+ * 1. gemini-3.8-flash (très puissant, priorité principale)
+ * 2. gemini-3.7-flash (si 3.8 non disponible ou saturé)
+ * 3. gemini-3.6-flash (modèle Flash puissant et moderne)
+ * 4. gemini-3.1-flash-lite (filet de sécurité ultime ultra-rapide)
+ */
+const DEFAULT_MODEL_CASCADE = [
+  "gemini-3.8-flash",
   "gemini-3.7-flash",
-  "gemini-flash-latest",
-  "gemini-3.1-pro-preview",
+  "gemini-3.6-flash",
   "gemini-3.1-flash-lite",
 ];
 
-/** Nettoie et extrait un JSON valide à partir de la réponse Gemini */
-export function extraireJsonPropre<T>(texte: string): T {
-  let propre = texte.trim();
-  // Retrait des blocs markdown ```json ... ```
-  if (propre.startsWith("```")) {
-    propre = propre
-      .replace(/^```(?:json)?\s*/i, "")
-      .replace(/\s*```$/, "")
-      .trim();
+export async function appelerGeminiSecurise(
+  opts: GeminiOptions,
+): Promise<string> {
+  if (!process.env["GEMINI_API_KEY"]) {
+    throw new Error("GEMINI_API_KEY is not configured.");
   }
-  try {
-    return JSON.parse(propre) as T;
-  } catch (err) {
-    // Tentative de rattrapage en cherchant le premier { ou [ et le dernier } ou ]
-    const premierAccolade = propre.indexOf("{");
-    const dernierAccolade = propre.lastIndexOf("}");
-    const premierCrochet = propre.indexOf("[");
-    const dernierCrochet = propre.lastIndexOf("]");
 
-    if (
-      premierAccolade !== -1 &&
-      dernierAccolade !== -1 &&
-      (premierCrochet === -1 || premierAccolade < premierCrochet)
-    ) {
-      const extrait = propre.slice(premierAccolade, dernierAccolade + 1);
-      return JSON.parse(extrait) as T;
+  const modelsToTry = opts.modele
+    ? [opts.modele, ...DEFAULT_MODEL_CASCADE.filter((m) => m !== opts.modele)]
+    : DEFAULT_MODEL_CASCADE;
+
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt < modelsToTry.length; attempt++) {
+    const model = modelsToTry[attempt];
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: opts.promptUtilisateur,
+        config: {
+          systemInstruction: opts.promptSysteme,
+          temperature: opts.temperature ?? 0.7,
+          responseMimeType:
+            opts.reponseFormat === "json" ? "application/json" : "text/plain",
+        },
+      });
+
+      if (response.text) {
+        return response.text;
+      }
+    } catch (err: unknown) {
+      const errorObj = err instanceof Error ? err : new Error(String(err));
+      lastError = errorObj;
+      const errMsg = errorObj.message;
+      const isAuthError =
+        errMsg.includes("API_KEY") ||
+        errMsg.includes("GEMINI_API_KEY") ||
+        errMsg.includes("invalid API key");
+
+      if (isAuthError) {
+        throw errorObj;
+      }
+
+      console.info(
+        `[Gemini Server] Modèle ${model} indisponible, basculement vers le candidat suivant (${attempt + 1}/${modelsToTry.length}).`,
+      );
+
+      continue;
     }
-    if (premierCrochet !== -1 && dernierCrochet !== -1) {
-      const extrait = propre.slice(premierCrochet, dernierCrochet + 1);
-      return JSON.parse(extrait) as T;
-    }
-    throw new Error(
-      `Réponse JSON invalide reçue de Gemini : ${err instanceof Error ? err.message : String(err)}`,
-    );
   }
+
+  throw lastError || new Error("Échec de l'appel Gemini.");
 }
 
-/** Exécute un appel Gemini avec résilience, retry et modèle de secours en cas de 503/429 */
-export async function appelerGeminiSecurise(options: {
-  contents: string;
-  systemInstruction?: string;
-  responseMimeType?: string;
-}): Promise<string> {
-  const ai = getGeminiClient();
-  const modeles = GEMINI_FALLBACK_MODELS;
-  let dernierErreur: unknown = null;
-
-  for (const model of modeles) {
-    for (let tentative = 0; tentative < 2; tentative++) {
-      try {
-        const response = await ai.models.generateContent({
-          model,
-          contents: options.contents,
-          config: {
-            systemInstruction: options.systemInstruction,
-            responseMimeType: options.responseMimeType ?? "application/json",
-          },
-        });
-        return response.text || "";
-      } catch (err: unknown) {
-        dernierErreur = err;
-        const msg = err instanceof Error ? err.message : String(err);
-        const estTemporaire =
-          /503|UNAVAILABLE|high demand|temporarily|rate limit|429|resource exhausted/i.test(
-            msg,
-          );
-        if (estTemporaire && tentative === 0) {
-          // Attendre 700ms avant de retenter sur le même modèle
-          await new Promise((r) => setTimeout(r, 700));
-          continue;
-        }
-        // Si erreur non temporaire ou déjà réessayé, passer au modèle suivant
-        break;
-      }
-    }
-  }
-
-  throw dernierErreur || new Error("Erreur de communication avec l'IA.");
+export function extraireJsonPropre(text: string): string {
+  if (!text) return "";
+  const match = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+  return match ? match[1] || "" : text.trim();
 }

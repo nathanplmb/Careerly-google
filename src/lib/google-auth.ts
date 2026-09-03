@@ -136,9 +136,9 @@ export async function connecterAvecGoogleReel(): Promise<UtilisateurLocal> {
             const utilisateur: UtilisateurLocal = {
               id: "goog_" + userInfo.sub,
               email: userInfo.email,
-              prenom,
+              prenom: prenom || "",
               nom,
-              avatarUrl: userInfo.picture,
+              avatarUrl: userInfo.picture || "",
               provider: "google",
               creeLe: new Date().toISOString(),
               dernierAccesLe: new Date().toISOString(),
@@ -150,7 +150,7 @@ export async function connecterAvecGoogleReel(): Promise<UtilisateurLocal> {
             // Synchroniser le profil applicatif avec l'identité réelle
             try {
               const profil = loadProfil();
-              profil.prenom = prenom;
+              profil.prenom = prenom || "";
               profil.nom = nom;
               saveProfilLocal(profil);
             } catch {
@@ -190,7 +190,7 @@ export function connecterCompteGoogleDirect(
   const parties = emailPropre.split("@")[0]?.split(".") ?? ["Utilisateur"];
   const prenomCalcule =
     prenom?.trim() ||
-    parties[0]?.charAt(0).toUpperCase() + parties[0]?.slice(1) ||
+    (parties[0] || "").charAt(0).toUpperCase() + parties[0]?.slice(1) ||
     "Nathan";
   const nomCalcule =
     nom?.trim() ||

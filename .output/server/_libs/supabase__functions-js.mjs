@@ -1,4 +1,4 @@
-import { h as __awaiter } from "./@radix-ui/react-dialog+[...].mjs";
+import { x as __awaiter } from "./@radix-ui/react-dialog+[...].mjs";
 //#region node_modules/@supabase/functions-js/dist/module/helper.js
 var resolveFetch = (customFetch) => {
 	if (customFetch) return (...args) => customFetch(...args);

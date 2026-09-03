@@ -13,10 +13,16 @@ export type ExperienceCV = {
   missions?: string[];
   responsabilites?: string[];
   realisations: string[];
+  resultats?: string[];
+  quantifiedResults?: string[];
   competences: string[];
   outils?: string[];
   kpi?: string;
   realisationsCles?: string;
+  ville?: string;
+  periode?: string;
+  typeContrat?: string;
+  sourceText?: string;
 };
 
 export type FormationCV = {
@@ -29,11 +35,15 @@ export type FormationCV = {
   enCours?: boolean;
   mention: string;
   specialisation?: string;
+  parcours?: string;
+  track?: string;
   coursImportants?: string[];
+  options?: string[];
   projets?: string[];
   resultats?: string;
   details: string;
   niveau?: string;
+  sourceText?: string;
 };
 
 export type CertificationCV = {
@@ -44,20 +54,36 @@ export type CertificationCV = {
   dateExpiration?: string;
   identifiant: string;
   lien: string;
+  score?: string;
+  niveau?: string;
+  langue?: string;
+  description?: string;
   competencesAssociees?: string[];
+  sourceText?: string;
 };
 
 export type ProjetCV = {
   id: string;
   nom: string;
   role: string;
-  type?: "personnel" | "scolaire" | "professionnel" | "hackathon" | "autre";
+  type?:
+    "personnel" | "scolaire" | "professionnel" | "hackathon" | "autre" | string;
+  contexte?: string;
   periode: string;
+  debut?: string;
+  fin?: string;
   description: string;
+  objectif?: string;
+  missions?: string[];
+  responsabilites?: string[];
+  realisations?: string[];
+  resultats?: string[];
   technologies?: string[];
+  outils?: string[];
   competences?: string[];
-  resultats?: string;
+  collaborateurs?: string[];
   lien: string;
+  sourceText?: string;
 };
 
 export const NIVEAUX_COMPETENCE = [
@@ -104,6 +130,12 @@ export type LangueCV = {
   niveau: NiveauLangue;
   certification: string;
   score?: string;
+  attestation?: string;
+  certificationsAssociees?: Array<{
+    nom: string;
+    score?: string;
+    niveau?: string;
+  }>;
 };
 
 export type BenevolatCV = {
@@ -111,10 +143,19 @@ export type BenevolatCV = {
   role: string;
   organisation: string;
   periode: string;
+  debut?: string;
+  fin?: string;
+  enCours?: boolean;
   description: string;
+  missions?: string[];
   responsabilites?: string[];
   realisations?: string[];
+  resultats?: string[];
+  equipe?: string;
+  budget?: string;
+  outils?: string[];
   competences?: string[];
+  sourceText?: string;
 };
 
 export type DistinctionCV = {
@@ -171,7 +212,7 @@ export type CvStructure = {
   email: string;
   telephone: string;
   ville: string;
-  pays?: string;
+  pays: string;
   linkedin: string;
   portfolio: string;
   github?: string;
@@ -186,6 +227,14 @@ export type CvStructure = {
   benevolats: BenevolatCV[];
   distinctions?: DistinctionCV[];
   interets: string[];
+  interetsDetailles?: Array<{
+    nom: string;
+    categorie?: string;
+    description?: string;
+    sousThemes?: string[];
+    details?: string;
+    sourceText?: string;
+  }>;
   preferences?: Partial<PreferencesCandidature>;
   documents?: DocumentProfil[];
   syntheseIa?: SyntheseProfilIA | null;
@@ -319,7 +368,7 @@ export function nouvelleCompetence(): CompetenceCV {
     nom: "",
     categorie: "Compétence",
     typeCategorie: "hard",
-    niveau: undefined,
+    niveau: "Notions",
     anneesExperience: "",
   };
 }
@@ -388,19 +437,45 @@ export function normaliserCvStructure(
         ? e.responsabilites
         : [],
       realisations: Array.isArray(e.realisations) ? e.realisations : [],
+      resultats: Array.isArray(
+        (e as unknown as { resultats?: string[] }).resultats,
+      )
+        ? (e as unknown as { resultats?: string[] }).resultats
+        : [],
+      quantifiedResults: Array.isArray(
+        (e as unknown as { quantifiedResults?: string[] }).quantifiedResults,
+      )
+        ? (e as unknown as { quantifiedResults?: string[] }).quantifiedResults
+        : [],
       competences: Array.isArray(e.competences) ? e.competences : [],
       outils: Array.isArray(e.outils) ? e.outils : [],
     })),
     formations: liste(brut.formations, nouvelleFormation).map((f) => ({
       ...f,
+      specialisation:
+        f.specialisation ??
+        (f as unknown as { parcours?: string }).parcours ??
+        "",
+      parcours:
+        (f as unknown as { parcours?: string }).parcours ??
+        f.specialisation ??
+        "",
+      track: (f as unknown as { track?: string }).track ?? "",
+      mention: f.mention ?? "",
       coursImportants: Array.isArray(f.coursImportants)
         ? f.coursImportants
+        : [],
+      options: Array.isArray((f as unknown as { options?: string[] }).options)
+        ? (f as unknown as { options?: string[] }).options
         : [],
       projets: Array.isArray(f.projets) ? f.projets : [],
     })),
     certifications: liste(brut.certifications, nouvelleCertification).map(
       (c) => ({
         ...c,
+        score: c.score ?? "",
+        niveau: c.niveau ?? "",
+        langue: c.langue ?? "",
         competencesAssociees: Array.isArray(c.competencesAssociees)
           ? c.competencesAssociees
           : [],
@@ -408,21 +483,49 @@ export function normaliserCvStructure(
     ),
     projets: liste(brut.projets, nouveauProjet).map((p) => ({
       ...p,
+      missions: Array.isArray(p.missions) ? p.missions : [],
+      responsabilites: Array.isArray(p.responsabilites)
+        ? p.responsabilites
+        : [],
+      realisations: Array.isArray(p.realisations) ? p.realisations : [],
       technologies: Array.isArray(p.technologies) ? p.technologies : [],
+      outils: Array.isArray(p.outils) ? p.outils : [],
       competences: Array.isArray(p.competences) ? p.competences : [],
+      collaborateurs: Array.isArray(p.collaborateurs) ? p.collaborateurs : [],
     })),
     competences: liste(brut.competences, nouvelleCompetence),
-    langues: liste(brut.langues, nouvelleLangue),
+    langues: liste(brut.langues, nouvelleLangue).map((l) => ({
+      ...l,
+      certification: l.certification ?? "",
+      score: l.score ?? "",
+      attestation: l.attestation ?? "",
+      certificationsAssociees: Array.isArray(l.certificationsAssociees)
+        ? l.certificationsAssociees
+        : [],
+    })),
     benevolats: liste(brut.benevolats, nouveauBenevolat).map((b) => ({
       ...b,
+      missions: Array.isArray(
+        (b as unknown as { missions?: string[] }).missions,
+      )
+        ? (b as unknown as { missions?: string[] }).missions
+        : [],
       responsabilites: Array.isArray(b.responsabilites)
         ? b.responsabilites
         : [],
       realisations: Array.isArray(b.realisations) ? b.realisations : [],
       competences: Array.isArray(b.competences) ? b.competences : [],
+      outils: Array.isArray((b as unknown as { outils?: string[] }).outils)
+        ? (b as unknown as { outils?: string[] }).outils
+        : [],
+      equipe: (b as unknown as { equipe?: string }).equipe ?? "",
+      budget: (b as unknown as { budget?: string }).budget ?? "",
     })),
     distinctions: liste(brut.distinctions, nouvelleDistinction),
     interets: Array.isArray(brut.interets) ? brut.interets.filter(Boolean) : [],
+    interetsDetailles: Array.isArray(brut.interetsDetailles)
+      ? brut.interetsDetailles
+      : [],
     preferences: {
       ...defaultPreferences(),
       ...(brut.preferences || {}),
@@ -542,8 +645,11 @@ export function cvStructureEnTexte(cv: CvStructure): string {
   if (cv.certifications.length > 0) {
     l.push("\n--- CERTIFICATIONS ---");
     for (const c of cv.certifications) {
+      const scoreStr = c.score ? `Score: ${c.score}, ` : "";
+      const niveauStr = c.niveau ? `Niveau: ${c.niveau}, ` : "";
+      const orgStr = c.organisme ? `${c.organisme}, ` : "";
       l.push(
-        `• ${c.nom} (${c.organisme}, ${c.date}${c.identifiant ? `, ID: ${c.identifiant}` : ""}${c.lien ? ` - ${c.lien}` : ""})`,
+        `• ${c.nom} (${orgStr}${scoreStr}${niveauStr}${c.date}${c.identifiant ? `, ID: ${c.identifiant}` : ""}${c.lien ? ` - ${c.lien}` : ""})`,
       );
     }
   }

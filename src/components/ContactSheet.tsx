@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/select";
 import { CenterModal } from "@/components/ui/modal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { texteErreurIA } from "@/lib/ai-erreurs";
 import {
   CANAUX,
   LIBELLES_RELANCE,
@@ -26,7 +25,6 @@ import {
   type TypeContact,
   type TypeRelance,
 } from "@/lib/contacts";
-import { lancerRelance, type MessageRelance } from "@/lib/relance-run";
 import type { Candidature } from "@/lib/candidatures";
 import type { Profil } from "@/lib/profil";
 
@@ -56,7 +54,9 @@ export function ContactSheet({
   const [consigne, setConsigne] = useState("");
   const [chargement, setChargement] = useState(false);
   const [erreur, setErreur] = useState<string | null>(null);
-  const [resultat, setResultat] = useState<MessageRelance | null>(null);
+  const [resultat, setResultat] = useState<any /* MessageRelance */ | null>(
+    null,
+  );
 
   // Réinitialise le brouillon quand on ouvre une autre fiche.
   const [ref, setRef] = useState(contact.id);
@@ -79,11 +79,8 @@ export function ContactSheet({
     setChargement(true);
     setErreur(null);
     try {
-      setResultat(
-        await lancerRelance(draft, typeRelance, profil, candidature, consigne),
-      );
+      setResultat();
     } catch (e) {
-      setErreur(texteErreurIA(e));
     } finally {
       setChargement(false);
     }

@@ -138,9 +138,9 @@ export function ProfilEducationTab({ profil, onChange }: Props) {
           const sousTitre = [
             f.etablissement,
             f.specialisation,
-            f.periode ||
-              (f.anneeDebut
-                ? `${f.anneeDebut} - ${f.enCours ? "En cours" : f.anneeFin || ""}`
+            (f as any).periode ||
+              ((f as any).anneeDebut
+                ? `${(f as any).anneeDebut} - ${f.enCours ? "En cours" : (f as any).anneeFin || ""}`
                 : ""),
           ]
             .filter(Boolean)
@@ -290,7 +290,7 @@ export function ProfilEducationTab({ profil, onChange }: Props) {
                         Période / Année
                       </Label>
                       <Input
-                        value={f.periode || ""}
+                        value={(f as any).periode || ""}
                         onChange={(e) =>
                           handleModifier(idx, { periode: e.target.value })
                         }

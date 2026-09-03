@@ -28,7 +28,157 @@ import type {
   ImportWarning,
 } from "./types";
 
-export const MODELE_CV_IMPORT = "gemini-2.5-flash";
+const MOIS: Record<string, string> = {
+  janvier: "01",
+  février: "02",
+  fevrier: "02",
+  mars: "03",
+  avril: "04",
+  mai: "05",
+  juin: "06",
+  juillet: "07",
+  aout: "08",
+  aoû: "08",
+  août: "08",
+  septembre: "09",
+  octobre: "10",
+  novembre: "11",
+  décembre: "12",
+  decembre: "12",
+};
+function parseMois(m: string) {
+  return MOIS[m.toLowerCase()] || "01";
+}
+
+function normalizeExperienceDates(exp: ExperienceEntity): ExperienceEntity {
+  // If dates are already fully valid, we might just return. But sometimes Gemini leaves dates in title.
+  const moisPattern =
+    "(?:janvier|f[eé]vrier|mars|avril|mai|juin|juillet|ao[uû]t|septembre|octobre|novembre|d[eé]cembre)";
+  const sepPattern = "\\s*[-–—/aà]+\\s*";
+  const nowPattern = "(?:actuellement|pr[eé]sent|aujourd'hui|en\\s*cours)";
+  const yearPattern = "(?:19|20)\\d{2}";
+
+  const r1 = new RegExp(
+    `\\b(${moisPattern})\\s+(${yearPattern})${sepPattern}${nowPattern}\\b`,
+    "i",
+  );
+  const r2 = new RegExp(
+    `\\b(${moisPattern})\\s+(${yearPattern})${sepPattern}(${moisPattern})\\s+(${yearPattern})\\b`,
+    "i",
+  );
+  const r3 = new RegExp(
+    `\\b(${moisPattern})${sepPattern}(${moisPattern})\\s+(${yearPattern})\\b`,
+    "i",
+  );
+  const r4 = new RegExp(`\\b(${moisPattern})\\s+(${yearPattern})\\b`, "i");
+
+  // Also try to find just a year range
+  const rYearRange = new RegExp(
+    `\\b(${yearPattern})${sepPattern}(${yearPattern})\\b`,
+    "i",
+  );
+  const rYearNow = new RegExp(
+    `\\b(${yearPattern})${sepPattern}${nowPattern}\\b`,
+    "i",
+  );
+
+  const checkAndExtract = (text: string) => {
+    let startDate = null;
+    let endDate = null;
+    let isCurrent = false;
+    let cleanText = text;
+
+    const m1 = text.match(r1);
+    const m2 = text.match(r2);
+    const m3 = text.match(r3);
+
+    if (m1) {
+      startDate = `${m1[2]}-${parseMois(m1[1] || "")}`;
+      isCurrent = true;
+      cleanText = text.replace(m1[0], "");
+    } else if (m2) {
+      startDate = `${m2[2]}-${parseMois(m2[1] || "")}`;
+      endDate = `${m2[4]}-${parseMois(m2[3] || "")}`;
+      cleanText = text.replace(m2[0], "");
+    } else if (m3) {
+      const y = m3[3];
+      startDate = `${y}-${parseMois(m3[1] || "")}`;
+      endDate = `${y}-${parseMois(m3[2] || "")}`;
+      cleanText = text.replace(m3[0], "");
+    } else {
+      const m4 = text.match(r4);
+      if (m4) {
+        startDate = `${m4[2]}-${parseMois(m4[1] || "")}`;
+        endDate = startDate;
+        cleanText = text.replace(m4[0], "");
+      } else {
+        const my1 = text.match(rYearRange);
+        const my2 = text.match(rYearNow);
+        if (my1) {
+          startDate = `${my1[1]}-01`;
+          endDate = `${my1[2]}-01`;
+          cleanText = text.replace(my1[0], "");
+        } else if (my2) {
+          startDate = `${my2[1]}-01`;
+          isCurrent = true;
+          cleanText = text.replace(my2[0], "");
+        }
+      }
+    }
+
+    cleanText = cleanText.replace(/[\s:,\-–—]+$/, "").trim();
+    if (startDate) {
+      return { cleanText, startDate, endDate, isCurrent };
+    }
+    return null;
+  };
+
+  let finalTitle = exp.title;
+  let finalCompany = exp.company;
+  let finalStart = exp.startDate;
+  let finalEnd = exp.endDate;
+  let finalCurrent = exp.isCurrent;
+
+  const resTitle = checkAndExtract(finalTitle);
+  if (resTitle) {
+    finalTitle = resTitle.cleanText;
+    finalStart = resTitle.startDate;
+    finalEnd = resTitle.endDate;
+    finalCurrent = resTitle.isCurrent;
+  } else {
+    const resCompany = checkAndExtract(finalCompany);
+    if (resCompany) {
+      finalCompany = resCompany.cleanText;
+      finalStart = resCompany.startDate;
+      finalEnd = resCompany.endDate;
+      finalCurrent = resCompany.isCurrent;
+    }
+  }
+
+  if (!finalStart && !finalEnd && !finalCurrent) {
+    const rawDates = exp.location || ""; // Sometimes date ends up in location
+    const resRaw = checkAndExtract(rawDates);
+    if (resRaw) {
+      finalStart = resRaw.startDate;
+      finalEnd = resRaw.endDate;
+      finalCurrent = resRaw.isCurrent;
+      if (exp.location === resRaw.cleanText || !resRaw.cleanText) {
+        exp.location = null;
+      }
+    }
+  }
+
+  return {
+    ...exp,
+    title: finalTitle,
+    company: finalCompany,
+    startDate: finalStart,
+    endDate: finalEnd,
+    isCurrent: finalCurrent,
+  };
+}
+
+export const MODELE_CV_IMPORT = "gemini-3.8-flash";
 
 const PROMPT_EXTRACTION_CV_V2 = `Tu es l'extracteur de CV de précision de NACORA.
 Ta mission est d'extraire STRICTEMENT les informations réellement et textuellement présentes dans le document fourni.
@@ -43,7 +193,7 @@ RÈGLES D'OR DE FIDÉLITÉ (VIOLATION = ÉCHEC CRITIQUE) :
    - Les CERTIFICATIONS ou scores (ex: TOEIC, TAGE MAGE) vont EXCLUSIVEMENT dans "certifications", JAMAIS dans "skills".
    - Les CENTRES D'INTÉRÊT vont EXCLUSIVEMENT dans "interests", JAMAIS dans "skills".
 6. PROJETS NON FRAGMENTÉS : Ne sépare pas le nom d'un projet de sa description. Une phrase descriptive appartient à la description du projet en cours, elle ne doit pas devenir un nouveau projet.
-7. IDENTITÉ ET EN-TÊTE : Utilise l'en-tête du document comme source prioritaire pour l'identité. Le prénom et le nom (ex: Nathan PALUMBO) doivent aller dans "firstName" et "lastName". Ne mets pas la ville ("city") si elle n'est pas clairement dans l'en-tête. "professionalTitle" doit être null si aucun titre explicite n'apparaît dans l'en-tête (ne pas utiliser une formation comme titre).
+7. IDENTITÉ ET EN-TÊTE : La première zone de texte significative du document doit être inspectée comme possible en-tête. Priorité d'extraction : 1. prénom + nom (dans "firstName" et "lastName"), 2. email, 3. téléphone, 4. LinkedIn, 5. localisation éventuelle. Ne mets pas la ville ("city") si elle n'est pas clairement dans l'en-tête. "professionalTitle" doit être null si aucun titre explicite n'apparaît dans l'en-tête.
 8. FORMAT JSON STRICT : Réponds UNIQUEMENT avec un objet JSON valide conforme au schéma.`;
 
 const GeminiExtractionSchema = z.object({
@@ -95,15 +245,39 @@ BLOCS ISOLÉS PAR LE SEGMENTEUR DÉTERMINISTE :
     const validatedGemini = GeminiExtractionSchema.parse(parsedJson);
 
     // Contrôle et assainissement strict des entités
-    const experiences = assainirExperiences(validatedGemini.experiences, segmented.experienceBlocks, warnings);
-    const education = assainirEducation(validatedGemini.education, segmented.educationBlocks, warnings);
-    const skills = assainirSkills(validatedGemini.skills, validatedGemini.languages, validatedGemini.certifications, warnings);
+    const experiences = assainirExperiences(
+      validatedGemini.experiences,
+      segmented.experienceBlocks,
+      warnings,
+    );
+    const education = assainirEducation(
+      validatedGemini.education,
+      segmented.educationBlocks,
+      warnings,
+    );
+    const skills = assainirSkills(
+      validatedGemini.skills,
+      validatedGemini.languages,
+      validatedGemini.certifications,
+      warnings,
+    );
     const languages = assainirLanguages(validatedGemini.languages, warnings);
-    const certifications = assainirCertifications(validatedGemini.certifications, warnings);
-    const projects = assainirProjects(validatedGemini.projects, segmented.projectBlocks, warnings);
+    const certifications = assainirCertifications(
+      validatedGemini.certifications,
+      warnings,
+    );
+    const projects = assainirProjects(
+      validatedGemini.projects,
+      segmented.projectBlocks,
+      warnings,
+    );
     const interests = assainirInterests(validatedGemini.interests, warnings);
     const engagements = validatedGemini.engagements || [];
-    const identity = assainirIdentity(validatedGemini.identity, segmented.identityLines);
+    const identity = assainirIdentity(
+      validatedGemini.identity,
+      segmented.identityLines,
+      doc,
+    );
 
     const counts = {
       experiences: experiences.length,
@@ -144,7 +318,10 @@ BLOCS ISOLÉS PAR LE SEGMENTEUR DÉTERMINISTE :
 
     return CVImportResultSchema.parse(result);
   } catch (error) {
-    console.error("[CV Importer Server] Erreur lors de l'extraction Gemini:", error);
+    console.error(
+      "[CV Importer Server] Erreur lors de l'extraction Gemini:",
+      error,
+    );
     // En cas d'échec de Gemini, on s'appuie sur l'extraction directe des blocs segmentés
     return fallbackExtractionDirecte(doc, segmented, warnings, startTime);
   }
@@ -153,6 +330,7 @@ BLOCS ISOLÉS PAR LE SEGMENTEUR DÉTERMINISTE :
 function assainirIdentity(
   raw: IdentityEntity,
   identityLines: string[],
+  doc: DocumentStructure,
 ): IdentityEntity {
   let title = raw.professionalTitle;
   // Interdiction de transformer un diplôme en titre
@@ -166,12 +344,29 @@ function assainirIdentity(
   // Si pas de prénom/nom par Gemini, rechercher dans les premières lignes
   let firstName = raw.firstName || "";
   let lastName = raw.lastName || "";
-  if (!firstName && identityLines.length > 0) {
-    const firstLine = identityLines[0].trim();
-    const parts = firstLine.split(/\s+/);
-    if (parts.length >= 2) {
-      firstName = parts[0];
-      lastName = parts.slice(1).join(" ");
+  if (!firstName) {
+    let firstLine = "";
+    const cleanIdLines = identityLines.map((l) => l.trim()).filter(Boolean);
+    if (cleanIdLines.length > 0) {
+      firstLine = cleanIdLines[0] || "";
+    } else if (doc && doc.plainText) {
+      const lines = doc.plainText
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
+      if (lines.length > 0) {
+        firstLine = lines[0] || "";
+      }
+    }
+
+    if (firstLine) {
+      const parts = firstLine.split(/\s+/);
+      if (parts.length >= 2) {
+        firstName = parts[0] || "";
+        lastName = parts.slice(1).join(" ");
+      } else if (parts.length === 1) {
+        firstName = parts[0] || "";
+      }
     }
   }
 
@@ -198,7 +393,10 @@ function assainirExperiences(
   warnings: ImportWarning[],
 ): ExperienceEntity[] {
   // S'il y a un grand écart entre le nombre de blocs détectés et ce qu'a retourné Gemini, on préserve l'exhaustivité
-  if (segmentedBlocks.length > geminiExps.length && segmentedBlocks.length >= 8) {
+  if (
+    segmentedBlocks.length > geminiExps.length &&
+    segmentedBlocks.length >= 8
+  ) {
     warnings.push({
       field: "experiences",
       message: `${segmentedBlocks.length} expériences ont été segmentées dans votre document.`,
@@ -207,17 +405,26 @@ function assainirExperiences(
   }
 
   return geminiExps.map((exp, idx) => {
+    // Nettoyage avec le normalisateur de dates
+    const normalized = normalizeExperienceDates(exp);
+
     // Vérification que les dates ne sont pas croisées
-    if (exp.startDate && exp.endDate && exp.startDate === exp.endDate && !exp.isCurrent) {
+    if (
+      normalized.startDate &&
+      normalized.endDate &&
+      normalized.startDate === normalized.endDate &&
+      !normalized.isCurrent
+    ) {
       // Date ponctuelle valide
     }
+
     return {
-      ...exp,
-      id: exp.id || `exp-${idx + 1}`,
-      title: exp.title.trim() || "Poste",
-      company: exp.company.trim() || "Entreprise",
-      responsibilities: exp.responsibilities || [],
-      achievements: exp.achievements || [],
+      ...normalized,
+      id: normalized.id || `exp-${idx + 1}`,
+      title: normalized.title.trim() || "Poste",
+      company: normalized.company.trim() || "Entreprise",
+      responsibilities: normalized.responsibilities || [],
+      achievements: normalized.achievements || [],
     };
   });
 }
@@ -272,13 +479,23 @@ function assainirSkills(
   for (const s of skills) {
     const cleanName = s.name.trim();
     const lower = cleanName.toLowerCase();
-    
+
     // Filtre strict : si ça ressemble à une langue ou une certification, on ignore
-    if (!cleanName || langueNoms.has(lower) || certifNoms.has(lower) || blacklist.has(lower)) {
+    if (
+      !cleanName ||
+      langueNoms.has(lower) ||
+      certifNoms.has(lower) ||
+      blacklist.has(lower)
+    ) {
       continue;
     }
     // Autre sécurité : vérifier les mots-clés
-    if (lower.includes("anglais") || lower.includes("toeic") || lower.includes("espagnol") || lower.includes("français")) {
+    if (
+      lower.includes("anglais") ||
+      lower.includes("toeic") ||
+      lower.includes("espagnol") ||
+      lower.includes("français")
+    ) {
       continue;
     }
 
@@ -350,7 +567,9 @@ function assainirProjects(
     if (cleanName.length > 60 && unique.size > 0) {
       const lastKey = Array.from(unique.keys()).pop()!;
       const lastProj = unique.get(lastKey)!;
-      lastProj.description = [lastProj.description, cleanName, p.description].filter(Boolean).join(" ");
+      lastProj.description = [lastProj.description, cleanName, p.description]
+        .filter(Boolean)
+        .join(" ");
       continue;
     }
 
@@ -401,50 +620,57 @@ function fallbackExtractionDirecte(
     severity: "info",
   });
 
-  const experiences: ExperienceEntity[] = segmented.experienceBlocks.map((b, idx) => {
-    const firstLine = b.lines[0] || "";
-    const secondLine = b.lines[1] || "";
-    return {
-      id: `exp-${idx + 1}`,
-      title: firstLine,
-      company: secondLine,
+  const experiences: ExperienceEntity[] = segmented.experienceBlocks.map(
+    (b, idx) => {
+      const firstLine = b.lines[0] || "";
+      const secondLine = b.lines[1] || "";
+      return {
+        id: `exp-${idx + 1}`,
+        title: firstLine,
+        company: secondLine,
+        location: null,
+        contractType: null,
+        startDate: null,
+        endDate: null,
+        isCurrent: false,
+        responsibilities: b.lines.slice(2),
+        achievements: [],
+        source: b.source,
+      };
+    },
+  );
+
+  const education: EducationEntity[] = segmented.educationBlocks.map(
+    (b, idx) => ({
+      id: `edu-${idx + 1}`,
+      school: b.lines[1] || b.lines[0] || "",
+      degree: b.lines[0] || "",
       location: null,
-      contractType: null,
+      specialization: b.lines[2] || null,
+      mention: null,
       startDate: null,
       endDate: null,
-      isCurrent: false,
-      responsibilities: b.lines.slice(2),
-      achievements: [],
       source: b.source,
-    };
-  });
+    }),
+  );
 
-  const education: EducationEntity[] = segmented.educationBlocks.map((b, idx) => ({
-    id: `edu-${idx + 1}`,
-    school: b.lines[1] || b.lines[0] || "",
-    degree: b.lines[0] || "",
-    location: null,
-    specialization: b.lines[2] || null,
-    mention: null,
-    startDate: null,
-    endDate: null,
-    source: b.source,
-  }));
+  const languages: LanguageEntity[] = segmented.languageBlocks.map(
+    (b, idx) => ({
+      id: `lang-${idx + 1}`,
+      name: b.rawText,
+      level: null,
+      source: b.source,
+    }),
+  );
 
-  const languages: LanguageEntity[] = segmented.languageBlocks.map((b, idx) => ({
-    id: `lang-${idx + 1}`,
-    name: b.rawText,
-    level: null,
-    source: b.source,
-  }));
-
-  const certifications: CertificationEntity[] = segmented.certificationBlocks.map((b, idx) => ({
-    id: `cert-${idx + 1}`,
-    name: b.rawText,
-    score: null,
-    date: null,
-    source: b.source,
-  }));
+  const certifications: CertificationEntity[] =
+    segmented.certificationBlocks.map((b, idx) => ({
+      id: `cert-${idx + 1}`,
+      name: b.rawText,
+      score: null,
+      date: null,
+      source: b.source,
+    }));
 
   const projects: ProjectEntity[] = segmented.projectBlocks.map((b, idx) => ({
     id: `proj-${idx + 1}`,
@@ -456,12 +682,14 @@ function fallbackExtractionDirecte(
     source: b.source,
   }));
 
-  const interests: InterestEntity[] = segmented.interestBlocks.map((b, idx) => ({
-    id: `int-${idx + 1}`,
-    name: b.rawText,
-    description: null,
-    source: b.source,
-  }));
+  const interests: InterestEntity[] = segmented.interestBlocks.map(
+    (b, idx) => ({
+      id: `int-${idx + 1}`,
+      name: b.rawText,
+      description: null,
+      source: b.source,
+    }),
+  );
 
   const skills: SkillEntity[] = segmented.skillBlocks.map((b, idx) => ({
     id: `skill-${idx + 1}`,

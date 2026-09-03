@@ -70,7 +70,6 @@ function toRow(c: Contact, userId: string) {
     date_prochaine_action: c.dateProchaineAction || null,
     notes: c.notes,
     historique: c.historique as never,
-    updatedAt: new Date().toISOString(),
   };
 }
 

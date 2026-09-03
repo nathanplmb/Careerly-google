@@ -34,10 +34,10 @@ import {
   nouvelleFormation,
   type CvExperience,
   type CvFormation,
-  type TypeContrat,
+  type any /* TypeContrat */,
 } from "@/lib/cv-structure";
 
-const TYPES_CONTRAT: TypeContrat[] = [
+const TYPES_CONTRAT: any /* TypeContrat */[] = [
   "Stage",
   "Alternance",
   "CDI",
@@ -63,6 +63,22 @@ type Props = {
   profil: Profil;
   onChange: (patch: Partial<Profil>) => void;
 };
+
+function formatPeriodeAffichee(
+  debut?: string,
+  fin?: string,
+  enCours?: boolean,
+): string {
+  const d = debut?.trim() || "";
+  const f = fin?.trim() || "";
+  if (enCours || (!f && d)) {
+    return d ? `${d} - Aujourd'hui` : "En cours";
+  }
+  if (d && f) return `${d} - ${f}`;
+  if (d) return d;
+  if (f) return f;
+  return "";
+}
 
 export function ProfilJourneyTab({ profil, onChange }: Props) {
   const [subView, setSubView] = useState<"experiences" | "formations">(
@@ -233,13 +249,18 @@ export function ProfilJourneyTab({ profil, onChange }: Props) {
             const isExpanded = expandedExp === idx;
             const titreAffiche =
               exp.poste || exp.entreprise || `Expérience #${idx + 1}`;
-            const sousTitre = [exp.entreprise, exp.typeContrat, exp.lieu]
+            const sousTitre = [
+              exp.entreprise,
+              exp.contrat || exp.typeContrat,
+              exp.lieu,
+            ]
               .filter(Boolean)
               .join(" • ");
-            const dates =
-              exp.debut || exp.fin
-                ? `${exp.debut || "Non renseigné"} - ${exp.enCours ? "Aujourd'hui" : exp.fin || "Non renseigné"}`
-                : "";
+            const dates = formatPeriodeAffichee(
+              exp.debut,
+              exp.fin,
+              exp.enCours,
+            );
 
             return (
               <div
@@ -331,10 +352,11 @@ export function ProfilJourneyTab({ profil, onChange }: Props) {
                           Type de contrat
                         </Label>
                         <Select
-                          value={exp.typeContrat || "Stage"}
+                          value={exp.contrat || exp.typeContrat || "Stage"}
                           onValueChange={(val) =>
                             handleModifierExp(idx, {
-                              typeContrat: val as TypeContrat,
+                              contrat: val,
+                              typeContrat: val,
                             })
                           }
                         >
@@ -515,13 +537,15 @@ export function ProfilJourneyTab({ profil, onChange }: Props) {
             const isExpanded = expandedForm === idx;
             const titreAffiche =
               f.diplome || f.etablissement || `Formation #${idx + 1}`;
-            const sousTitre = [f.etablissement, f.specialisation, f.niveau]
+            const sousTitre = [
+              f.etablissement,
+              f.specialisation ||
+                (f as unknown as { parcours?: string }).parcours,
+              f.mention ? `Mention ${f.mention}` : f.niveau,
+            ]
               .filter(Boolean)
               .join(" • ");
-            const dates =
-              f.debut || f.fin
-                ? `${f.debut || "Non renseigné"} - ${f.enCours ? "En cours" : f.fin || "Non renseigné"}`
-                : "";
+            const dates = formatPeriodeAffichee(f.debut, f.fin, f.enCours);
 
             return (
               <div

@@ -16,7 +16,6 @@ import { AppShell } from "@/components/AppShell";
 import { Input } from "@/components/ui/input";
 import { CenterModal } from "@/components/ui/modal";
 import { CandidatureSheet } from "@/components/CandidatureSheet";
-import { MatchBadge } from "@/components/MatchBadge";
 import { StatutBadge } from "@/components/StatutBadge";
 import { useCandidatures } from "@/hooks/useCandidatures";
 import { useProfil } from "@/hooks/useProfil";
@@ -126,8 +125,8 @@ function EntreprisesPage() {
       {groupes.length === 0 && (
         <p className="glass-card p-8 text-center text-sm text-muted-foreground">
           Aucune entreprise pour l'instant. Ajoutez une opportunité depuis{" "}
-          <Link to="/candidatures" className="text-primary hover:underline">
-            vos candidatures
+          <Link to="/opportunites" className="text-primary hover:underline">
+            vos opportunités
           </Link>
           .
         </p>
@@ -135,18 +134,14 @@ function EntreprisesPage() {
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {groupes.map((g, i) => {
-          const meilleur = g.candidatures
-            .map((c) => c.match?.global ?? -1)
-            .reduce((a, b) => Math.max(a, b), -1);
-          const matchTop =
-            g.candidatures.find((c) => (c.match?.global ?? -1) === meilleur)
-              ?.match ?? null;
+          const meilleur = -1;
+          const matchTop = null;
           const avancement = g.candidatures.reduce(
             (best, c) =>
               STATUTS.indexOf(c.statut) > STATUTS.indexOf(best)
                 ? c.statut
                 : best,
-            g.candidatures[0]?.statut ?? "Je vais postuler",
+            g.candidatures[0]?.statut ?? "À candidater",
           );
           return (
             <button
@@ -175,7 +170,6 @@ function EntreprisesPage() {
                 {g.candidatures.length > 0 && (
                   <StatutBadge statut={avancement} />
                 )}
-                {matchTop && <MatchBadge match={matchTop} />}
               </div>
 
               <p className="mt-auto inline-flex items-center gap-1.5 text-xs font-medium text-primary">
@@ -232,7 +226,6 @@ function EntreprisesPage() {
                       </span>
                       <span className="flex items-center gap-2">
                         <StatutBadge statut={c.statut} />
-                        {c.match && <MatchBadge match={c.match} />}
                       </span>
                     </button>
                   </li>

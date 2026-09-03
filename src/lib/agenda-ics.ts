@@ -27,10 +27,11 @@ export function evenementsDepuisCandidatures(
   for (const c of items) {
     if (c.archive) continue;
     const libelle = [c.entreprise, c.poste].filter(Boolean).join(" — ");
-    if (c.dateLimite)
+    const deadline = c.applicationDeadline || c.dateLimite;
+    if (deadline)
       evts.push({
         uid: `${c.id}-limite`,
-        date: c.dateLimite,
+        date: deadline,
         titre: `Date limite : ${libelle}`,
         description: `Dernier jour pour postuler.${c.lien ? ` ${c.lien}` : ""}`,
       });
@@ -41,7 +42,7 @@ export function evenementsDepuisCandidatures(
         titre: `Relance : ${libelle}`,
         description: "Relance prévue depuis Careerly.",
       });
-    if (c.statut === "J'ai un entretien" && c.dateDernierContact)
+    if (c.statut === "Entretien" && c.dateDernierContact)
       evts.push({
         uid: `${c.id}-entretien`,
         date: c.dateDernierContact,

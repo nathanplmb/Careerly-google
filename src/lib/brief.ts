@@ -34,7 +34,7 @@ export type FaitBrief = {
   /** Fait objectif, formulé par l'app à partir des données de la base. */
   fait: string;
   action: ActionBrief;
-  match: number | null;
+  match?: number | null;
   lien: boolean;
 };
 
@@ -73,12 +73,11 @@ export function faitsDuJour(
       entreprise: c.entreprise,
       poste: c.poste,
       statut: c.statut,
-      match: typeof c.match?.global === "number" ? c.match.global : null,
       lien: Boolean(c.lien),
     };
 
     // Deadline de candidature imminente ou dépassée
-    if (c.dateLimite && c.statut === "Je vais postuler") {
+    if (c.dateLimite && c.statut === "À candidater") {
       const reste = daysBetween(aujourdhui, c.dateLimite);
       if (reste !== null && reste < 0) {
         faits.push({
@@ -99,7 +98,7 @@ export function faitsDuJour(
 
     // Relance due
     if (
-      c.statut === "J'ai postulé" &&
+      c.statut === "Candidature envoyée" &&
       c.dateRelance &&
       c.dateRelance <= aujourdhui
     ) {
@@ -115,7 +114,7 @@ export function faitsDuJour(
     }
 
     // Entretien en cours
-    if (c.statut === "J'ai un entretien") {
+    if (c.statut === "Entretien") {
       faits.push({
         ...base,
         categorie: "entretien",
@@ -128,33 +127,18 @@ export function faitsDuJour(
       });
     }
 
-    // Opportunité à fort potentiel non encore envoyée
-    if (
-      c.statut === "Je vais postuler" &&
-      base.match !== null &&
-      base.match >= 80
-    ) {
-      faits.push({
-        ...base,
-        categorie: "opportunite",
-        fait: `Match IA de ${base.match} % chez ${label(c)}, candidature pas encore envoyée.`,
-        action: "postuler",
-      });
-    }
-
     // Candidature à finaliser (informations manquantes)
-    if (c.statut === "Je vais postuler") {
+    if (c.statut === "À candidater") {
       const manques: string[] = [];
       if (!c.detail.trim()) manques.push("détail de l'offre");
       if (!c.lien.trim()) manques.push("lien de l'offre");
       if (!c.contact.trim()) manques.push("contact");
-      if (!c.match) manques.push("analyse Match IA");
       if (manques.length > 0) {
         faits.push({
           ...base,
           categorie: "finaliser",
           fait: `Fiche incomplète chez ${label(c)} : ${manques.join(", ")} manquant(s).`,
-          action: !c.match && c.detail.trim() ? "analyser" : "ouvrir",
+          action: "ouvrir",
         });
       }
     }

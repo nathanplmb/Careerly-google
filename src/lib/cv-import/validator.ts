@@ -10,7 +10,10 @@ export function validateCVImportResult(data: unknown): {
 
   const parsed = CVImportResultSchema.safeParse(data);
   if (!parsed.success) {
-    console.error("[CV Import Validator] Erreur de validation Zod:", parsed.error);
+    console.error(
+      "[CV Import Validator] Erreur de validation Zod:",
+      parsed.error,
+    );
     throw new Error(
       "Le résultat d'extraction ne respecte pas le schéma d'intégrité de NACORA.",
     );
@@ -36,7 +39,8 @@ export function validateCVImportResult(data: unknown): {
     result.identity.professionalTitle = null;
     warnings.push({
       field: "identity.professionalTitle",
-      message: "Titre professionnel ambigu (formation détectée) réinitialisé à vide.",
+      message:
+        "Titre professionnel ambigu (formation détectée) réinitialisé à vide.",
       severity: "info",
     });
   }
@@ -94,6 +98,7 @@ export function validateCVImportResult(data: unknown): {
 
   for (let i = 0; i < result.experiences.length; i++) {
     const exp = result.experiences[i];
+    if (!exp) continue;
     if (!exp.company) {
       warnings.push({
         field: `experiences[${i}].company`,
@@ -101,7 +106,8 @@ export function validateCVImportResult(data: unknown): {
         severity: "warning",
       });
     }
-    const dateDetected = Boolean(exp.startDate || exp.endDate || exp.isCurrent);
+    const dateDetected =
+      exp.startDate != null || exp.endDate != null || exp.isCurrent === true;
     if (!dateDetected) {
       warnings.push({
         field: `experiences[${i}].dates`,
