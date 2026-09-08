@@ -1,10 +1,10 @@
 import type { DetectedSection, RawEntityBlock, SegmentedBlocks } from "./types";
 
 const DATE_RANGE_REGEX =
-  /(?:(?:janv|f[eé]vr|mars|avr|mai|juin|juil|ao[uû]t|sept|oct|nov|d[eé]c)\.?\s*\d{4}|\d{4})\s*(?:[–—\-\/]|(?:[aà]|au)\s*)\s*(?:(?:janv|f[eé]vr|mars|avr|mai|juin|juil|ao[uû]t|sept|oct|nov|d[eé]c)\.?\s*\d{4}|\d{4}|aujourd['’]hui|actuellement|en cours|présent)/i;
+  /(?:(?:janv|f[eé]vr|mars|avr|mai|juin|juil|ao[uû]t|sept|oct|nov|d[eé]c)\.?\s*\d{4}|\d{4})\s*(?:[–—\-/]|(?:[aà]|au)\s*)\s*(?:(?:janv|f[eé]vr|mars|avr|mai|juin|juil|ao[uû]t|sept|oct|nov|d[eé]c)\.?\s*\d{4}|\d{4}|aujourd['’]hui|actuellement|en cours|présent)/i;
 
 const SINGLE_DATE_OR_YEAR_REGEX =
-  /\b(?:19|20)\d{2}(?:\s*[-–—\/]\s*(?:19|20)\d{2})?\b/;
+  /\b(?:19|20)\d{2}(?:\s*[-–—/]\s*(?:19|20)\d{2})?\b/;
 
 export function segmentBlocks(sections: DetectedSection[]): SegmentedBlocks {
   const identityLines: string[] = [];
@@ -107,7 +107,7 @@ function isExperienceBoundary(
   if (accumulatedLines.length === 0) return true;
 
   // Si la ligne commence par une puce de description (-, •, *), elle appartient au bloc en cours
-  if (/^[\s•\-\*–—\t]/.test(line)) {
+  if (/^[\s•\-*–—\t]/.test(line)) {
     return false;
   }
 
@@ -148,7 +148,7 @@ function isEducationBoundary(
   accumulatedLines: string[],
 ): boolean {
   if (accumulatedLines.length === 0) return true;
-  if (/^[\s•\-\*–—\t]/.test(line)) return false;
+  if (/^[\s•\-*–—\t]/.test(line)) return false;
 
   if (
     /\b(master|licence|bachelor|but|dut|bts|baccalaur[eé]at|bac|dipl[oô]me|doctorat|mba|classe\s+pr[eé]paratoire|cpge|école|lyc[eé]e|universit[eé]|iut|facult[eé])\b/i.test(
@@ -174,10 +174,10 @@ function isProjectBoundary(
   accumulatedLines: string[],
 ): boolean {
   if (accumulatedLines.length === 0) return true;
-  if (/^[\s•\-\*–—\t]/.test(line)) return false;
+  if (/^[\s•\-*–—\t]/.test(line)) return false;
 
   // Ligne numérotée ou contenant un nom de projet distinct
-  if (/^(?:\d+[\.\)]|[•\-\*]\s+[A-Z])/.test(line)) return true;
+  if (/^(?:\d+[.)]|[•\-*]\s+[A-Z])/.test(line)) return true;
   if (
     /^(?:projet|podcast|[eé]tude|strat[eé]gie|d[eé]veloppement)\b/i.test(line)
   )
@@ -192,7 +192,7 @@ function isEngagementBoundary(
   accumulatedLines: string[],
 ): boolean {
   if (accumulatedLines.length === 0) return true;
-  if (/^[\s•\-\*–—\t]/.test(line)) return false;
+  if (/^[\s•\-*–—\t]/.test(line)) return false;
   if (DATE_RANGE_REGEX.test(line)) return true;
   return false;
 }
@@ -250,7 +250,7 @@ function segmentMultiLineBlocks(
 function segmentSimpleListBlocks(section: DetectedSection): RawEntityBlock[] {
   const blocks: RawEntityBlock[] = [];
   for (const line of section.lines) {
-    const clean = line.replace(/^[\s•\-\*–—\t]+/, "").trim();
+    const clean = line.replace(/^[\s•\-*–—\t]+/, "").trim();
     if (!clean) continue;
 
     blocks.push({
@@ -270,7 +270,7 @@ function segmentSimpleListBlocks(section: DetectedSection): RawEntityBlock[] {
 function segmentSkillBlocks(section: DetectedSection): RawEntityBlock[] {
   const blocks: RawEntityBlock[] = [];
   for (const line of section.lines) {
-    const clean = line.replace(/^[\s•\-\*–—\t]+/, "").trim();
+    const clean = line.replace(/^[\s•\-*–—\t]+/, "").trim();
     if (!clean) continue;
 
     // Si la ligne contient des séparateurs (virgules, barres verticales, puces)

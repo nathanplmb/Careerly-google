@@ -37,6 +37,7 @@ type Props = {
 };
 
 export function ProfilSkillsTab({ profil, onChange }: Props) {
+  const cv = profil.cvStructure;
   const allCompetences = cv?.competences || [];
   const hardSkillsList = allCompetences.filter(
     (c) =>

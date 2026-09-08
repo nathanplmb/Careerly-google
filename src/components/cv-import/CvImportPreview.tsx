@@ -114,13 +114,13 @@ export function CvImportPreview({
         <div>
           <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-lg font-bold tracking-tight text-foreground">
-              Aperçu de l'extraction V4 (Zéro Perte)
+              Aperçu de l'extraction de votre CV
             </h2>
             <Badge
               variant="outline"
-              className="bg-purple-500/10 text-purple-400 border-purple-500/20 text-xs"
+              className="bg-primary/10 text-primary border-primary/20 text-xs"
             >
-              Fidélité & Exhaustivité Totale
+              Extraction Complète
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
@@ -373,13 +373,15 @@ export function CvImportPreview({
                         <div className="text-xs text-muted-foreground whitespace-nowrap flex items-center gap-1.5 font-mono">
                           <Calendar className="size-3" />
                           <span>{exp.startDate || "Date non précisée"}</span>
-                          <ArrowRight className="size-3" />
-                          <span>
-                            {exp.endDate ||
-                              (exp.isCurrent
-                                ? "Aujourd'hui"
-                                : "Date non précisée")}
-                          </span>
+                          {(exp.endDate || exp.isCurrent) && (
+                            <>
+                              <ArrowRight className="size-3" />
+                              <span>
+                                {exp.endDate ||
+                                  (exp.isCurrent ? "Aujourd'hui" : "")}
+                              </span>
+                            </>
+                          )}
                         </div>
 
                         <button

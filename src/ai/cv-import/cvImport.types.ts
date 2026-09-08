@@ -202,7 +202,23 @@ export interface CvImportCorrelations {
 
 export interface CvImportAuditReport {
   rawTextLength: number;
+  sourceTextHash?: string;
+  cacheKey?: string;
+  fromCache?: boolean;
+  aiCallCount?: number;
   detectedCounts: {
+    experiences: number;
+    education: number;
+    skills: number;
+    tools: number;
+    softSkills: number;
+    languages: number;
+    certifications: number;
+    projects: number;
+    associations: number;
+    interests: number;
+  };
+  expectedCounts?: {
     experiences: number;
     education: number;
     skills: number;
@@ -223,22 +239,32 @@ export interface CvImportAuditReport {
   processingTimeMs: number;
 }
 
-export interface CvImportResult {
+export interface ExtractedCV {
   identity: CvImportIdentity;
-  summary: CvImportSummary;
+  summary?: CvImportSummary;
   experiences: CvImportExperience[];
   education: CvImportEducation[];
-  skills: CvImportSkill[];
-  tools: CvImportTool[];
-  softSkills: CvImportSoftSkill[];
-  languages: CvImportLanguage[];
   certifications: CvImportCertification[];
+  languages: CvImportLanguage[];
+  tools: CvImportTool[];
+  skills: CvImportSkill[];
+  softSkills?: CvImportSoftSkill[];
   projects: CvImportProject[];
+  engagements?: CvImportAssociation[];
   associations: CvImportAssociation[];
   interests: CvImportInterest[];
   correlations?: CvImportCorrelations;
+  audit?: CvImportAuditReport;
+  rawText?: string;
+  sourceTextHash?: string;
+}
+
+export interface CvImportResult extends ExtractedCV {
+  summary: CvImportSummary;
+  softSkills: CvImportSoftSkill[];
   audit: CvImportAuditReport;
   rawText: string;
+  sourceTextHash?: string;
 }
 
 export type CvImportStep =
@@ -247,5 +273,12 @@ export type CvImportStep =
   | "identifying"
   | "structuring"
   | "verifying"
+  | "finalizing"
   | "preview"
   | "error";
+
+export interface CvImportProgressUpdate {
+  step: CvImportStep;
+  message: string;
+  progressPercent: number;
+}

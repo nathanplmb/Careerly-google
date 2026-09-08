@@ -36,6 +36,35 @@ export function patchReadableStreamInstance(stream: unknown): void {
 }
 
 export function initPolyfills(): void {
+  const globalScope =
+    typeof globalThis !== "undefined"
+      ? globalThis
+      : typeof window !== "undefined"
+        ? window
+        : typeof self !== "undefined"
+          ? self
+          : {};
+
+  // Polyfill window.process and global for client-side environments (Safari / WebKit)
+  const gAny = globalScope as Record<string, unknown>;
+  if (!gAny.process) {
+    gAny.process = {
+      env: { NODE_ENV: "development", TSS_ROUTER_BASEPATH: "" },
+    };
+  } else {
+    const proc = gAny.process as { env?: Record<string, string> };
+    if (!proc.env) {
+      proc.env = { NODE_ENV: "development", TSS_ROUTER_BASEPATH: "" };
+    } else {
+      proc.env.NODE_ENV = proc.env.NODE_ENV || "development";
+      proc.env.TSS_ROUTER_BASEPATH = proc.env.TSS_ROUTER_BASEPATH || "";
+    }
+  }
+
+  if (!gAny.global) {
+    gAny.global = globalScope;
+  }
+
   if (typeof Symbol !== "undefined" && !Symbol.asyncIterator) {
     (Symbol as unknown as { asyncIterator: symbol }).asyncIterator = Symbol.for(
       "Symbol.asyncIterator",
@@ -46,15 +75,6 @@ export function initPolyfills(): void {
     typeof Symbol !== "undefined" && Symbol.asyncIterator
       ? Symbol.asyncIterator
       : Symbol.for("Symbol.asyncIterator");
-
-  const globalScope =
-    typeof globalThis !== "undefined"
-      ? globalThis
-      : typeof window !== "undefined"
-        ? window
-        : typeof self !== "undefined"
-          ? self
-          : {};
 
   const g = globalScope as unknown as {
     ReadableStream?: {

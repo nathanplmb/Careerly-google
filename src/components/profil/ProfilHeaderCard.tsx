@@ -197,7 +197,7 @@ export function ProfilHeaderCard({
         </div>
 
         {/* Suggestion prioritaire intelligente */}
-        {bilan.suggestions.length > 0 && (
+        {bilan.suggestions.length > 0 && bilan.suggestions[0] && (
           <div className="flex items-center justify-between gap-3 pt-2 border-t border-border/40 text-xs">
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-purple-400 font-bold shrink-0">
@@ -209,7 +209,11 @@ export function ProfilHeaderCard({
             </div>
             <button
               type="button"
-              onClick={() => onSelectTab(bilan.suggestions[0].tab)}
+              onClick={() => {
+                if (bilan.suggestions[0]?.tab) {
+                  onSelectTab(bilan.suggestions[0].tab);
+                }
+              }}
               className="text-xs font-semibold text-purple-400 hover:text-purple-300 inline-flex items-center gap-1 shrink-0"
             >
               Compléter (+{bilan.suggestions[0].gain} pts)

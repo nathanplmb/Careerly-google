@@ -4,7 +4,7 @@
  * Sauvegardée -> À préparer -> Candidature envoyée -> Relance -> Entretien -> Deuxième entretien -> Offre reçue -> Acceptée / Refusée
  */
 
-import { todayIso, type Statut } from "./candidatures";
+import { todayIso, type Candidature, type Statut } from "./candidatures";
 
 export type WorkflowStepKey =
   | "saved"
@@ -176,7 +176,7 @@ export function getWorkflowStepConfig(
   key: WorkflowStepKey,
 ): WorkflowStepConfig {
   const found = WORKFLOW_STEPS_CONFIG.find((s) => s.key === key);
-  return found || WORKFLOW_STEPS_CONFIG[0];
+  return found ?? WORKFLOW_STEPS_CONFIG[0]!;
 }
 
 /** Convertit un statut texte en clé d'étape du workflow. */
@@ -212,7 +212,13 @@ export function statutToWorkflowStepKey(
   if (s.includes("relanc")) {
     return "follow_up";
   }
-  if (s.includes("envoy") || s.includes("postul") || s.includes("candidat")) {
+  if (s.includes("envoy") || s.includes("postul")) {
+    return "application_sent";
+  }
+  if (s === "à candidater" || s.includes("candidater")) {
+    return "to_prepare";
+  }
+  if (s.includes("candidat")) {
     return "application_sent";
   }
   if (s.includes("prépar") || s.includes("étudier")) {
@@ -393,7 +399,7 @@ export function extractDatesFromWorkflowEvents(events: WorkflowEvent[]): {
   const getLatestDate = (type: WorkflowStepKey): string | null => {
     const matches = events.filter((e) => e.type === type && e.date);
     if (!matches.length) return null;
-    return matches[matches.length - 1].date;
+    return matches[matches.length - 1]?.date ?? null;
   };
 
   const interviewDate = getLatestDate("interview");
@@ -417,4 +423,108 @@ export function extractDatesFromWorkflowEvents(events: WorkflowEvent[]): {
     rejectedAt: getLatestDate("rejected"),
     lastContactDate,
   };
+}
+
+/**
+ * SOURCE UNIQUE DE VÉRITÉ POUR LES TRANSITIONS DE STATUT & KANBAN (Sections 3, 5, 6, 24, 25).
+ * Déplace une opportunité vers une nouvelle étape en mettant à jour en un seul endroit :
+ * - currentWorkflowStep (clé d'étape canonique)
+ * - currentStage (libellé d'étape visible, ex: "À préparer", "Candidature envoyée")
+ * - statut et status (compatibilité générale)
+ * - workflowEvents (ajout de l'événement daté et documenté)
+ * - dates spécifiques de l'étape (dateEnvoi, followUpDate, interviewDate, etc.)
+ */
+export function transitionWorkflowStep(
+  candidature: Candidature,
+  targetStepKey: WorkflowStepKey,
+  options?: {
+    date?: string;
+    note?: string;
+    channel?: string;
+    interviewType?: string;
+    interlocuteur?: string;
+  },
+): Partial<Candidature> {
+  const targetConfig = getWorkflowStepConfig(targetStepKey);
+  const newStatut = targetConfig.statutLabel;
+  const stepDate = options?.date || todayIso();
+  const currentStepKey =
+    candidature.currentWorkflowStep ||
+    statutToWorkflowStepKey(candidature.currentStage || candidature.statut);
+  const prevConfig = getWorkflowStepConfig(currentStepKey);
+
+  const defaultNote =
+    currentStepKey !== targetStepKey
+      ? `Étape modifiée depuis « ${prevConfig.label} »`
+      : targetConfig.description;
+
+  const newEvent: WorkflowEvent = {
+    id: `evt-${targetStepKey}-${Date.now()}`,
+    type: targetStepKey,
+    date: stepDate,
+    note: (options?.note && options.note.trim()) || defaultNote,
+    channel:
+      targetStepKey === "application_sent"
+        ? options?.channel || candidature.source
+        : undefined,
+    interviewType:
+      targetStepKey === "interview" || targetStepKey === "second_interview"
+        ? options?.interviewType
+        : undefined,
+    interlocuteur:
+      targetStepKey === "interview" || targetStepKey === "second_interview"
+        ? options?.interlocuteur || candidature.contact
+        : undefined,
+    createdAt: new Date().toISOString(),
+  };
+
+  const otherEvents = (candidature.workflowEvents || []).filter(
+    (e) => e.type !== targetStepKey,
+  );
+  const updatedEvents = [...otherEvents, newEvent].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+  );
+
+  const patch: Partial<Candidature> = {
+    currentWorkflowStep: targetStepKey,
+    currentStage: targetConfig.statutLabel,
+    statut: newStatut,
+    status: newStatut,
+    workflowEvents: updatedEvents,
+  };
+
+  if (targetStepKey === "saved") {
+    patch.savedAt = stepDate;
+  } else if (targetStepKey === "to_prepare") {
+    patch.preparedAt = stepDate;
+  } else if (targetStepKey === "application_sent") {
+    patch.appliedAt = stepDate;
+    patch.dateEnvoi = stepDate;
+    if (options?.channel) patch.source = options.channel;
+  } else if (targetStepKey === "follow_up") {
+    patch.followUpDate = stepDate;
+    patch.dateRelance = stepDate;
+  } else if (targetStepKey === "interview") {
+    patch.interviewDate = stepDate;
+    patch.dateDernierContact = stepDate;
+    patch.lastContactDate = stepDate;
+    if (options?.interlocuteur?.trim()) {
+      patch.contact = options.interlocuteur.trim();
+    }
+  } else if (targetStepKey === "second_interview") {
+    patch.secondInterviewDate = stepDate;
+    patch.dateDernierContact = stepDate;
+    patch.lastContactDate = stepDate;
+    if (options?.interlocuteur?.trim()) {
+      patch.contact = options.interlocuteur.trim();
+    }
+  } else if (targetStepKey === "offer_received") {
+    patch.offerReceivedAt = stepDate;
+  } else if (targetStepKey === "accepted") {
+    patch.acceptedAt = stepDate;
+  } else if (targetStepKey === "rejected") {
+    patch.rejectedAt = stepDate;
+  }
+
+  return patch;
 }

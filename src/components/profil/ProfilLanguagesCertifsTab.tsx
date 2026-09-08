@@ -41,17 +41,16 @@ export function ProfilLanguagesCertifsTab({ profil, onChange }: Props) {
   const certifsList = cv?.certifications || [];
 
   const [nouvelleLangueNom, setNouvelleLangueNom] = useState("");
-  const [niveauLangueSelect, setNiveauLangueSelect] = useState<NiveauLangue>(
-    "Courant (C1)" as any,
-  );
+  const [niveauLangueSelect, setNiveauLangueSelect] =
+    useState<NiveauLangue>("B2");
   const [scoreOfficiel, setScoreOfficiel] = useState("");
 
   const updateLangues = (nouvelles: CvLangue[]) => {
     const resumeText = nouvelles
-      .map((l) => `${(l as any).langue} (${l.niveau || "Courant"})`)
+      .map((l) => `${l.nom} (${l.niveau || "B2"})`)
       .join(", ");
     onChange({
-      langues: resumeText || profi(l as any).langues,
+      langues: resumeText || profil.langues,
       cvStructure: {
         ...cv,
         langues: nouvelles,
@@ -72,8 +71,7 @@ export function ProfilLanguagesCertifsTab({ profil, onChange }: Props) {
     if (!nouvelleLangueNom.trim()) return;
     const nl: CvLangue = {
       id: crypto.randomUUID(),
-      // @ts-ignore
-      langue: nouvelleLangueNom.trim(),
+      nom: nouvelleLangueNom.trim(),
       niveau: niveauLangueSelect,
       score: scoreOfficiel.trim() || undefined,
     };
@@ -175,7 +173,7 @@ export function ProfilLanguagesCertifsTab({ profil, onChange }: Props) {
               >
                 <div className="space-y-0.5 min-w-0">
                   <span className="font-semibold text-xs text-foreground block truncate">
-                    {lang.langue}
+                    {lang.nom}
                   </span>
                   <div className="flex items-center gap-2">
                     <span className="text-[11px] text-indigo-400 font-medium">
@@ -267,33 +265,30 @@ export function ProfilLanguagesCertifsTab({ profil, onChange }: Props) {
 
               <div className="grid gap-3 sm:grid-cols-3">
                 <Input
-                  value={cert.emetteur || ""}
+                  value={cert.organisme || ""}
                   onChange={(e) =>
                     handleModifierCertif(cert.id, {
-                      // @ts-ignore
-                      emetteur: e.target.value,
+                      organisme: e.target.value,
                     })
                   }
                   placeholder="Organisme (ex: Google, CFA Institute, Bloomberg...)"
                   className="text-xs"
                 />
                 <Input
-                  value={cert.annee || ""}
+                  value={cert.date || ""}
                   onChange={(e) =>
                     handleModifierCertif(cert.id, {
-                      // @ts-ignore
-                      annee: e.target.value,
+                      date: e.target.value,
                     })
                   }
                   placeholder="Année / Date d'obtention (ex: 2024)"
                   className="text-xs"
                 />
                 <Input
-                  value={cert.url || ""}
+                  value={cert.lien || ""}
                   onChange={(e) =>
                     handleModifierCertif(cert.id, {
-                      // @ts-ignore
-                      url: e.target.value,
+                      lien: e.target.value,
                     })
                   }
                   placeholder="Lien / URL de vérification (optionnel)"

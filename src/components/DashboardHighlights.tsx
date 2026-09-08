@@ -12,6 +12,28 @@ const BAR_COLORS = [
   "bg-destructive",
 ];
 
+function getNiveauMatch(score: number) {
+  if (score >= 85)
+    return {
+      label: "Excellent match",
+      badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    };
+  if (score >= 70)
+    return {
+      label: "Très bon match",
+      badge: "bg-purple-500/10 text-purple-400 border-purple-500/20",
+    };
+  if (score >= 50)
+    return {
+      label: "Match moyen",
+      badge: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    };
+  return {
+    label: "Match faible",
+    badge: "bg-rose-500/10 text-rose-400 border-rose-500/20",
+  };
+}
+
 function initiales(nom: string) {
   return (
     nom
@@ -51,6 +73,7 @@ export function RecentCandidatures({
           </li>
         )}
         {recentes.map((c, i) => {
+          const n = c.match ? getNiveauMatch(c.match.global) : null;
           return (
             <li
               key={c.id}
@@ -78,13 +101,13 @@ export function RecentCandidatures({
                     <span
                       className={cn(
                         "num rounded-md border px-1.5 py-0.5 text-[12px] font-bold",
-                        (n as any)?.badge,
+                        n.badge,
                       )}
                     >
                       {c.match.global}%
                     </span>
                     <span className="hidden text-[12px] text-muted-foreground lg:block">
-                      {(n as any)?.label}
+                      {n.label}
                     </span>
                   </span>
                 )}
@@ -116,6 +139,7 @@ export function MatchSpotlight({
 }) {
   const match = candidature?.match ?? null;
   const score = match?.global ?? 0;
+  const n = getNiveauMatch(score);
   const R = 52;
   const C = 2 * Math.PI * R;
 
@@ -166,7 +190,7 @@ export function MatchSpotlight({
 
           <div className="min-w-0 flex-1">
             <h3 className="flex items-center justify-center gap-1.5 text-[17px] font-bold xl:justify-start">
-              {(n as any)?.label} <span className="text-primary">✦</span>
+              {n.label} <span className="text-primary">✦</span>
             </h3>
             <p className="mt-1 line-clamp-2 text-[13px] text-muted-foreground">
               {match.explication ||
@@ -185,7 +209,7 @@ export function MatchSpotlight({
 
       {match && (match.criteres?.length || 0) > 0 && (
         <ul className="mt-5 flex flex-col gap-2.5">
-          {match.criteres.slice(0, 6).map((d, i) => (
+          {(match.criteres || []).slice(0, 6).map((d, i) => (
             <li key={d.critere} className="flex items-center gap-3">
               <span className="w-28 shrink-0 truncate text-[12.5px] text-muted-foreground">
                 {d.critere}

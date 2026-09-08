@@ -216,8 +216,27 @@ export const CvImportCorrelationsSchema = z.object({
 });
 
 export const CvImportRawGeminiSchema = z.object({
-  identity: CvImportIdentitySchema.default({}),
-  summary: CvImportSummarySchema.default({}),
+  identity: CvImportIdentitySchema.default(() => ({
+    firstName: null,
+    lastName: null,
+    professionalTitle: null,
+    email: null,
+    phone: null,
+    city: null,
+    postalCode: null,
+    country: null,
+    drivingLicense: null,
+    mobility: null,
+    linkedin: null,
+    portfolio: null,
+    github: null,
+    website: null,
+  })),
+  summary: CvImportSummarySchema.default(() => ({
+    headline: null,
+    careerObjective: null,
+    shortBio: null,
+  })),
   experiences: z.array(CvImportExperienceSchema).default([]),
   education: z.array(CvImportEducationSchema).default([]),
   skills: z.array(CvImportSkillSchema).default([]),
@@ -281,12 +300,31 @@ export const cvImportResultSchema = CvImportRawGeminiSchema.extend({
         .default([]),
       processingTimeMs: z.number().default(0),
     })
-    .default({}),
+    .default(() => ({
+      rawTextLength: 0,
+      detectedCounts: {
+        experiences: 0,
+        education: 0,
+        skills: 0,
+        tools: 0,
+        softSkills: 0,
+        languages: 0,
+        certifications: 0,
+        projects: 0,
+        associations: 0,
+        interests: 0,
+      },
+      completenessCheckPassed: true,
+      warnings: [],
+      processingTimeMs: 0,
+    })),
   rawText: z.string().default(""),
 });
 
+export const SCHEMA_VERSION = "v5.0.0";
+
 /**
- * Schéma JSON strict pour l'API @google/genai
+ * Schéma JSON strict pour l'API @google/genai (V5 Déterministe)
  */
 export const geminiCvImportResponseSchema = {
   type: "OBJECT" as const,
@@ -327,6 +365,7 @@ export const geminiCvImportResponseSchema = {
           company: { type: "STRING" as const },
           location: { type: "STRING" as const },
           contractType: { type: "STRING" as const },
+          employmentType: { type: "STRING" as const },
           startDate: { type: "STRING" as const },
           endDate: { type: "STRING" as const },
           isCurrent: { type: "BOOLEAN" as const },
@@ -347,6 +386,10 @@ export const geminiCvImportResponseSchema = {
             type: "ARRAY" as const,
             items: { type: "STRING" as const },
           },
+          quantifiedResults: {
+            type: "ARRAY" as const,
+            items: { type: "STRING" as const },
+          },
           tools: {
             type: "ARRAY" as const,
             items: { type: "STRING" as const },
@@ -357,7 +400,7 @@ export const geminiCvImportResponseSchema = {
           },
           sourceText: { type: "STRING" as const },
         },
-        required: ["title", "company"],
+        required: ["title", "company", "missions"],
       },
     },
     education: {
@@ -536,7 +579,7 @@ export const geminiCvImportResponseSchema = {
           },
           sourceText: { type: "STRING" as const },
         },
-        required: ["organization"],
+        required: ["organization", "missions"],
       },
     },
     interests: {
@@ -554,7 +597,7 @@ export const geminiCvImportResponseSchema = {
           details: { type: "STRING" as const },
           sourceText: { type: "STRING" as const },
         },
-        required: ["name"],
+        required: ["name", "subtopics"],
       },
     },
   },
@@ -566,5 +609,8 @@ export const geminiCvImportResponseSchema = {
     "tools",
     "languages",
     "certifications",
+    "projects",
+    "associations",
+    "interests",
   ],
 };

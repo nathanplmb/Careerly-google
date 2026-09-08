@@ -10,40 +10,25 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AssistantRouteImport } from './routes/assistant'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CalendrierRouteImport } from './routes/calendrier'
 import { Route as CandidaturesRouteImport } from './routes/candidatures'
-import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as ContactsRouteImport } from './routes/contacts'
 import { Route as DocumentsRouteImport } from './routes/documents'
 import { Route as EntreprisesRouteImport } from './routes/entreprises'
 import { Route as ImportRouteImport } from './routes/import'
-import { Route as InterviewRouteImport } from './routes/interview'
-import { Route as LinkedinRouteImport } from './routes/linkedin'
-import { Route as MatchRouteImport } from './routes/match'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as OpportunitesRouteImport } from './routes/opportunites'
 import { Route as ParametresRouteImport } from './routes/parametres'
 import { Route as ProfilRouteImport } from './routes/profil'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
-import { Route as AssistantIndexRouteImport } from './routes/assistant.index'
-import { Route as AssistantConnectRouteImport } from './routes/assistant.connect'
-import { Route as AssistantInterviewRouteImport } from './routes/assistant.interview'
-import { Route as AssistantLinkedinRouteImport } from './routes/assistant.linkedin'
-import { Route as AssistantMatchRouteImport } from './routes/assistant.match'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AssistantRoute = AssistantRouteImport.update({
-  id: '/assistant',
-  path: '/assistant',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -59,11 +44,6 @@ const CalendrierRoute = CalendrierRouteImport.update({
 const CandidaturesRoute = CandidaturesRouteImport.update({
   id: '/candidatures',
   path: '/candidatures',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConnectRoute = ConnectRouteImport.update({
-  id: '/connect',
-  path: '/connect',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactsRoute = ContactsRouteImport.update({
@@ -84,21 +64,6 @@ const EntreprisesRoute = EntreprisesRouteImport.update({
 const ImportRoute = ImportRouteImport.update({
   id: '/import',
   path: '/import',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InterviewRoute = InterviewRouteImport.update({
-  id: '/interview',
-  path: '/interview',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LinkedinRoute = LinkedinRouteImport.update({
-  id: '/linkedin',
-  path: '/linkedin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MatchRoute = MatchRouteImport.update({
-  id: '/match',
-  path: '/match',
   getParentRoute: () => rootRouteImport,
 } as any)
 const McpRoute = McpRouteImport.update({
@@ -133,31 +98,6 @@ const Char91DotwellKnownChar93OauthProtectedResourceRoute =
     path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
-const AssistantIndexRoute = AssistantIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AssistantRoute,
-} as any)
-const AssistantConnectRoute = AssistantConnectRouteImport.update({
-  id: '/connect',
-  path: '/connect',
-  getParentRoute: () => AssistantRoute,
-} as any)
-const AssistantInterviewRoute = AssistantInterviewRouteImport.update({
-  id: '/interview',
-  path: '/interview',
-  getParentRoute: () => AssistantRoute,
-} as any)
-const AssistantLinkedinRoute = AssistantLinkedinRouteImport.update({
-  id: '/linkedin',
-  path: '/linkedin',
-  getParentRoute: () => AssistantRoute,
-} as any)
-const AssistantMatchRoute = AssistantMatchRouteImport.update({
-  id: '/match',
-  path: '/match',
-  getParentRoute: () => AssistantRoute,
-} as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
@@ -172,29 +112,19 @@ const Char91DotmcpChar93InvokeToolToolRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/assistant': typeof AssistantRouteWithChildren
   '/auth': typeof AuthRoute
   '/calendrier': typeof CalendrierRoute
   '/candidatures': typeof CandidaturesRoute
-  '/connect': typeof ConnectRoute
   '/contacts': typeof ContactsRoute
   '/documents': typeof DocumentsRoute
   '/entreprises': typeof EntreprisesRoute
   '/import': typeof ImportRoute
-  '/interview': typeof InterviewRoute
-  '/linkedin': typeof LinkedinRoute
-  '/match': typeof MatchRoute
   '/mcp': typeof McpRoute
   '/opportunites': typeof OpportunitesRoute
   '/parametres': typeof ParametresRoute
   '/profil': typeof ProfilRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/assistant/connect': typeof AssistantConnectRoute
-  '/assistant/interview': typeof AssistantInterviewRoute
-  '/assistant/linkedin': typeof AssistantLinkedinRoute
-  '/assistant/match': typeof AssistantMatchRoute
-  '/assistant/': typeof AssistantIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
@@ -203,54 +133,35 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/calendrier': typeof CalendrierRoute
   '/candidatures': typeof CandidaturesRoute
-  '/connect': typeof ConnectRoute
   '/contacts': typeof ContactsRoute
   '/documents': typeof DocumentsRoute
   '/entreprises': typeof EntreprisesRoute
   '/import': typeof ImportRoute
-  '/interview': typeof InterviewRoute
-  '/linkedin': typeof LinkedinRoute
-  '/match': typeof MatchRoute
   '/mcp': typeof McpRoute
   '/opportunites': typeof OpportunitesRoute
   '/parametres': typeof ParametresRoute
   '/profil': typeof ProfilRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/assistant/connect': typeof AssistantConnectRoute
-  '/assistant/interview': typeof AssistantInterviewRoute
-  '/assistant/linkedin': typeof AssistantLinkedinRoute
-  '/assistant/match': typeof AssistantMatchRoute
-  '/assistant': typeof AssistantIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/assistant': typeof AssistantRouteWithChildren
   '/auth': typeof AuthRoute
   '/calendrier': typeof CalendrierRoute
   '/candidatures': typeof CandidaturesRoute
-  '/connect': typeof ConnectRoute
   '/contacts': typeof ContactsRoute
   '/documents': typeof DocumentsRoute
   '/entreprises': typeof EntreprisesRoute
   '/import': typeof ImportRoute
-  '/interview': typeof InterviewRoute
-  '/linkedin': typeof LinkedinRoute
-  '/match': typeof MatchRoute
   '/mcp': typeof McpRoute
   '/opportunites': typeof OpportunitesRoute
   '/parametres': typeof ParametresRoute
   '/profil': typeof ProfilRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/assistant/connect': typeof AssistantConnectRoute
-  '/assistant/interview': typeof AssistantInterviewRoute
-  '/assistant/linkedin': typeof AssistantLinkedinRoute
-  '/assistant/match': typeof AssistantMatchRoute
-  '/assistant/': typeof AssistantIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
 }
@@ -258,29 +169,19 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/assistant'
     | '/auth'
     | '/calendrier'
     | '/candidatures'
-    | '/connect'
     | '/contacts'
     | '/documents'
     | '/entreprises'
     | '/import'
-    | '/interview'
-    | '/linkedin'
-    | '/match'
     | '/mcp'
     | '/opportunites'
     | '/parametres'
     | '/profil'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
-    | '/assistant/connect'
-    | '/assistant/interview'
-    | '/assistant/linkedin'
-    | '/assistant/match'
-    | '/assistant/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
   fileRoutesByTo: FileRoutesByTo
@@ -289,71 +190,47 @@ export interface FileRouteTypes {
     | '/auth'
     | '/calendrier'
     | '/candidatures'
-    | '/connect'
     | '/contacts'
     | '/documents'
     | '/entreprises'
     | '/import'
-    | '/interview'
-    | '/linkedin'
-    | '/match'
     | '/mcp'
     | '/opportunites'
     | '/parametres'
     | '/profil'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
-    | '/assistant/connect'
-    | '/assistant/interview'
-    | '/assistant/linkedin'
-    | '/assistant/match'
-    | '/assistant'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
   id:
     | '__root__'
     | '/'
-    | '/assistant'
     | '/auth'
     | '/calendrier'
     | '/candidatures'
-    | '/connect'
     | '/contacts'
     | '/documents'
     | '/entreprises'
     | '/import'
-    | '/interview'
-    | '/linkedin'
-    | '/match'
     | '/mcp'
     | '/opportunites'
     | '/parametres'
     | '/profil'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
-    | '/assistant/connect'
-    | '/assistant/interview'
-    | '/assistant/linkedin'
-    | '/assistant/match'
-    | '/assistant/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AssistantRoute: typeof AssistantRouteWithChildren
   AuthRoute: typeof AuthRoute
   CalendrierRoute: typeof CalendrierRoute
   CandidaturesRoute: typeof CandidaturesRoute
-  ConnectRoute: typeof ConnectRoute
   ContactsRoute: typeof ContactsRoute
   DocumentsRoute: typeof DocumentsRoute
   EntreprisesRoute: typeof EntreprisesRoute
   ImportRoute: typeof ImportRoute
-  InterviewRoute: typeof InterviewRoute
-  LinkedinRoute: typeof LinkedinRoute
-  MatchRoute: typeof MatchRoute
   McpRoute: typeof McpRoute
   OpportunitesRoute: typeof OpportunitesRoute
   ParametresRoute: typeof ParametresRoute
@@ -371,13 +248,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/assistant': {
-      id: '/assistant'
-      path: '/assistant'
-      fullPath: '/assistant'
-      preLoaderRoute: typeof AssistantRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -399,13 +269,6 @@ declare module '@tanstack/react-router' {
       path: '/candidatures'
       fullPath: '/candidatures'
       preLoaderRoute: typeof CandidaturesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/connect': {
-      id: '/connect'
-      path: '/connect'
-      fullPath: '/connect'
-      preLoaderRoute: typeof ConnectRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contacts': {
@@ -434,27 +297,6 @@ declare module '@tanstack/react-router' {
       path: '/import'
       fullPath: '/import'
       preLoaderRoute: typeof ImportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/interview': {
-      id: '/interview'
-      path: '/interview'
-      fullPath: '/interview'
-      preLoaderRoute: typeof InterviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/linkedin': {
-      id: '/linkedin'
-      path: '/linkedin'
-      fullPath: '/linkedin'
-      preLoaderRoute: typeof LinkedinRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/match': {
-      id: '/match'
-      path: '/match'
-      fullPath: '/match'
-      preLoaderRoute: typeof MatchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mcp': {
@@ -499,41 +341,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/assistant/': {
-      id: '/assistant/'
-      path: '/'
-      fullPath: '/assistant/'
-      preLoaderRoute: typeof AssistantIndexRouteImport
-      parentRoute: typeof AssistantRoute
-    }
-    '/assistant/connect': {
-      id: '/assistant/connect'
-      path: '/connect'
-      fullPath: '/assistant/connect'
-      preLoaderRoute: typeof AssistantConnectRouteImport
-      parentRoute: typeof AssistantRoute
-    }
-    '/assistant/interview': {
-      id: '/assistant/interview'
-      path: '/interview'
-      fullPath: '/assistant/interview'
-      preLoaderRoute: typeof AssistantInterviewRouteImport
-      parentRoute: typeof AssistantRoute
-    }
-    '/assistant/linkedin': {
-      id: '/assistant/linkedin'
-      path: '/linkedin'
-      fullPath: '/assistant/linkedin'
-      preLoaderRoute: typeof AssistantLinkedinRouteImport
-      parentRoute: typeof AssistantRoute
-    }
-    '/assistant/match': {
-      id: '/assistant/match'
-      path: '/match'
-      fullPath: '/assistant/match'
-      preLoaderRoute: typeof AssistantMatchRouteImport
-      parentRoute: typeof AssistantRoute
-    }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
       path: '/.lovable/oauth/consent'
@@ -551,40 +358,15 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AssistantRouteChildren {
-  AssistantConnectRoute: typeof AssistantConnectRoute
-  AssistantInterviewRoute: typeof AssistantInterviewRoute
-  AssistantLinkedinRoute: typeof AssistantLinkedinRoute
-  AssistantMatchRoute: typeof AssistantMatchRoute
-  AssistantIndexRoute: typeof AssistantIndexRoute
-}
-
-const AssistantRouteChildren: AssistantRouteChildren = {
-  AssistantConnectRoute: AssistantConnectRoute,
-  AssistantInterviewRoute: AssistantInterviewRoute,
-  AssistantLinkedinRoute: AssistantLinkedinRoute,
-  AssistantMatchRoute: AssistantMatchRoute,
-  AssistantIndexRoute: AssistantIndexRoute,
-}
-
-const AssistantRouteWithChildren = AssistantRoute._addFileChildren(
-  AssistantRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AssistantRoute: AssistantRouteWithChildren,
   AuthRoute: AuthRoute,
   CalendrierRoute: CalendrierRoute,
   CandidaturesRoute: CandidaturesRoute,
-  ConnectRoute: ConnectRoute,
   ContactsRoute: ContactsRoute,
   DocumentsRoute: DocumentsRoute,
   EntreprisesRoute: EntreprisesRoute,
   ImportRoute: ImportRoute,
-  InterviewRoute: InterviewRoute,
-  LinkedinRoute: LinkedinRoute,
-  MatchRoute: MatchRoute,
   McpRoute: McpRoute,
   OpportunitesRoute: OpportunitesRoute,
   ParametresRoute: ParametresRoute,

@@ -30,6 +30,8 @@ export type FormationCV = {
   diplome: string;
   etablissement: string;
   lieu: string;
+  ville?: string;
+  periode?: string;
   debut: string;
   fin: string;
   enCours?: boolean;
@@ -42,6 +44,7 @@ export type FormationCV = {
   projets?: string[];
   resultats?: string;
   details: string;
+  description?: string;
   niveau?: string;
   sourceText?: string;
 };
@@ -128,7 +131,7 @@ export type LangueCV = {
   id: string;
   nom: string;
   niveau: NiveauLangue;
-  certification: string;
+  certification?: string;
   score?: string;
   attestation?: string;
   certificationsAssociees?: Array<{
@@ -357,7 +360,7 @@ export function nouveauProjet(): ProjetCV {
     description: "",
     technologies: [],
     competences: [],
-    resultats: "",
+    resultats: [],
     lien: "",
   };
 }

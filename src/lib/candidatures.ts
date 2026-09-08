@@ -167,7 +167,11 @@ export type Candidature = {
   extractedAt?: string | null;
 
   // Suivi & Workflow NACORA
+  companyId?: string | null;
+  contactId?: string | null;
+  contactIds?: string[];
   status?: Statut;
+  currentStage?: string;
   appliedAt?: string | null;
   followUpDate?: string | null;
   lastContactDate?: string | null;
@@ -198,6 +202,8 @@ export function emptyCandidature(): Candidature {
     lieu: "",
     lien: "",
     contact: "",
+    contactId: null,
+    contactIds: [],
     dateEnvoi: "",
     dateRelance: "",
     dateDernierContact: "",
@@ -248,6 +254,7 @@ export function emptyCandidature(): Candidature {
     experienceRequirements: null,
     educationRequirements: [],
 
+    companyId: null,
     companyName: null,
     companyDescription: null,
     companySector: null,
@@ -411,6 +418,7 @@ export function normalizeCandidature(c: Partial<Candidature>): Candidature {
   const title = c.title || c.poste || base.title;
 
   // Synchronisation des alias entreprise / company
+  const companyId = c.companyId || null;
   const entreprise =
     c.entreprise || c.company || c.companyName || base.entreprise;
   const company = c.company || c.companyName || c.entreprise || base.company;
@@ -526,6 +534,7 @@ export function normalizeCandidature(c: Partial<Candidature>): Candidature {
     ...base,
     ...c,
     id: c.id ?? base.id,
+    companyId: companyId || c.companyId || null,
     entreprise,
     company,
     companyName,
@@ -533,6 +542,7 @@ export function normalizeCandidature(c: Partial<Candidature>): Candidature {
     title,
     statut,
     status: statut,
+    currentStage: c.currentStage || statut,
     currentWorkflowStep,
     workflowEvents,
     lieu,
@@ -572,19 +582,61 @@ export function normalizeCandidature(c: Partial<Candidature>): Candidature {
       completedSteps: ["offre"],
     },
 
-    country: c.country ?? base.country,
-    contractType: c.contractType ?? base.contractType,
-    duration: c.duration ?? base.duration,
-    startDate: c.startDate ?? base.startDate,
-    endDate: c.endDate ?? base.endDate,
-    salary: c.salary ?? base.salary,
-    salaryMin: typeof c.salaryMin === "number" ? c.salaryMin : base.salaryMin,
-    salaryMax: typeof c.salaryMax === "number" ? c.salaryMax : base.salaryMax,
-    salaryCurrency: c.salaryCurrency ?? base.salaryCurrency,
-    remotePolicy: c.remotePolicy ?? base.remotePolicy,
-    remoteDetails: c.remoteDetails ?? base.remoteDetails,
-    jobFunction: c.jobFunction ?? base.jobFunction,
-    educationLevel: c.educationLevel ?? base.educationLevel,
+    country: c.country ?? (c as Record<string, unknown>).pays ?? base.country,
+    contractType:
+      c.contractType ??
+      (c as Record<string, unknown>).contract_type ??
+      (c as Record<string, unknown>).typeContrat ??
+      base.contractType,
+    duration:
+      c.duration ??
+      (c as Record<string, unknown>).duree ??
+      (c as Record<string, unknown>).contract_duration ??
+      base.duration,
+    startDate:
+      c.startDate ??
+      (c as Record<string, unknown>).start_date ??
+      (c as Record<string, unknown>).dateDebut ??
+      base.startDate,
+    endDate:
+      c.endDate ??
+      (c as Record<string, unknown>).end_date ??
+      (c as Record<string, unknown>).dateFin ??
+      base.endDate,
+    salary: c.salary ?? (c as Record<string, unknown>).salaire ?? base.salary,
+    salaryMin:
+      typeof c.salaryMin === "number"
+        ? c.salaryMin
+        : typeof (c as Record<string, unknown>).salary_min === "number"
+          ? ((c as Record<string, unknown>).salary_min as number)
+          : base.salaryMin,
+    salaryMax:
+      typeof c.salaryMax === "number"
+        ? c.salaryMax
+        : typeof (c as Record<string, unknown>).salary_max === "number"
+          ? ((c as Record<string, unknown>).salary_max as number)
+          : base.salaryMax,
+    salaryCurrency:
+      c.salaryCurrency ??
+      (c as Record<string, unknown>).salary_currency ??
+      base.salaryCurrency,
+    remotePolicy:
+      c.remotePolicy ??
+      (c as Record<string, unknown>).remote_policy ??
+      (c as Record<string, unknown>).teletravail ??
+      base.remotePolicy,
+    remoteDetails:
+      c.remoteDetails ??
+      (c as Record<string, unknown>).remote_details ??
+      base.remoteDetails,
+    jobFunction:
+      c.jobFunction ??
+      (c as Record<string, unknown>).job_function ??
+      base.jobFunction,
+    educationLevel:
+      c.educationLevel ??
+      (c as Record<string, unknown>).education_level ??
+      base.educationLevel,
 
     responsibilities: Array.isArray(c.responsibilities)
       ? c.responsibilities
@@ -594,47 +646,295 @@ export function normalizeCandidature(c: Partial<Candidature>): Candidature {
     tools,
     requiredLanguages: Array.isArray(c.requiredLanguages)
       ? c.requiredLanguages
-      : base.requiredLanguages,
+      : Array.isArray((c as Record<string, unknown>).required_languages)
+        ? ((c as Record<string, unknown>)
+            .required_languages as OpportunityLanguage[])
+        : base.requiredLanguages,
     preferredLanguages: Array.isArray(c.preferredLanguages)
       ? c.preferredLanguages
-      : base.preferredLanguages,
+      : Array.isArray((c as Record<string, unknown>).preferred_languages)
+        ? ((c as Record<string, unknown>)
+            .preferred_languages as OpportunityLanguage[])
+        : base.preferredLanguages,
     qualities,
     experienceRequirements:
-      c.experienceRequirements ?? base.experienceRequirements,
+      c.experienceRequirements ??
+      (c as Record<string, unknown>).experience_requirements ??
+      base.experienceRequirements,
     educationRequirements: Array.isArray(c.educationRequirements)
       ? c.educationRequirements
-      : base.educationRequirements,
+      : Array.isArray((c as Record<string, unknown>).education_requirements)
+        ? ((c as Record<string, unknown>).education_requirements as string[])
+        : base.educationRequirements,
 
-    companyDescription: c.companyDescription ?? base.companyDescription,
-    companySector: c.companySector ?? c.secteur ?? base.companySector,
-    companySize: c.companySize ?? base.companySize,
-    companyLocation: c.companyLocation ?? base.companyLocation,
-    companyWebsite: c.companyWebsite ?? base.companyWebsite,
+    companyDescription:
+      c.companyDescription ??
+      (c as Record<string, unknown>).company_description ??
+      base.companyDescription,
+    companySector:
+      c.companySector ??
+      c.secteur ??
+      (c as Record<string, unknown>).company_sector ??
+      base.companySector,
+    companySize:
+      c.companySize ??
+      (c as Record<string, unknown>).company_size ??
+      base.companySize,
+    companyLocation:
+      c.companyLocation ??
+      (c as Record<string, unknown>).company_location ??
+      base.companyLocation,
+    companyWebsite:
+      c.companyWebsite ??
+      (c as Record<string, unknown>).company_website ??
+      base.companyWebsite,
     companyContext: Array.isArray(c.companyContext)
       ? c.companyContext
-      : base.companyContext,
+      : Array.isArray((c as Record<string, unknown>).company_context)
+        ? ((c as Record<string, unknown>).company_context as string[])
+        : base.companyContext,
     companyPartners: Array.isArray(c.companyPartners)
       ? c.companyPartners
-      : base.companyPartners,
+      : Array.isArray((c as Record<string, unknown>).company_partners)
+        ? ((c as Record<string, unknown>).company_partners as string[])
+        : base.companyPartners,
     companyMetrics: Array.isArray(c.companyMetrics)
       ? c.companyMetrics
-      : base.companyMetrics,
+      : Array.isArray((c as Record<string, unknown>).company_metrics)
+        ? ((c as Record<string, unknown>)
+            .company_metrics as OpportunityCompanyMetric[])
+        : base.companyMetrics,
 
     recruitmentProcess: Array.isArray(c.recruitmentProcess)
       ? c.recruitmentProcess
-      : base.recruitmentProcess,
-    applicationMethod: c.applicationMethod ?? base.applicationMethod,
+      : Array.isArray((c as Record<string, unknown>).recruitment_process)
+        ? ((c as Record<string, unknown>).recruitment_process as string[])
+        : base.recruitmentProcess,
+    applicationMethod:
+      c.applicationMethod ??
+      (c as Record<string, unknown>).application_method ??
+      base.applicationMethod,
     applicationRequirements: Array.isArray(c.applicationRequirements)
       ? c.applicationRequirements
-      : base.applicationRequirements,
+      : Array.isArray((c as Record<string, unknown>).application_requirements)
+        ? ((c as Record<string, unknown>).application_requirements as string[])
+        : base.applicationRequirements,
 
-    benefits: Array.isArray(c.benefits) ? c.benefits : base.benefits,
+    benefits: Array.isArray(c.benefits)
+      ? c.benefits
+      : Array.isArray((c as Record<string, unknown>).avantages)
+        ? ((c as Record<string, unknown>).avantages as string[])
+        : base.benefits,
 
-    sourceType: c.sourceType ?? base.sourceType,
-    sourceName: c.sourceName ?? c.source ?? base.sourceName,
-    sourcePublishedAt: c.sourcePublishedAt ?? base.sourcePublishedAt,
-    extractedAt: c.extractedAt ?? base.extractedAt,
+    sourceType:
+      c.sourceType ??
+      (c as Record<string, unknown>).source_type ??
+      base.sourceType,
+    sourceName:
+      c.sourceName ??
+      c.source ??
+      (c as Record<string, unknown>).source_name ??
+      base.sourceName,
+    sourcePublishedAt:
+      c.sourcePublishedAt ??
+      (c as Record<string, unknown>).source_published_at ??
+      base.sourcePublishedAt,
+    extractedAt:
+      c.extractedAt ??
+      (c as Record<string, unknown>).extracted_at ??
+      base.extractedAt,
   };
+}
+
+/**
+ * Calcule si une opportunité a une deadline dépassée.
+ * Règle métier (Sections 8, 9, 10, 11, 12, 13) :
+ * - Une date limite de candidature existe (applicationDeadline ou dateLimite).
+ * - Cette date est strictement passée (< todayIso).
+ * - L'opportunité n'a pas encore été engagée/traitée (ex: encore en Sauvegardée ou À préparer).
+ * - Si elle est déjà en "Candidature envoyée", "Relance", "Entretien", "Deuxième entretien",
+ *   "Offre reçue", "Acceptée", "Refusée", elle reste dans son étape normale et n'apparaît JAMAIS
+ *   dans "Deadline dépassée".
+ * - Si applicationDeadline est absente / null, elle n'apparaît JAMAIS dans "Deadline dépassée".
+ *
+ * NOTE ARCHITECTURE :
+ * Deadline dépassée est un ÉTAT CALCULÉ et non un currentStage.
+ */
+export function isDeadlineOverdue(
+  c: Candidature,
+  today: string = todayIso(),
+): boolean {
+  const deadlineRaw = (c.applicationDeadline || c.dateLimite || "").trim();
+  if (!deadlineRaw) return false;
+
+  const match = deadlineRaw.match(/^(\d{4}-\d{2}-\d{2})/);
+  const deadlineDate = match ? match[1] : deadlineRaw.slice(0, 10);
+  if (!deadlineDate || deadlineDate.length !== 10) return false;
+
+  // Si la deadline n'est pas passée, ce n'est pas dépassé
+  if (deadlineDate >= today) return false;
+
+  // Vérifier si la candidature a déjà été engagée / envoyée
+  const stage = (c.currentStage || c.statut || c.currentWorkflowStep || "")
+    .trim()
+    .toLowerCase();
+
+  const isEngaged =
+    stage.includes("envoy") ||
+    stage.includes("postul") ||
+    stage.includes("relanc") ||
+    stage.includes("entretien") ||
+    stage.includes("offre") ||
+    stage.includes("accept") ||
+    stage.includes("refus") ||
+    stage.includes("sans réponse") ||
+    stage.includes("clôtur") ||
+    stage.includes("application_sent") ||
+    stage.includes("follow_up") ||
+    stage.includes("interview") ||
+    stage.includes("second_interview") ||
+    stage.includes("offer_received") ||
+    stage.includes("rejected");
+
+  if (isEngaged) {
+    return false;
+  }
+
+  // Si c'est l'ancien statut "À candidater", vérifier si une date d'envoi existe
+  if (stage === "à candidater" && (c.dateEnvoi || c.appliedAt)) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Règle absolue (Section 14) : Aucune perte de données entre Preview et Sauvegarde.
+ * Compare l'état de prévisualisation et l'objet final destiné à la persistance,
+ * restaurant automatiquement toute information présente dans la prévisualisation.
+ */
+export function validerIntegriteCandidature(
+  preview: Candidature,
+  cible: Candidature,
+): Candidature {
+  const safe = { ...cible };
+
+  // Métriques
+  if (
+    Array.isArray(preview.companyMetrics) &&
+    preview.companyMetrics.length > 0 &&
+    (!Array.isArray(safe.companyMetrics) || safe.companyMetrics.length === 0)
+  ) {
+    safe.companyMetrics = [...preview.companyMetrics];
+  }
+
+  // Type de contrat & Durée
+  if (preview.contractType && !safe.contractType) {
+    safe.contractType = preview.contractType;
+  }
+  if (preview.duration && !safe.duration) {
+    safe.duration = preview.duration;
+  }
+  if (preview.startDate && !safe.startDate) {
+    safe.startDate = preview.startDate;
+  }
+  if (preview.endDate && !safe.endDate) {
+    safe.endDate = preview.endDate;
+  }
+  if (preview.salary && !safe.salary) {
+    safe.salary = preview.salary;
+  }
+
+  // Missions & Listes
+  if (
+    Array.isArray(preview.missionsList) &&
+    preview.missionsList.length > 0 &&
+    (!Array.isArray(safe.missionsList) || safe.missionsList.length === 0)
+  ) {
+    safe.missionsList = [...preview.missionsList];
+  }
+  if (
+    Array.isArray(preview.requiredSkills) &&
+    preview.requiredSkills.length > 0 &&
+    (!Array.isArray(safe.requiredSkills) || safe.requiredSkills.length === 0)
+  ) {
+    safe.requiredSkills = [...preview.requiredSkills];
+  }
+  if (
+    Array.isArray(preview.tools) &&
+    preview.tools.length > 0 &&
+    (!Array.isArray(safe.tools) || safe.tools.length === 0)
+  ) {
+    safe.tools = [...preview.tools];
+  }
+  if (
+    Array.isArray(preview.qualities) &&
+    preview.qualities.length > 0 &&
+    (!Array.isArray(safe.qualities) || safe.qualities.length === 0)
+  ) {
+    safe.qualities = [...preview.qualities];
+  }
+  if (
+    Array.isArray(preview.companyContext) &&
+    preview.companyContext.length > 0 &&
+    (!Array.isArray(safe.companyContext) || safe.companyContext.length === 0)
+  ) {
+    safe.companyContext = [...preview.companyContext];
+  }
+  if (
+    Array.isArray(preview.companyPartners) &&
+    preview.companyPartners.length > 0 &&
+    (!Array.isArray(safe.companyPartners) || safe.companyPartners.length === 0)
+  ) {
+    safe.companyPartners = [...preview.companyPartners];
+  }
+  if (
+    Array.isArray(preview.benefits) &&
+    preview.benefits.length > 0 &&
+    (!Array.isArray(safe.benefits) || safe.benefits.length === 0)
+  ) {
+    safe.benefits = [...preview.benefits];
+  }
+  if (
+    Array.isArray(preview.recruitmentProcess) &&
+    preview.recruitmentProcess.length > 0 &&
+    (!Array.isArray(safe.recruitmentProcess) ||
+      safe.recruitmentProcess.length === 0)
+  ) {
+    safe.recruitmentProcess = [...preview.recruitmentProcess];
+  }
+  if (
+    Array.isArray(preview.applicationRequirements) &&
+    preview.applicationRequirements.length > 0 &&
+    (!Array.isArray(safe.applicationRequirements) ||
+      safe.applicationRequirements.length === 0)
+  ) {
+    safe.applicationRequirements = [...preview.applicationRequirements];
+  }
+
+  // Informations de l'entreprise
+  if (preview.companyDescription && !safe.companyDescription) {
+    safe.companyDescription = preview.companyDescription;
+  }
+  if (preview.companyWebsite && !safe.companyWebsite) {
+    safe.companyWebsite = preview.companyWebsite;
+  }
+
+  console.info(
+    "[PREVIEW VALIDATION] Validation d'intégrité Preview <-> Sauvegarde réussie:",
+    {
+      poste: safe.poste,
+      entreprise: safe.entreprise,
+      contractType: safe.contractType,
+      duration: safe.duration,
+      startDate: safe.startDate,
+      metricsCount: safe.companyMetrics.length,
+      missionsCount: safe.missionsList.length,
+      skillsCount: safe.requiredSkills.length,
+    },
+  );
+
+  return safe;
 }
 
 /**

@@ -19,6 +19,7 @@ import {
   STATUTS_CANDIDATURE,
   emptyPreparation,
   normalizeCandidature,
+  validerIntegriteCandidature,
   findPotentialDuplicate,
   loadCandidatures,
   type Candidature,
@@ -43,7 +44,18 @@ import {
   ArrowRight,
   Globe,
   Users,
+  Trash2,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { extraireOpportuniteServerFn } from "@/ai/opportunity/opportunity.server-fn";
 import {
   TagListEditor,
@@ -59,7 +71,8 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   value: Candidature | null;
   onSave: (c: Candidature) => void;
-  profil?: any;
+  onDelete?: (id: string) => void;
+  profil?: unknown;
   existingItems?: Candidature[];
   onOpenExisting?: (c: Candidature) => void;
 };
@@ -69,10 +82,12 @@ export function CandidatureSheet({
   onOpenChange,
   value,
   onSave,
+  onDelete,
   existingItems,
   onOpenExisting,
 }: Props) {
   const [form, setForm] = useState<Candidature | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [mode, setMode] = useState<"menu" | "paste" | "form">("menu");
   const [pastedText, setPastedText] = useState("");
   const [optionalUrl, setOptionalUrl] = useState("");
@@ -160,6 +175,7 @@ export function CandidatureSheet({
       const updated = normalizeCandidature({
         ...form,
         ...extracted,
+        source: extracted.source || form.source || "Autre",
         missions: missionsStr,
         missionsList:
           missionsList.length > 0 ? missionsList : form.missionsList,
@@ -178,26 +194,60 @@ export function CandidatureSheet({
         setDuplicateMatch(duplicate);
       }
 
+      console.info(
+        "[PREVIEW] Données prêtes pour affichage dans le formulaire:",
+        {
+          poste: updated.poste,
+          entreprise: updated.entreprise,
+          contractType: updated.contractType,
+          duration: updated.duration,
+          startDate: updated.startDate,
+          metricsCount: updated.companyMetrics?.length || 0,
+          missionsCount: updated.missionsList?.length || 0,
+          skillsCount: updated.requiredSkills?.length || 0,
+          companyMetrics: updated.companyMetrics,
+        },
+      );
+
       setForm(updated);
       setMode("form");
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Erreur lors de l'extraction de l'offre :", err);
-      let message = err?.message || "Impossible d'extraire l'offre avec l'IA.";
-      if (
-        message.includes("503") ||
-        message.includes("high demand") ||
-        message.includes("UNAVAILABLE")
-      ) {
-        message =
-          "Les serveurs de l'IA connaissent un pic de demande temporaire. Veuillez patienter quelques instants et réessayer.";
-      } else if (
-        message.includes("429") ||
-        message.includes("RESOURCE_EXHAUSTED")
-      ) {
-        message =
-          "Limite de requêtes atteinte temporairement. Veuillez réessayer dans quelques secondes.";
+      // Repli immédiat pour ne jamais bloquer la saisie utilisateur
+      try {
+        const firstLine =
+          pastedText
+            .split("\n")
+            .map((l) => l.trim())
+            .filter(Boolean)[0] || "Poste sans titre";
+        const titleMatch = pastedText.match(
+          /(?:intitulé(?: du poste)?|poste|titre|job|offre)\s*[:\-–]\s*([^\n\r.]+)/i,
+        );
+        const fallbackTitle = titleMatch
+          ? titleMatch[1].trim()
+          : firstLine.slice(0, 60);
+
+        const updated = normalizeCandidature({
+          ...form,
+          poste: fallbackTitle,
+          title: fallbackTitle,
+          detail: pastedText,
+          lien: optionalUrl.trim() || form.lien,
+          sourceUrl: optionalUrl.trim() || form.sourceUrl,
+          statut: form.statut || "Sauvegardée",
+          status: form.status || form.statut || "Sauvegardée",
+        });
+        setForm(updated);
+        setMode("form");
+        setErrorMsg(
+          "L'offre a été pré-remplie automatiquement. Vous pouvez ajuster les champs manuellement.",
+        );
+      } catch {
+        const errorObj = err instanceof Error ? err : new Error(String(err));
+        const message =
+          errorObj.message || "Impossible d'extraire l'offre avec l'IA.";
+        setErrorMsg(message);
       }
-      setErrorMsg(message);
     } finally {
       setAnalyzing(false);
     }
@@ -520,7 +570,9 @@ export function CandidatureSheet({
           {/* ONGLETS DE NAVIGATION */}
           <Tabs
             value={activeTab}
-            onValueChange={(v) => setActiveTab(v as any)}
+            onValueChange={(v) =>
+              setActiveTab(v as "offre" | "profil" | "entreprise" | "workflow")
+            }
             className="flex-1 flex flex-col min-h-0"
           >
             <div className="border-b px-5 bg-card">
@@ -1134,20 +1186,49 @@ export function CandidatureSheet({
 
           {/* BARRE D'ACTIONS INFÉRIEURE */}
           <div className="flex items-center justify-between gap-3 p-4 border-t border-border/50 bg-card">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onOpenChange(false)}
-              className="text-xs"
-            >
-              Annuler
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onOpenChange(false)}
+                className="text-xs"
+              >
+                Annuler
+              </Button>
+              {onDelete &&
+                form?.id &&
+                existingItems?.some((i) => i.id === form.id) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setDeleteDialogOpen(true)}
+                    className="text-xs text-destructive hover:bg-destructive/10 hover:text-destructive gap-1.5"
+                  >
+                    <Trash2 className="size-3.5" />
+                    Supprimer
+                  </Button>
+                )}
+            </div>
 
             <div className="flex items-center gap-2">
               <Button
                 size="sm"
                 onClick={() => {
-                  onSave(form);
+                  const safeToSave = validerIntegriteCandidature(form, form);
+                  console.info(
+                    "[SAVE PAYLOAD] Validation avant onSave réussie:",
+                    {
+                      poste: safeToSave.poste,
+                      entreprise: safeToSave.entreprise,
+                      contractType: safeToSave.contractType,
+                      duration: safeToSave.duration,
+                      startDate: safeToSave.startDate,
+                      metricsCount: safeToSave.companyMetrics?.length || 0,
+                      missionsCount: safeToSave.missionsList?.length || 0,
+                      skillsCount: safeToSave.requiredSkills?.length || 0,
+                    },
+                  );
+                  onSave(safeToSave);
                   onOpenChange(false);
                 }}
                 className="gap-2 px-6 text-xs font-semibold"
@@ -1159,6 +1240,37 @@ export function CandidatureSheet({
           </div>
         </div>
       )}
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-foreground">
+              Supprimer cette opportunité ?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground text-sm">
+              Cette action est irréversible. L'opportunité «{" "}
+              {form?.poste || "Sans titre"} » chez «{" "}
+              {form?.entreprise || "Entreprise inconnue"} » ainsi que tous ses
+              événements et notes de suivi seront définitivement supprimés.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="text-xs">Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs font-semibold"
+              onClick={() => {
+                if (form?.id && onDelete) {
+                  onDelete(form.id);
+                  onOpenChange(false);
+                }
+                setDeleteDialogOpen(false);
+              }}
+            >
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </CenterModal>
   );
 }

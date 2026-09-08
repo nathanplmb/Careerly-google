@@ -29,6 +29,7 @@ import {
   getWorkflowStepConfig,
   statutToWorkflowStepKey,
   workflowStepKeyToStatut,
+  transitionWorkflowStep,
   type WorkflowEvent,
   type WorkflowStepKey,
   type WorkflowStepConfig,
@@ -121,12 +122,8 @@ export function WorkflowTab({ candidature, onChange }: Props) {
 
   const handleConfirmChangeStep = () => {
     const targetConfig = getWorkflowStepConfig(selectedTargetStep);
-    const newStatut = targetConfig.statutLabel;
 
-    // Créer ou mettre à jour l'événement lié
-    const newEvent: WorkflowEvent = {
-      id: `evt-${selectedTargetStep}-${Date.now()}`,
-      type: selectedTargetStep,
+    const patch = transitionWorkflowStep(candidature, selectedTargetStep, {
       date: stepDate || todayIso(),
       note: stepNote.trim() || targetConfig.description,
       channel:
@@ -141,53 +138,7 @@ export function WorkflowTab({ candidature, onChange }: Props) {
         selectedTargetStep === "second_interview"
           ? stepInterlocuteur.trim() || undefined
           : undefined,
-      createdAt: new Date().toISOString(),
-    };
-
-    // Mettre à jour la liste des événements
-    // Si un événement de même type existait déjà, on le remplace ou on l'ajoute
-    const otherEvents = events.filter((e) => e.type !== selectedTargetStep);
-    const updatedEvents = [...otherEvents, newEvent].sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-    );
-
-    // Mettre à jour les champs synchronisés
-    const patch: Partial<Candidature> = {
-      currentWorkflowStep: selectedTargetStep,
-      statut: newStatut,
-      status: newStatut,
-      workflowEvents: updatedEvents,
-    };
-
-    // Synchronisation des dates dérivées
-    if (selectedTargetStep === "saved") {
-      patch.savedAt = stepDate;
-    } else if (selectedTargetStep === "to_prepare") {
-      patch.preparedAt = stepDate;
-    } else if (selectedTargetStep === "application_sent") {
-      patch.appliedAt = stepDate;
-      patch.dateEnvoi = stepDate;
-      if (stepChannel) patch.source = stepChannel;
-    } else if (selectedTargetStep === "follow_up") {
-      patch.followUpDate = stepDate;
-      patch.dateRelance = stepDate;
-    } else if (selectedTargetStep === "interview") {
-      patch.interviewDate = stepDate;
-      patch.dateDernierContact = stepDate;
-      patch.lastContactDate = stepDate;
-      if (stepInterlocuteur.trim()) patch.contact = stepInterlocuteur.trim();
-    } else if (selectedTargetStep === "second_interview") {
-      patch.secondInterviewDate = stepDate;
-      patch.dateDernierContact = stepDate;
-      patch.lastContactDate = stepDate;
-      if (stepInterlocuteur.trim()) patch.contact = stepInterlocuteur.trim();
-    } else if (selectedTargetStep === "offer_received") {
-      patch.offerReceivedAt = stepDate;
-    } else if (selectedTargetStep === "accepted") {
-      patch.acceptedAt = stepDate;
-    } else if (selectedTargetStep === "rejected") {
-      patch.rejectedAt = stepDate;
-    }
+    });
 
     onChange(patch);
     setChangeStepModalOpen(false);
@@ -263,7 +214,7 @@ export function WorkflowTab({ candidature, onChange }: Props) {
       );
       newStep =
         orderedRemaining.length > 0
-          ? orderedRemaining[orderedRemaining.length - 1].key
+          ? orderedRemaining[orderedRemaining.length - 1]?.key || "saved"
           : "saved";
     }
 

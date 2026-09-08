@@ -44,7 +44,7 @@ export function AccountMenu({ user }: { user: User | null }) {
 
   const localCompte = getCompteActif();
   const displayName =
-    (user?.user_metadata?.full_name as string) ||
+    (user?.user_metadata?.["full_name"] as string) ||
     (localCompte?.prenom
       ? `${localCompte.prenom} ${localCompte.nom || ""}`.trim()
       : null) ||

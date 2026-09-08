@@ -34,6 +34,14 @@ const htmlContent = `<!DOCTYPE html>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Careerly AI — Copilote Candidatures</title>
     <link rel="icon" type="image/png" href="/favicon.png" />
+    <script>
+      try {
+        if (typeof window !== "undefined") {
+          window.process = window.process || { env: { NODE_ENV: "production", TSS_ROUTER_BASEPATH: "" } };
+          window.global = window.global || window;
+        }
+      } catch(e) {}
+    </script>
     ${cssFile ? `<link rel="stylesheet" href="/assets/${cssFile}" />` : ""}
   </head>
   <body>

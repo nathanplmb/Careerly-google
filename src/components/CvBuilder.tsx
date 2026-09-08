@@ -645,7 +645,7 @@ export function CvBuilder({ value, onChange }: Props) {
                 </div>
                 <Champ
                   label="Certification"
-                  value={l.certification}
+                  value={l.certification || ""}
                   onChange={(v) => maj("langues", i, { certification: v })}
                   placeholder="TOEIC 900"
                 />

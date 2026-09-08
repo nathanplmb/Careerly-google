@@ -146,6 +146,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         },
         { rel: "icon", href: "/favicon.png", type: "image/png" },
       ],
+      scripts: [
+        {
+          children: `try{if(typeof window!=="undefined"){window.process=window.process||{env:{NODE_ENV:"development",TSS_ROUTER_BASEPATH:""}};window.global=window.global||window;}}catch(e){}`,
+        },
+      ],
     }),
     shellComponent: RootShell,
     component: RootComponent,
@@ -158,6 +163,11 @@ function RootShell({ children }: { children: ReactNode }) {
   return (
     <html lang="fr" className="dark">
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(typeof window!=="undefined"){window.process=window.process||{env:{NODE_ENV:"development",TSS_ROUTER_BASEPATH:""}};window.global=window.global||window;}}catch(e){}`,
+          }}
+        />
         <HeadContent />
       </head>
       <body>
@@ -179,15 +189,29 @@ function RootComponent() {
         message.includes("error loading dynamically imported module") ||
         message.includes("Unable to preload CSS")
       ) {
-        const key = "chunk_reload_attempted";
-        const lastAttempt = sessionStorage.getItem(key);
-        const now = Date.now();
-        if (!lastAttempt || now - Number(lastAttempt) > 10000) {
-          sessionStorage.setItem(key, String(now));
+        console.warn("Dynamic import issue detected:", message);
+        const key = "chunk_reload_count";
+        const count = Number(sessionStorage.getItem(key) || "0");
+        if (count < 1) {
+          sessionStorage.setItem(key, "1");
           console.warn(
-            "Stale dynamic chunk detected. Reloading page for fresh assets...",
+            "Stale dynamic chunk detected. Reloading page once for fresh assets...",
           );
           window.location.reload();
+        } else {
+          // Already reloaded once: never loop infinitely
+          toast.error("Mise à jour disponible", {
+            description:
+              "Un composant n'a pas pu être chargé. Cliquez pour rafraîchir.",
+            action: {
+              label: "Rafraîchir",
+              onClick: () => {
+                sessionStorage.removeItem(key);
+                window.location.reload();
+              },
+            },
+            duration: 8000,
+          });
         }
       }
     };

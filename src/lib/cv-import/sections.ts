@@ -124,7 +124,7 @@ export function detectSections(doc: DocumentStructure): DetectedSection[] {
     const cleanHeader =
       (line ? line.text : "") ||
       ""
-        .replace(/^[\s•\-\*–—#]+/, "")
+        .replace(/^[\s•\-*–—#]+/, "")
         .replace(/[:：]$/, "")
         .trim();
 

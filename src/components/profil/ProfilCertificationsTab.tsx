@@ -62,10 +62,10 @@ export function ProfilCertificationsTab({ profil, onChange }: Props) {
     const nc: CvCertification = {
       id: crypto.randomUUID(),
       nom,
-      organisme: nouvelOrganisme.trim() || undefined,
-      date: nouvelleDate.trim() || undefined,
-      lien: nouveauLien.trim() || undefined,
-      identifiant: nouveauIdentifiant.trim() || undefined,
+      organisme: nouvelOrganisme.trim() || "",
+      date: nouvelleDate.trim() || "",
+      lien: nouveauLien.trim() || "",
+      identifiant: nouveauIdentifiant.trim() || "",
     };
 
     updateCertifs([nc, ...certifs]);

@@ -23,7 +23,7 @@ import type {
   DailyBriefInputData,
   OpportunityInputForBrief,
 } from "@/ai/daily-brief/dailyBrief.types";
-import { generateDeterministicDailyBrief } from "@/ai/daily-brief/dailyBrief.service";
+import { generateDeterministicDailyBrief } from "@/ai/daily-brief/dailyBrief.deterministic";
 import { genererDailyBriefServerFn } from "@/ai/daily-brief/dailyBrief.server-fn";
 
 type DailyBriefProps = {

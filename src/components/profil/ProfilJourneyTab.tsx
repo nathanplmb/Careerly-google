@@ -34,10 +34,9 @@ import {
   nouvelleFormation,
   type CvExperience,
   type CvFormation,
-  type any /* TypeContrat */,
 } from "@/lib/cv-structure";
 
-const TYPES_CONTRAT: any /* TypeContrat */[] = [
+const TYPES_CONTRAT: string[] = [
   "Stage",
   "Alternance",
   "CDI",

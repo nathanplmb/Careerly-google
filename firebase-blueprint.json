@@ -37,6 +37,20 @@
         "updatedAt": { "type": "string" }
       },
       "required": ["user_id", "nom"]
+    },
+    "Entreprise": {
+      "title": "Entreprise",
+      "description": "Entreprise cible liée aux opportunités et contacts",
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "nom": { "type": "string" },
+        "normalizedName": { "type": "string" },
+        "secteur": { "type": "string" },
+        "siteWeb": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["user_id", "nom"]
     }
   },
   "firestore": {
@@ -51,6 +65,10 @@
     "/users/{userId}/contacts/{contactId}": {
       "schema": { "$ref": "#/entities/Contact" },
       "description": "Contacts réseau appartenant à un utilisateur"
+    },
+    "/users/{userId}/entreprises/{entrepriseId}": {
+      "schema": { "$ref": "#/entities/Entreprise" },
+      "description": "Entreprises appartenant à un utilisateur"
     }
   }
 }

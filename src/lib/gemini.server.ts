@@ -29,6 +29,7 @@ const DEFAULT_MODEL_CASCADE = [
   "gemini-3.7-flash",
   "gemini-3.6-flash",
   "gemini-3.1-flash-lite",
+  "gemini-flash-latest",
 ];
 
 export async function appelerGeminiSecurise(
@@ -45,7 +46,7 @@ export async function appelerGeminiSecurise(
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt < modelsToTry.length; attempt++) {
-    const model = modelsToTry[attempt];
+    const model = modelsToTry[attempt] || "gemini-3.7-flash";
     try {
       const response = await ai.models.generateContent({
         model,

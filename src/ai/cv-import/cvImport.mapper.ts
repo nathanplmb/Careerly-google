@@ -1,15 +1,16 @@
-import type { Profil } from "@/lib/profil";
-import type {
-  CvStructure,
-  CvExperience,
-  CvFormation,
-  CvCompetence,
-  CvLangue,
-  CvCertification,
-  CvProjet,
-  CvBenevolat,
+import { emptyProfil, type Profil } from "@/lib/profil";
+import {
+  normaliserCvStructure,
+  type CvStructure,
+  type CvExperience,
+  type CvFormation,
+  type CvCompetence,
+  type CvLangue,
+  type CvCertification,
+  type CvProjet,
+  type CvBenevolat,
 } from "@/lib/cv-structure";
-import type { CvImportResult } from "./cvImport.types";
+import type { CvImportResult, ExtractedCV } from "./cvImport.types";
 
 /**
  * Normalise une chaîne pour comparaison sans casse ni accents.
@@ -103,12 +104,15 @@ export function mergeCvImportWithProfil(
 
       const isCurrent = Boolean(
         exp.isCurrent ||
-        !exp.endDate ||
-        exp.endDate.toLowerCase().includes("aujourd") ||
-        exp.endDate.toLowerCase().includes("cours") ||
-        exp.endDate.toLowerCase().includes("actuel"),
+        (exp.endDate &&
+          (exp.endDate.toLowerCase().includes("aujourd") ||
+            exp.endDate.toLowerCase().includes("cours") ||
+            exp.endDate.toLowerCase().includes("actuel"))),
       );
-      const cleanFin = isCurrent ? "" : exp.endDate || "";
+      const cleanFin =
+        exp.endDate && /actuel|cours|aujourd/i.test(exp.endDate)
+          ? ""
+          : exp.endDate || "";
 
       const missionsDescription =
         uniqueMissions.length > 0
@@ -564,10 +568,13 @@ export function mergeCvImportWithProfil(
 }
 
 export function mapExtractedCVToProfile(
-  result: CvImportResult,
+  result: ExtractedCV | CvImportResult,
   currentProfil?: Profil | null,
 ): Profil {
-  const patch = mergeCvImportWithProfil(result, currentProfil);
+  const patch = mergeCvImportWithProfil(
+    result as CvImportResult,
+    currentProfil,
+  );
   const base = currentProfil || emptyProfil();
   return {
     ...base,

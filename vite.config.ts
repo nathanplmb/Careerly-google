@@ -10,6 +10,12 @@ import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
 export default defineConfig({
   vite: {
     plugins: [mcpPlugin()],
+    define: {
+      "process.env.NODE_ENV": JSON.stringify(
+        process.env.NODE_ENV || "development",
+      ),
+      "process.env.TSS_ROUTER_BASEPATH": JSON.stringify(""),
+    },
   },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
