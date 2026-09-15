@@ -1,12 +1,50 @@
 import { z } from "zod";
 
 export const BriefPriorityZodEnum = z.enum(["high", "medium", "low"]);
-export const BriefActionTypeZodEnum = z.enum([
+
+export const BriefActionIdZodEnum = z.enum([
+  "VIEW_OPPORTUNITY",
+  "UPDATE_DEADLINE",
+  "DELETE_OPPORTUNITY",
+  "KEEP_OPPORTUNITY",
+  "CHANGE_STAGE",
+  "MARK_APPLIED",
+  "PREPARE_APPLICATION",
+  "PLAN_FOLLOW_UP",
+  "OPEN_CONTACT",
+  "OPEN_COMPANY",
+  "OPEN_CALENDAR",
+  // Variantes minuscules acceptées par tolérance
   "view_opportunity",
+  "update_deadline",
+  "delete_opportunity",
+  "keep_opportunity",
+  "change_stage",
+  "mark_applied",
+  "prepare_application",
+  "plan_follow_up",
+  "open_contact",
+  "open_company",
+  "open_calendar",
   "view_calendar",
   "prepare",
   "follow_up",
 ]);
+
+export const BriefActionVariantZodEnum = z.enum([
+  "default",
+  "secondary",
+  "outline",
+  "destructive",
+  "ghost",
+]);
+
+export const BriefActionItemZodSchema = z.object({
+  id: z.string(),
+  label: z.string(),
+  variant: BriefActionVariantZodEnum.optional().default("secondary"),
+});
+
 export const BriefItemTypeZodEnum = z.enum([
   "deadline",
   "relance",
@@ -26,8 +64,9 @@ export const BriefItemZodSchema = z.object({
   dateContext: z.string().nullable().optional(),
   priority: BriefPriorityZodEnum.default("medium"),
   message: z.string().default(""),
-  actionLabel: z.string().default("Voir l'opportunité"),
-  actionType: BriefActionTypeZodEnum.default("view_opportunity"),
+  recommendedActions: z.array(BriefActionItemZodSchema).default([]),
+  actionLabel: z.string().optional(),
+  actionType: z.string().optional(),
 });
 
 export const DailyBriefZodSchema = z.object({
@@ -36,7 +75,7 @@ export const DailyBriefZodSchema = z.object({
   today: z.array(BriefItemZodSchema).default([]),
   watch: z.array(BriefItemZodSchema).default([]),
   upcoming: z.array(BriefItemZodSchema).default([]),
-  recent: z.array(BriefItemZodSchema).default([]),
+  recent: z.array(BriefItemZodSchema).optional().default([]),
 });
 
 export const OpportunityInputZodSchema = z.object({
@@ -62,6 +101,12 @@ export const OpportunityInputZodSchema = z.object({
   rejectedAt: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
   archive: z.boolean().optional(),
+  contactNom: z.string().nullable().optional(),
+  contactEmail: z.string().nullable().optional(),
+  contactRole: z.string().nullable().optional(),
+  hasContact: z.boolean().optional(),
+  companyId: z.string().nullable().optional(),
+  keepAcknowledgedAt: z.string().nullable().optional(),
 });
 
 export const CalendarEventInputZodSchema = z.object({
@@ -81,16 +126,38 @@ export const DailyBriefInputZodSchema = z.object({
   calendarEvents: z.array(CalendarEventInputZodSchema).optional(),
 });
 
+const geminiBriefActionSchema = {
+  type: "OBJECT" as const,
+  properties: {
+    id: {
+      type: "STRING" as const,
+      description:
+        "Identifiant de l'action autorisée parmi : VIEW_OPPORTUNITY, UPDATE_DEADLINE, DELETE_OPPORTUNITY, KEEP_OPPORTUNITY, CHANGE_STAGE, MARK_APPLIED, PREPARE_APPLICATION, PLAN_FOLLOW_UP, OPEN_CONTACT, OPEN_COMPANY, OPEN_CALENDAR",
+    },
+    label: {
+      type: "STRING" as const,
+      description:
+        "Libellé court du bouton d'action (ex: Mettre à jour, Garder, Supprimer, Préparer, Planifier la relance)",
+    },
+    variant: {
+      type: "STRING" as const,
+      description: "default, secondary, outline, destructive, ghost",
+    },
+  },
+  required: ["id", "label"],
+};
+
 const geminiBriefItemSchema = {
   type: "OBJECT" as const,
   properties: {
     id: {
       type: "STRING" as const,
-      description: "Identifiant de l'opportunité associée (ou id unique)",
+      description: "Identifiant unique de la recommandation",
     },
     opportunityId: {
       type: "STRING" as const,
-      description: "ID de l'opportunité dans NACORA",
+      description:
+        "ID exact de l'opportunité dans NACORA (doit exister dans les données fournies)",
     },
     type: {
       type: "STRING" as const,
@@ -100,21 +167,20 @@ const geminiBriefItemSchema = {
     title: {
       type: "STRING" as const,
       description:
-        "Titre court de l'action ou de l'échéance (ex: Relancer Revolut, Deadline EXO, Entretien visio)",
+        "Titre concis (ex: EXO — Deadline dépassée, Dassault — Entretien jeudi)",
     },
     company: {
       type: "STRING" as const,
-      description: "Nom de l'entreprise concernée",
+      description: "Nom de l'entreprise",
     },
     date: {
       type: "STRING" as const,
-      description:
-        "Date exacte associée au format YYYY-MM-DD si applicable, sinon null",
+      description: "Date exacte YYYY-MM-DD si applicable, sinon null",
     },
     dateContext: {
       type: "STRING" as const,
       description:
-        "Contexte temporel ultra-court (ex: Aujourd'hui, Dans 2 jours, Prévue aujourd'hui, Dépassée, Ajoutée hier)",
+        "Contexte temporel direct (ex: Aujourd'hui, Dépassée, Dans 2 jours, Jeudi 14h)",
     },
     priority: {
       type: "STRING" as const,
@@ -123,16 +189,13 @@ const geminiBriefItemSchema = {
     message: {
       type: "STRING" as const,
       description:
-        "Explication courte, factuelle et actionnable en une seule phrase sans jargon",
+        "Une seule phrase directe, factuelle et claire expliquant la situation sans fioritures",
     },
-    actionLabel: {
-      type: "STRING" as const,
+    recommendedActions: {
+      type: "ARRAY" as const,
+      items: geminiBriefActionSchema,
       description:
-        "Libellé direct du bouton (ex: Voir l'opportunité, Voir le calendrier, Planifier la relance)",
-    },
-    actionType: {
-      type: "STRING" as const,
-      description: "view_opportunity, view_calendar, prepare, follow_up",
+        "1 à 3 actions concrètes et adaptées à la situation issues du catalogue autorisé",
     },
   },
   required: [
@@ -142,8 +205,7 @@ const geminiBriefItemSchema = {
     "company",
     "priority",
     "message",
-    "actionLabel",
-    "actionType",
+    "recommendedActions",
   ],
 };
 
@@ -153,37 +215,32 @@ export const geminiDailyBriefResponseSchema = {
     greeting: {
       type: "STRING" as const,
       description:
-        "Salutation chaleureuse personnalisée avec le prénom fourni (ex: Bonjour Nathan)",
+        "Salutation personnalisée courte (ex: Bonjour Nathan)",
     },
     summary: {
       type: "STRING" as const,
       description:
-        "Phrase de synthèse globale résumant les priorités de la journée",
+        "Une seule phrase résumant l'état du jour ou 'Tout est à jour. Aucune action urgente aujourd'hui.' si calme",
     },
     today: {
       type: "ARRAY" as const,
       items: geminiBriefItemSchema,
       description:
-        "Actions prioritaires à faire aujourd'hui (urgences, deadlines du jour, relances du jour, entretiens du jour - maximum 5 éléments)",
+        "À FAIRE AUJOURD'HUI : actions prioritaires requises aujourd'hui (maximum 5 éléments)",
     },
     watch: {
       type: "ARRAY" as const,
       items: geminiBriefItemSchema,
       description:
-        "Éléments à surveiller (deadlines dans les 2 à 7 jours, relances en retard - maximum 3 éléments)",
+        "À SURVEILLER : éléments nécessitant attention/décision sans urgence immédiate (maximum 3 éléments)",
     },
     upcoming: {
       type: "ARRAY" as const,
       items: geminiBriefItemSchema,
       description:
-        "Événements à venir (entretiens futurs, prochaines étapes - maximum 5 éléments)",
-    },
-    recent: {
-      type: "ARRAY" as const,
-      items: geminiBriefItemSchema,
-      description:
-        "Activité récente (opportunités récemment sauvegardées ou préparées - maximum 5 éléments)",
+        "À VENIR : événements confirmés des prochains jours (maximum 5 éléments)",
     },
   },
-  required: ["greeting", "summary", "today", "watch", "upcoming", "recent"],
+  required: ["greeting", "summary", "today", "watch", "upcoming"],
 };
+
