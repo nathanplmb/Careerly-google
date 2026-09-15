@@ -8,15 +8,47 @@ import {
   geminiOpportunityResponseSchema,
   type OpportunityExtractionRaw,
 } from "./opportunity.schema";
-import type { OpportunityExtractedData } from "./opportunity.types";
+import type {
+  OpportunityCompanyMetric,
+  OpportunityExtractedData,
+} from "./opportunity.types";
+import {
+  cleanOfferText,
+  isSuspiciousTitle,
+  extractCleanJobTitle,
+  sanitizeCompanyAndMetrics,
+  extraireOpportuniteHeuristique,
+} from "./opportunity.heuristic";
+
+// Re-exports pour compatibilité
+export {
+  cleanOfferText,
+  isSuspiciousTitle,
+  extractCleanJobTitle,
+  sanitizeCompanyAndMetrics,
+  extraireOpportuniteHeuristique,
+};
+
+/**
+ * Tronque une valeur pour les logs afin d'éviter le bruit et les surcharges console,
+ * tout en garantissant l'absence absolue de fuite de tokens ou clés API.
+ */
+function truncateForLog(val: unknown, maxLen = 300): string {
+  if (val === null || val === undefined) return "";
+  const str = typeof val === "string" ? val : JSON.stringify(val);
+  if (str.length <= maxLen) return str;
+  return str.slice(0, maxLen) + `... [tronqué, ${str.length} car.]`;
+}
 
 function getAiClient(): GoogleGenAI {
   const apiKey = process.env["GEMINI_API_KEY"];
-  if (!apiKey) {
-    throw new Error("La clé d'API GEMINI_API_KEY n'est pas configurée.");
+  if (!apiKey || !apiKey.trim()) {
+    throw new Error(
+      "La variable d'environnement GEMINI_API_KEY n'est pas configurée.",
+    );
   }
   return new GoogleGenAI({
-    apiKey,
+    apiKey: apiKey.trim(),
     httpOptions: {
       headers: {
         "User-Agent": "aistudio-build",
@@ -32,19 +64,21 @@ function cleanJsonString(raw: string): string {
 }
 
 /**
- * Modèles candidats par ordre de disponibilité, rapidité et résilience :
- * gemini-3.1-flash-lite : ultra-rapide, quota élevé, quasiment jamais saturé (idéal pour l'extraction)
- * gemini-flash-latest : alias moderne officiel
- * gemini-3.7-flash : haute fidélité avec fallback
- * gemini-3.8-flash : modèle de pointe
- * gemini-3.6-flash : modèle Flash moderne
+ * Cascade de modèles Gemini :
+ * 1. gemini-3.8-flash : Priorité absolue, puissant et optimisé pour le texte structuré
+ * 2. gemini-3.7-flash : Modèle alternatif de haute performance
+ * 3. gemini-3.6-flash : Deuxième modèle Flash
+ * 4. gemini-2.5-flash : Flash stable
+ * 5. gemini-flash-latest : Alias générique
+ * 6. gemini-3.1-flash-lite : Filet de sécurité rapide
  */
 const CANDIDATE_MODELS = [
-  "gemini-3.1-flash-lite",
-  "gemini-flash-latest",
-  "gemini-3.7-flash",
   "gemini-3.8-flash",
+  "gemini-3.7-flash",
   "gemini-3.6-flash",
+  "gemini-2.5-flash",
+  "gemini-flash-latest",
+  "gemini-3.1-flash-lite",
 ];
 
 async function generateContentWithFallback(
@@ -52,11 +86,15 @@ async function generateContentWithFallback(
   contents: string,
   systemInstruction: string,
   responseSchema: unknown,
-): Promise<string> {
+): Promise<{ text: string; modelUsed: string }> {
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt < CANDIDATE_MODELS.length; attempt++) {
-    const model = CANDIDATE_MODELS[attempt] || "gemini-3.1-flash-lite";
+    const model = CANDIDATE_MODELS[attempt] || "gemini-3.8-flash";
+    console.info(
+      `[AI CONFIG] Modèle candidat: ${model} (${attempt + 1}/${CANDIDATE_MODELS.length}) | temperature=0.0`,
+    );
+
     try {
       const response = await ai.models.generateContent({
         model,
@@ -70,7 +108,7 @@ async function generateContentWithFallback(
       });
 
       if (response.text) {
-        return response.text;
+        return { text: response.text, modelUsed: model };
       }
     } catch (err: unknown) {
       const errorObj = err instanceof Error ? err : new Error(String(err));
@@ -85,271 +123,21 @@ async function generateContentWithFallback(
         throw new Error("Clé d'API Gemini manquante ou invalide.");
       }
 
-      console.info(
-        `[Opportunity AI] Modèle ${model} indisponible (${errorObj.message?.slice(0, 80)}), basculement vers le candidat suivant (${attempt + 1}/${CANDIDATE_MODELS.length}).`,
+      console.warn(
+        `[Opportunity AI] Modèle ${model} indisponible (${errorObj.message?.slice(0, 100)}), basculement vers candidat suivant.`,
       );
-
       continue;
     }
   }
 
-  // Si tous les modèles ont échoué, on relève l'erreur pour basculer sur l'extraction heuristique
-  throw lastError || new Error("Indisponibilité temporaire des modèles IA.");
-}
-
-/**
- * Extraction heuristique de secours en cas d'indisponibilité totale du réseau ou des serveurs IA
- */
-export function extraireOpportuniteHeuristique(
-  rawText: string,
-  optionalUrl?: string,
-): OpportunityExtractedData {
-  const lines = rawText
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter(Boolean);
-
-  // 1. Détection du titre du poste
-  let title = "";
-  const titleRegex =
-    /(?:intitulé(?: du poste)?|titre|poste|job title|job|offre)\s*[:\-–]\s*([^\n\r.]+)/i;
-  for (const line of lines) {
-    const m = line.match(titleRegex);
-    if (m && m[1] && m[1].length > 3) {
-      title = m[1].trim();
-      break;
-    }
-  }
-  if (!title) {
-    const jobKeywordsRegex =
-      /\b(?:développeur|developpeur|ingénieur|ingenieur|lead dev|tech lead|architecte|consultant|manager|chef de projet|product owner|product manager|data scientist|data engineer|devops|designer|commercial|comptable|stage|alternance|stagiaire|alternant)\b/i;
-    for (const line of lines.slice(0, 10)) {
-      if (jobKeywordsRegex.test(line) && line.length < 80) {
-        title = line.replace(/^[#*•\-\s]+/, "").trim();
-        break;
-      }
-    }
-  }
-  if (!title && lines.length > 0) {
-    title = lines[0]
-      .replace(/^[#*•\-\s]+/, "")
-      .slice(0, 70)
-      .trim();
-  }
-
-  // 2. Détection de l'entreprise
-  let company = "";
-  if (title && /\bchez\s+/i.test(title)) {
-    const parts = title.split(/\bchez\s+/i);
-    title = parts[0].trim();
-    if (parts[1]) {
-      company = parts[1]
-        .split(/\s+(?:à|au|en|pour)\s+/i)[0]
-        .replace(/[.,;:].*$/, "")
-        .trim();
-    }
-  }
-
-  const companyRegex =
-    /(?:entreprise|société|societe|chez|company|client)\s*[:\-–]?\s*([A-Za-z0-9À-ÿ\s&.-]{2,30})/i;
-  if (!company) {
-    for (const line of lines) {
-      const m = line.match(companyRegex);
-      if (
-        m &&
-        m[1] &&
-        !m[1].toLowerCase().includes("recherche") &&
-        !m[1].toLowerCase().includes("recrute")
-      ) {
-        company = m[1]
-          .split(/\s+(?:à|au|en|pour)\s+/i)[0]
-          .replace(/[.,;:].*$/, "")
-          .trim();
-        break;
-      }
-    }
-  }
-  if (!company && optionalUrl) {
-    try {
-      const parsedUrl = new URL(optionalUrl);
-      const host = parsedUrl.hostname.replace(/^www\./, "");
-      const parts = host.split(".");
-      if (
-        parts.length >= 2 &&
-        ![
-          "welcometothejungle",
-          "linkedin",
-          "indeed",
-          "hellowork",
-          "apec",
-          "glassdoor",
-        ].includes(parts[0])
-      ) {
-        company = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
-      }
-    } catch {
-      // Ignorer si url invalide
-    }
-  }
-
-  // 3. Détection de la localisation
-  let location = "";
-  const locRegex =
-    /(?:lieu|localisation|ville|location)\s*[:\-–]?\s*([^\n\r,;()]+)/i;
-  for (const line of lines) {
-    const m = line.match(locRegex);
-    if (m && m[1]) {
-      location = m[1].trim();
-      break;
-    }
-  }
-  if (!location) {
-    const commonCities = [
-      "Paris",
-      "Lyon",
-      "Marseille",
-      "Toulouse",
-      "Bordeaux",
-      "Nantes",
-      "Lille",
-      "Strasbourg",
-      "Rennes",
-      "Montpellier",
-      "Nice",
-      "Grenoble",
-    ];
-    for (const city of commonCities) {
-      if (new RegExp(`\\b${city}\\b`, "i").test(rawText)) {
-        location = city;
-        break;
-      }
-    }
-  }
-
-  // 4. Type de contrat
-  let contractType: string | null = null;
-  if (/\bCDI\b/i.test(rawText)) contractType = "CDI";
-  else if (/\bCDD\b/i.test(rawText)) contractType = "CDD";
-  else if (/\b(?:stage|stagiaire)\b/i.test(rawText)) contractType = "Stage";
-  else if (/\b(?:alternance|apprentissage|contrat pro)\b/i.test(rawText))
-    contractType = "Alternance";
-  else if (/\bfreelance\b/i.test(rawText)) contractType = "Freelance";
-
-  // 5. Télétravail
-  let remotePolicy: string | null = null;
-  if (/full\s*remote|100%\s*télétravail|télétravail\s*total/i.test(rawText)) {
-    remotePolicy = "Full remote";
-  } else if (
-    /hybride|partiel|télétravail\s*(?:partiel|possible|\d+\s*j)/i.test(rawText)
-  ) {
-    remotePolicy = "Hybride";
-  } else if (/présentiel/i.test(rawText)) {
-    remotePolicy = "Présentiel";
-  }
-
-  // 6. Salaire
-  let salary: string | null = null;
-  const salMatch = rawText.match(
-    /\b(\d{2,3}(?:\s?[–-]\s?\d{2,3})?\s?[kK]€?|\d{2,3}\s?000\s?€|\d{3,4}\s?€\s*\/\s*mois)\b/i,
+  throw (
+    lastError || new Error("Indisponibilité temporaire des modèles Gemini.")
   );
-  if (salMatch) {
-    salary = salMatch[0].trim();
-  }
-
-  // 7. Missions (lignes à puces)
-  const missions: string[] = [];
-  for (const line of lines) {
-    if (/^[•\-*]\s*(.+)/.test(line)) {
-      const bullet = line.replace(/^[•\-*]\s*/, "").trim();
-      if (bullet.length > 10 && bullet.length < 250) {
-        missions.push(bullet);
-      }
-    }
-  }
-
-  // 8. Compétences
-  const techKeywords = [
-    "React",
-    "Vue",
-    "Angular",
-    "Next.js",
-    "TypeScript",
-    "JavaScript",
-    "Node.js",
-    "Python",
-    "Java",
-    "Spring",
-    "Go",
-    "Golang",
-    "C#",
-    ".NET",
-    "PHP",
-    "Symfony",
-    "Laravel",
-    "Ruby",
-    "SQL",
-    "PostgreSQL",
-    "MySQL",
-    "MongoDB",
-    "Redis",
-    "Docker",
-    "Kubernetes",
-    "AWS",
-    "GCP",
-    "Azure",
-    "Git",
-    "CI/CD",
-    "Tailwind",
-    "REST",
-    "GraphQL",
-    "Figma",
-    "Agile",
-    "Scrum",
-  ];
-  const requiredSkills: string[] = [];
-  for (const skill of techKeywords) {
-    if (new RegExp(`\\b${skill.replace(".", "\\.")}\\b`, "i").test(rawText)) {
-      requiredSkills.push(skill);
-    }
-  }
-
-  return {
-    title: title || "Poste sans titre",
-    poste: title || "Poste sans titre",
-    company: company || "Entreprise inconnue",
-    entreprise: company || "Entreprise inconnue",
-    location: location || "",
-    lieu: location || "",
-    country: "France",
-    contractType,
-    typeContrat: contractType,
-    remotePolicy,
-    salary,
-    source: optionalUrl ? "Lien externe" : "Texte brut",
-    sourceUrl: optionalUrl?.trim() || null,
-    missions: missions.slice(0, 8),
-    responsibilities: [],
-    requiredSkills: requiredSkills.slice(0, 10),
-    preferredSkills: [],
-    tools: [],
-    requiredLanguages: [],
-    preferredLanguages: [],
-    qualities: [],
-    educationRequirements: [],
-    companyContext: [],
-    companyPartners: [],
-    companyMetrics: [],
-    recruitmentProcess: [],
-    applicationRequirements: [],
-    benefits: [],
-    sourceType: "job_board",
-    sourceName: optionalUrl ? "Lien externe" : "Texte brut",
-    extractedAt: new Date().toISOString(),
-  };
 }
 
 /**
- * Service serveur pour l'extraction haute précision d'une opportunité
+ * Service central officiel d'extraction d'opportunité par IA.
+ * Source unique de traitement partagée entre AI Studio et Vercel.
  */
 export async function extraireOpportuniteIA(
   rawText: string,
@@ -359,34 +147,65 @@ export async function extraireOpportuniteIA(
     throw new Error("Le texte de l'offre est trop court pour être analysé.");
   }
 
+  // [OPPORTUNITY SOURCE] Log structuré du texte brut reçu
+  console.info(
+    `[OPPORTUNITY SOURCE] Texte brut reçu (${rawText.length} caractères):`,
+    truncateForLog(rawText, 250),
+  );
+
+  // Nettoyage proactif du texte d'entrée
+  const cleanedText = cleanOfferText(rawText);
+
+  // [OPPORTUNITY CLEANED] Log structuré du texte nettoyé envoyé à l'analyseur
+  console.info(
+    `[OPPORTUNITY CLEANED] Texte nettoyé (${cleanedText.length} caractères):`,
+    truncateForLog(cleanedText, 250),
+  );
+
   let ai: GoogleGenAI | null = null;
   try {
     ai = getAiClient();
-  } catch (err) {
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
     console.warn(
-      "[Opportunity AI] Client IA non disponible, basculement vers extraction heuristique:",
-      err,
+      `[Opportunity AI] Client IA indisponible (${errorMsg}), basculement déterministe vers le moteur heuristique de secours.`,
     );
-    return extraireOpportuniteHeuristique(rawText, optionalUrl);
+    return extraireOpportuniteHeuristique(cleanedText, optionalUrl);
   }
 
-  const userPrompt = buildOpportunityUserPrompt(rawText, optionalUrl);
+  const userPrompt = buildOpportunityUserPrompt(cleanedText, optionalUrl);
+
+  // [AI PROMPT] Log structuré du prompt envoyé
+  console.info(
+    `[AI PROMPT] Prompt réellement envoyé (${userPrompt.length} caractères):`,
+    truncateForLog(userPrompt, 300),
+  );
 
   let responseText: string;
+  let modelUsed: string;
   try {
-    responseText = await generateContentWithFallback(
+    const result = await generateContentWithFallback(
       ai,
       userPrompt,
       OPPORTUNITY_SYSTEM_PROMPT,
       geminiOpportunityResponseSchema,
     );
-  } catch (err) {
+    responseText = result.text;
+    modelUsed = result.modelUsed;
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : String(err);
     console.warn(
-      "[Opportunity AI] Tous les modèles distants sont temporairement indisponibles, utilisation du moteur heuristique de secours:",
-      err,
+      `[Opportunity AI] Tous les modèles distants sont indisponibles (${errorMsg}), activation du moteur heuristique de secours:`,
     );
-    return extraireOpportuniteHeuristique(rawText, optionalUrl);
+    return extraireOpportuniteHeuristique(cleanedText, optionalUrl);
   }
+
+  // [AI RAW RESPONSE] Log structuré de la réponse brute reçue
+  console.info(
+    `[AI RAW RESPONSE] Réponse brute du modèle (${modelUsed}):`,
+    truncateForLog(responseText, 350),
+  );
+
   const cleanedJson = cleanJsonString(responseText);
 
   let parsedRaw: Record<string, unknown>;
@@ -396,6 +215,15 @@ export async function extraireOpportuniteIA(
     console.error("Erreur de parsing JSON brut Gemini:", err, responseText);
     throw new Error("L'IA n'a pas renvoyé un format JSON valide.");
   }
+
+  // [AI PARSED] Log structuré de l'objet parsé
+  console.info("[AI PARSED] Objet JSON extrait du modèle:", {
+    title: parsedRaw["title"],
+    company: parsedRaw["company"],
+    contractType: parsedRaw["contractType"],
+    duration: parsedRaw["duration"],
+    startDate: parsedRaw["startDate"],
+  });
 
   const parseResult = OpportunityExtractionZodSchema.safeParse(parsedRaw);
   if (!parseResult.success) {
@@ -409,74 +237,76 @@ export async function extraireOpportuniteIA(
     ? parseResult.data
     : (parsedRaw as unknown as OpportunityExtractionRaw);
 
-  console.info("[AI EXTRACTION] JSON structuré brut issu de Gemini:", {
-    title: data.title,
-    company: data.company,
-    contractType: data.contractType,
-    duration: data.duration,
-    startDate: data.startDate,
-    metricsCount: Array.isArray(data.companyMetrics)
-      ? data.companyMetrics.length
-      : 0,
-    missionsCount: Array.isArray(data.missions) ? data.missions.length : 0,
-    skillsCount: Array.isArray(data.requiredSkills)
-      ? data.requiredSkills.length
-      : 0,
-  });
+  // --- GARDE-FOUS DÉTERMINISTES STRICTS CONTRE LES FAUX POSITIFS ---
 
-  // --- GARDE-FOUS DÉTERMINISTES (Règles 13 et 19) ---
-  // 1. Détection déterministe et anti-incohérence du type de contrat
+  // 1. Garde-fou Titre : Rejet absolu de "Aller au contenu" et autres bruits web
+  let resolvedTitle = data.title ? data.title.trim() : "";
+  if (isSuspiciousTitle(resolvedTitle)) {
+    console.warn(
+      `[GARDE-FOU TITRE] Faux positif détecté ("${resolvedTitle}"). Recherche déterministe d'un titre authentique...`,
+    );
+    const candidateTitle = extractCleanJobTitle(cleanedText);
+    resolvedTitle = candidateTitle || "Poste sans titre";
+  }
+
+  // 2. Garde-fou Entreprise : Rejet et dissociation de "15 k employésBanque"
+  const companySanitized = sanitizeCompanyAndMetrics(data.company, cleanedText);
+  const resolvedCompany =
+    companySanitized.cleanCompany ||
+    (data.company && !isSuspiciousTitle(data.company)
+      ? data.company.trim()
+      : "Entreprise inconnue");
+
+  // 3. Détection déterministe du type de contrat
   let resolvedContractType = data.contractType || null;
-  const lowerText = rawText.toLowerCase();
-
   if (
-    /\b(stage|stagiaire|internship|intern)\b/i.test(rawText) &&
+    /\b(stage|stagiaire|internship|intern)\b/i.test(cleanedText) &&
     (!resolvedContractType || resolvedContractType.toLowerCase() === "cdi")
   ) {
     resolvedContractType = "Stage";
   } else if (
     /\b(alternance|alternant|apprentissage|apprenti|contrat de pro(?:fessionnalisation)?)\b/i.test(
-      rawText,
+      cleanedText,
     ) &&
     (!resolvedContractType || resolvedContractType.toLowerCase() === "cdi")
   ) {
     resolvedContractType = "Alternance";
   } else if (
-    /\b(cdd|contrat à durée déterminée)\b/i.test(rawText) &&
-    !/\b(stage|alternance)\b/i.test(rawText)
+    /\b(cdd|contrat à durée déterminée)\b/i.test(cleanedText) &&
+    !/\b(stage|alternance)\b/i.test(cleanedText)
   ) {
     resolvedContractType = "CDD";
   } else if (
-    /\b(cdi|contrat à durée indéterminée)\b/i.test(rawText) &&
-    !/\b(stage|alternance|stagiaire)\b/i.test(rawText)
+    /\b(cdi|contrat à durée indéterminée)\b/i.test(cleanedText) &&
+    !/\b(stage|alternance|stagiaire)\b/i.test(cleanedText)
   ) {
     resolvedContractType = "CDI";
   } else if (
-    /\b(v\.?i\.?e|volontariat international en entreprise)\b/i.test(rawText)
+    /\b(v\.?i\.?e|volontariat international en entreprise)\b/i.test(cleanedText)
   ) {
     resolvedContractType = "VIE";
-  } else if (/\b(freelance|indépendant)\b/i.test(rawText)) {
+  } else if (/\b(freelance|indépendant)\b/i.test(cleanedText)) {
     resolvedContractType = "Freelance";
-  } else if (/\b(intérim|interim)\b/i.test(rawText)) {
+  } else if (/\b(intérim|interim)\b/i.test(cleanedText)) {
     resolvedContractType = "Intérim";
   }
 
-  // 2. Détection déterministe de la durée si omise par l'IA
+  // 4. Détection déterministe de la durée si omise
   let resolvedDuration = data.duration || null;
   if (!resolvedDuration || resolvedDuration.trim().toLowerCase() === "null") {
     const durationMatch =
-      rawText.match(
+      cleanedText.match(
         /(?:durée(?:\s*du\s*(?:contrat|stage|poste))?|stage\s+de|alternance\s+de|mission\s+de|contrat\s+de)\s*[:–-]?\s*(\d+\s*(?:[àa]\s*\d+\s*)?(?:mois|semaines|ans?|jours?))\b/i,
-      ) || rawText.match(/\b(\d+\s*(?:[àa]\s*\d+\s*)?mois)\b/i);
+      ) || cleanedText.match(/\b(\d+\s*(?:[àa]\s*\d+\s*)?mois)\b/i);
     if (durationMatch && durationMatch[1]) {
       resolvedDuration = durationMatch[1].trim();
     }
   }
 
-  // 3. Détection déterministe de la date de début si omise
+  // 5. Détection déterministe de la date de début si omise
   let resolvedStartDate = data.startDate || null;
   if (!resolvedStartDate || resolvedStartDate.trim().toLowerCase() === "null") {
-    const startDateMatch = rawText.match(
+    const startDateMatch = cleanedText.match(
       /(?:[àa]\s+partir\s+de|d[ée]but\s*:?|d[ée]marrage\s*:?|d[èe]s\s*:?|[àa]\s+pourvoir\s+(?:en|d[èe]s|[àa]\s+partir\s+de))\s*([a-zA-ZÀ-ÿ0-9\s]+?(?:\d{4}|d[èe]s\s+que\s+possible|imm[ée]diat(?:ement)?))\b/i,
     );
     if (startDateMatch && startDateMatch[1]) {
@@ -487,8 +317,10 @@ export async function extraireOpportuniteIA(
     }
   }
 
-  // 4. Métriques de l'entreprise : conservation stricte et extraction complémentaire
-  const companyMetrics = Array.isArray(data.companyMetrics)
+  // 6. Métriques de l'entreprise : conservation stricte et consolidation
+  const companyMetrics: OpportunityCompanyMetric[] = Array.isArray(
+    data.companyMetrics,
+  )
     ? data.companyMetrics
         .map((m) => ({
           label: String(m.label || "").trim(),
@@ -497,12 +329,20 @@ export async function extraireOpportuniteIA(
         .filter((m) => Boolean(m.label && m.value))
     : [];
 
-  // Si l'IA n'a pas détecté de métriques mais que le texte contient des chiffres évidents
+  if (companySanitized.extractedMetric) {
+    const alreadyExists = companyMetrics.some(
+      (m) => m.label.toLowerCase() === "effectif",
+    );
+    if (!alreadyExists) {
+      companyMetrics.push(companySanitized.extractedMetric);
+    }
+  }
+
   if (companyMetrics.length === 0) {
-    const userCountMatch = rawText.match(
+    const userCountMatch = cleanedText.match(
       /(?:plus de\s+)?(\d{1,3}(?:\s\d{3})+|\d+\s*000)\s*(utilisateurs|membres|clients|abonn[ée]s|salles\s+partenaires)/i,
     );
-    if (userCountMatch) {
+    if (userCountMatch && userCountMatch[1] && userCountMatch[2]) {
       companyMetrics.push({
         label:
           userCountMatch[2].charAt(0).toUpperCase() +
@@ -510,10 +350,10 @@ export async function extraireOpportuniteIA(
         value: userCountMatch[1].trim(),
       });
     }
-    const fundingMatch = rawText.match(
+    const fundingMatch = cleanedText.match(
       /(\d+(?:[.,]\d+)?\s*(?:M€|k€|millions?\s*d'euros?))\s*(?:de\s+lev[ée]e|lev[ée]s?|de\s+chiffre\s+d'affaires)/i,
     );
-    if (fundingMatch) {
+    if (fundingMatch && fundingMatch[1]) {
       companyMetrics.push({
         label: "Financement",
         value: fundingMatch[1].trim(),
@@ -521,11 +361,12 @@ export async function extraireOpportuniteIA(
     }
   }
 
+  // Construction de l'objet final normalisé
   const extracted: OpportunityExtractedData = {
-    title: (data.title || "Poste sans titre").trim(),
-    poste: (data.title || "Poste sans titre").trim(),
-    company: (data.company || "Entreprise inconnue").trim(),
-    entreprise: (data.company || "Entreprise inconnue").trim(),
+    title: resolvedTitle,
+    poste: resolvedTitle,
+    company: resolvedCompany,
+    entreprise: resolvedCompany,
     location: (data.location || "").trim(),
     lieu: (data.location || "").trim(),
     country: data.country || null,
@@ -548,10 +389,14 @@ export async function extraireOpportuniteIA(
     sourceUrl: optionalUrl?.trim() || data.sourceUrl || null,
 
     missions: Array.isArray(data.missions)
-      ? data.missions.map((m) => String(m).trim()).filter(Boolean)
+      ? data.missions
+          .map((m) => String(m).trim())
+          .filter((m) => Boolean(m) && !isSuspiciousTitle(m))
       : [],
     responsibilities: Array.isArray(data.responsibilities)
-      ? data.responsibilities.map((r) => String(r).trim()).filter(Boolean)
+      ? data.responsibilities
+          .map((r) => String(r).trim())
+          .filter((r) => Boolean(r) && !isSuspiciousTitle(r))
       : [],
 
     requiredSkills: Array.isArray(data.requiredSkills)
@@ -588,10 +433,11 @@ export async function extraireOpportuniteIA(
       ? data.educationRequirements.map((e) => String(e).trim()).filter(Boolean)
       : [],
 
-    companyName: data.companyName || data.company || null,
+    companyName: resolvedCompany,
     companyDescription: data.companyDescription || null,
-    companySector: data.companySector || null,
-    companySize: data.companySize || null,
+    companySector:
+      companySanitized.extractedSector || data.companySector || null,
+    companySize: companySanitized.extractedSize || data.companySize || null,
     companyLocation: data.companyLocation || null,
     companyWebsite: data.companyWebsite || null,
     companyContext: Array.isArray(data.companyContext)
@@ -620,10 +466,13 @@ export async function extraireOpportuniteIA(
     sourceName: data.sourceName || data.source || null,
     sourcePublishedAt: data.sourcePublishedAt || null,
     extractedAt: new Date().toISOString(),
+    _extractionMethod: "ai",
+    _modelUsed: modelUsed,
   };
 
+  // [AI NORMALIZED] Log structuré après normalisation et validation
   console.info(
-    "[ANALYSIS NORMALIZED] Résultat après validation et harmonisation:",
+    `[AI NORMALIZED] Opportunité structurée validée (${extracted._extractionMethod} via ${extracted._modelUsed}):`,
     {
       title: extracted.title,
       company: extracted.company,
@@ -633,7 +482,7 @@ export async function extraireOpportuniteIA(
       metricsCount: extracted.companyMetrics.length,
       missionsCount: extracted.missions.length,
       skillsCount: extracted.requiredSkills.length,
-      metrics: extracted.companyMetrics,
+      companyMetrics: extracted.companyMetrics,
     },
   );
 

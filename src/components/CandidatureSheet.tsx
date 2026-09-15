@@ -57,6 +57,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { extraireOpportuniteServerFn } from "@/ai/opportunity/opportunity.server-fn";
+import { extraireOpportuniteHeuristique } from "@/ai/opportunity/opportunity.heuristic";
+import type { OpportunityExtractedData } from "@/ai/opportunity/opportunity.types";
 import {
   TagListEditor,
   MetricsEditor,
@@ -153,14 +155,60 @@ export function CandidatureSheet({
     setAnalyzing(true);
     setErrorMsg(null);
 
+    let extracted: OpportunityExtractedData | null = null;
+    let fallbackUsed = false;
+
+    // 1. Tentative d'analyse via TanStack Start Server Function
     try {
-      const extracted = await extraireOpportuniteServerFn({
+      extracted = await extraireOpportuniteServerFn({
         data: {
           text: pastedText,
           url: optionalUrl.trim() || undefined,
         },
       });
+    } catch (serverFnErr: unknown) {
+      console.warn(
+        "[CandidatureSheet] Échec createServerFn, tentative via endpoint Vercel /api/extraire-opportunite:",
+        serverFnErr,
+      );
+      // 2. Tentative via l'endpoint serverless Vercel
+      try {
+        const res = await fetch("/api/extraire-opportunite", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: pastedText,
+            url: optionalUrl.trim() || undefined,
+          }),
+        });
+        if (res.ok) {
+          extracted = (await res.json()) as OpportunityExtractedData;
+        } else {
+          throw new Error(`API HTTP ${res.status}`);
+        }
+      } catch (apiErr: unknown) {
+        console.warn(
+          "[CandidatureSheet] Échec de l'endpoint distant, activation du moteur heuristique déterministe:",
+          apiErr,
+        );
+        // 3. Repli local déterministe avec garde-fous stricts
+        extracted = extraireOpportuniteHeuristique(
+          pastedText,
+          optionalUrl.trim() || undefined,
+        );
+        fallbackUsed = true;
+      }
+    }
 
+    if (!extracted) {
+      extracted = extraireOpportuniteHeuristique(
+        pastedText,
+        optionalUrl.trim() || undefined,
+      );
+      fallbackUsed = true;
+    }
+
+    try {
       // Construction du formulaire enrichi
       const missionsList = Array.isArray(extracted.missions)
         ? extracted.missions
@@ -194,8 +242,9 @@ export function CandidatureSheet({
         setDuplicateMatch(duplicate);
       }
 
+      // [OPPORTUNITY PREVIEW] Log structuré des données affichées dans l'interface
       console.info(
-        "[PREVIEW] Données prêtes pour affichage dans le formulaire:",
+        "[OPPORTUNITY PREVIEW] Données prêtes pour affichage dans le formulaire:",
         {
           poste: updated.poste,
           entreprise: updated.entreprise,
@@ -206,48 +255,28 @@ export function CandidatureSheet({
           missionsCount: updated.missionsList?.length || 0,
           skillsCount: updated.requiredSkills?.length || 0,
           companyMetrics: updated.companyMetrics,
+          extractionMethod:
+            extracted._extractionMethod || (fallbackUsed ? "heuristic" : "ai"),
+          modelUsed: extracted._modelUsed,
         },
       );
 
       setForm(updated);
       setMode("form");
-    } catch (err: unknown) {
-      console.error("Erreur lors de l'extraction de l'offre :", err);
-      // Repli immédiat pour ne jamais bloquer la saisie utilisateur
-      try {
-        const firstLine =
-          pastedText
-            .split("\n")
-            .map((l) => l.trim())
-            .filter(Boolean)[0] || "Poste sans titre";
-        const titleMatch = pastedText.match(
-          /(?:intitulé(?: du poste)?|poste|titre|job|offre)\s*[:\-–]\s*([^\n\r.]+)/i,
-        );
-        const fallbackTitle = titleMatch
-          ? titleMatch[1].trim()
-          : firstLine.slice(0, 60);
 
-        const updated = normalizeCandidature({
-          ...form,
-          poste: fallbackTitle,
-          title: fallbackTitle,
-          detail: pastedText,
-          lien: optionalUrl.trim() || form.lien,
-          sourceUrl: optionalUrl.trim() || form.sourceUrl,
-          statut: form.statut || "Sauvegardée",
-          status: form.status || form.statut || "Sauvegardée",
-        });
-        setForm(updated);
-        setMode("form");
+      if (fallbackUsed || extracted._extractionMethod === "heuristic") {
         setErrorMsg(
-          "L'offre a été pré-remplie automatiquement. Vous pouvez ajuster les champs manuellement.",
+          "Analyse effectuée via le moteur heuristique de secours. Vous pouvez affiner ou compléter les champs.",
         );
-      } catch {
-        const errorObj = err instanceof Error ? err : new Error(String(err));
-        const message =
-          errorObj.message || "Impossible d'extraire l'offre avec l'IA.";
-        setErrorMsg(message);
       }
+    } catch (normalizeErr) {
+      console.error(
+        "Erreur lors de la normalisation de l'offre extraite :",
+        normalizeErr,
+      );
+      setErrorMsg(
+        "Une erreur est survenue lors de l'application des données. Veuillez vérifier les champs.",
+      );
     } finally {
       setAnalyzing(false);
     }
@@ -1216,7 +1245,7 @@ export function CandidatureSheet({
                 onClick={() => {
                   const safeToSave = validerIntegriteCandidature(form, form);
                   console.info(
-                    "[SAVE PAYLOAD] Validation avant onSave réussie:",
+                    "[OPPORTUNITY SAVE] Objet envoyé lors de l'enregistrement:",
                     {
                       poste: safeToSave.poste,
                       entreprise: safeToSave.entreprise,
@@ -1226,6 +1255,7 @@ export function CandidatureSheet({
                       metricsCount: safeToSave.companyMetrics?.length || 0,
                       missionsCount: safeToSave.missionsList?.length || 0,
                       skillsCount: safeToSave.requiredSkills?.length || 0,
+                      companyMetrics: safeToSave.companyMetrics,
                     },
                   );
                   onSave(safeToSave);

@@ -74,6 +74,8 @@ export interface OpportunityExtractedData {
   sourceName?: string | null;
   sourcePublishedAt?: string | null;
   extractedAt?: string | null;
+  _extractionMethod?: "ai" | "heuristic";
+  _modelUsed?: string | null;
 }
 
 export interface OpportunityIntelligence extends OpportunityExtractedData {

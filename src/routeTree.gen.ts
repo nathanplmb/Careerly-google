@@ -8,353 +8,353 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as CalendrierRouteImport } from './routes/calendrier'
-import { Route as CandidaturesRouteImport } from './routes/candidatures'
-import { Route as ContactsRouteImport } from './routes/contacts'
-import { Route as DocumentsRouteImport } from './routes/documents'
-import { Route as EntreprisesRouteImport } from './routes/entreprises'
-import { Route as ImportRouteImport } from './routes/import'
-import { Route as McpRouteImport } from './routes/mcp'
-import { Route as OpportunitesRouteImport } from './routes/opportunites'
-import { Route as ParametresRouteImport } from './routes/parametres'
-import { Route as ProfilRouteImport } from './routes/profil'
-import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
-import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
-import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
-import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as rootRouteImport } from "./routes/__root";
+import { Route as IndexRouteImport } from "./routes/index";
+import { Route as AuthRouteImport } from "./routes/auth";
+import { Route as CalendrierRouteImport } from "./routes/calendrier";
+import { Route as CandidaturesRouteImport } from "./routes/candidatures";
+import { Route as ContactsRouteImport } from "./routes/contacts";
+import { Route as DocumentsRouteImport } from "./routes/documents";
+import { Route as EntreprisesRouteImport } from "./routes/entreprises";
+import { Route as ImportRouteImport } from "./routes/import";
+import { Route as McpRouteImport } from "./routes/mcp";
+import { Route as OpportunitesRouteImport } from "./routes/opportunites";
+import { Route as ParametresRouteImport } from "./routes/parametres";
+import { Route as ProfilRouteImport } from "./routes/profil";
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from "./routes/[.mcp]/list-tools";
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from "./routes/[.well-known]/oauth-protected-resource";
+import { Route as DotlovableOauthConsentRouteImport } from "./routes/[.]lovable.oauth.consent";
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from "./routes/[.mcp]/invoke-tool/$tool";
 
 const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+  id: "/auth",
+  path: "/auth",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const CalendrierRoute = CalendrierRouteImport.update({
-  id: '/calendrier',
-  path: '/calendrier',
+  id: "/calendrier",
+  path: "/calendrier",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const CandidaturesRoute = CandidaturesRouteImport.update({
-  id: '/candidatures',
-  path: '/candidatures',
+  id: "/candidatures",
+  path: "/candidatures",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ContactsRoute = ContactsRouteImport.update({
-  id: '/contacts',
-  path: '/contacts',
+  id: "/contacts",
+  path: "/contacts",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const DocumentsRoute = DocumentsRouteImport.update({
-  id: '/documents',
-  path: '/documents',
+  id: "/documents",
+  path: "/documents",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const EntreprisesRoute = EntreprisesRouteImport.update({
-  id: '/entreprises',
-  path: '/entreprises',
+  id: "/entreprises",
+  path: "/entreprises",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ImportRoute = ImportRouteImport.update({
-  id: '/import',
-  path: '/import',
+  id: "/import",
+  path: "/import",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
+  id: "/mcp",
+  path: "/mcp",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const OpportunitesRoute = OpportunitesRouteImport.update({
-  id: '/opportunites',
-  path: '/opportunites',
+  id: "/opportunites",
+  path: "/opportunites",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ParametresRoute = ParametresRouteImport.update({
-  id: '/parametres',
-  path: '/parametres',
+  id: "/parametres",
+  path: "/parametres",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const ProfilRoute = ProfilRouteImport.update({
-  id: '/profil',
-  path: '/profil',
+  id: "/profil",
+  path: "/profil",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const Char91DotmcpChar93ListToolsRoute =
   Char91DotmcpChar93ListToolsRouteImport.update({
-    id: '/.mcp/list-tools',
-    path: '/.mcp/list-tools',
+    id: "/.mcp/list-tools",
+    path: "/.mcp/list-tools",
     getParentRoute: () => rootRouteImport,
-  } as any)
+  } as any);
 const Char91DotwellKnownChar93OauthProtectedResourceRoute =
   Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
-    id: '/.well-known/oauth-protected-resource',
-    path: '/.well-known/oauth-protected-resource',
+    id: "/.well-known/oauth-protected-resource",
+    path: "/.well-known/oauth-protected-resource",
     getParentRoute: () => rootRouteImport,
-  } as any)
+  } as any);
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
-  id: '/.lovable/oauth/consent',
-  path: '/.lovable/oauth/consent',
+  id: "/.lovable/oauth/consent",
+  path: "/.lovable/oauth/consent",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
-    id: '/.mcp/invoke-tool/$tool',
-    path: '/.mcp/invoke-tool/$tool',
+    id: "/.mcp/invoke-tool/$tool",
+    path: "/.mcp/invoke-tool/$tool",
     getParentRoute: () => rootRouteImport,
-  } as any)
+  } as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
-  '/calendrier': typeof CalendrierRoute
-  '/candidatures': typeof CandidaturesRoute
-  '/contacts': typeof ContactsRoute
-  '/documents': typeof DocumentsRoute
-  '/entreprises': typeof EntreprisesRoute
-  '/import': typeof ImportRoute
-  '/mcp': typeof McpRoute
-  '/opportunites': typeof OpportunitesRoute
-  '/parametres': typeof ParametresRoute
-  '/profil': typeof ProfilRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  "/": typeof IndexRoute;
+  "/auth": typeof AuthRoute;
+  "/calendrier": typeof CalendrierRoute;
+  "/candidatures": typeof CandidaturesRoute;
+  "/contacts": typeof ContactsRoute;
+  "/documents": typeof DocumentsRoute;
+  "/entreprises": typeof EntreprisesRoute;
+  "/import": typeof ImportRoute;
+  "/mcp": typeof McpRoute;
+  "/opportunites": typeof OpportunitesRoute;
+  "/parametres": typeof ParametresRoute;
+  "/profil": typeof ProfilRoute;
+  "/.mcp/list-tools": typeof Char91DotmcpChar93ListToolsRoute;
+  "/.well-known/oauth-protected-resource": typeof Char91DotwellKnownChar93OauthProtectedResourceRoute;
+  "/.lovable/oauth/consent": typeof DotlovableOauthConsentRoute;
+  "/.mcp/invoke-tool/$tool": typeof Char91DotmcpChar93InvokeToolToolRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
-  '/calendrier': typeof CalendrierRoute
-  '/candidatures': typeof CandidaturesRoute
-  '/contacts': typeof ContactsRoute
-  '/documents': typeof DocumentsRoute
-  '/entreprises': typeof EntreprisesRoute
-  '/import': typeof ImportRoute
-  '/mcp': typeof McpRoute
-  '/opportunites': typeof OpportunitesRoute
-  '/parametres': typeof ParametresRoute
-  '/profil': typeof ProfilRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  "/": typeof IndexRoute;
+  "/auth": typeof AuthRoute;
+  "/calendrier": typeof CalendrierRoute;
+  "/candidatures": typeof CandidaturesRoute;
+  "/contacts": typeof ContactsRoute;
+  "/documents": typeof DocumentsRoute;
+  "/entreprises": typeof EntreprisesRoute;
+  "/import": typeof ImportRoute;
+  "/mcp": typeof McpRoute;
+  "/opportunites": typeof OpportunitesRoute;
+  "/parametres": typeof ParametresRoute;
+  "/profil": typeof ProfilRoute;
+  "/.mcp/list-tools": typeof Char91DotmcpChar93ListToolsRoute;
+  "/.well-known/oauth-protected-resource": typeof Char91DotwellKnownChar93OauthProtectedResourceRoute;
+  "/.lovable/oauth/consent": typeof DotlovableOauthConsentRoute;
+  "/.mcp/invoke-tool/$tool": typeof Char91DotmcpChar93InvokeToolToolRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
-  '/calendrier': typeof CalendrierRoute
-  '/candidatures': typeof CandidaturesRoute
-  '/contacts': typeof ContactsRoute
-  '/documents': typeof DocumentsRoute
-  '/entreprises': typeof EntreprisesRoute
-  '/import': typeof ImportRoute
-  '/mcp': typeof McpRoute
-  '/opportunites': typeof OpportunitesRoute
-  '/parametres': typeof ParametresRoute
-  '/profil': typeof ProfilRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  __root__: typeof rootRouteImport;
+  "/": typeof IndexRoute;
+  "/auth": typeof AuthRoute;
+  "/calendrier": typeof CalendrierRoute;
+  "/candidatures": typeof CandidaturesRoute;
+  "/contacts": typeof ContactsRoute;
+  "/documents": typeof DocumentsRoute;
+  "/entreprises": typeof EntreprisesRoute;
+  "/import": typeof ImportRoute;
+  "/mcp": typeof McpRoute;
+  "/opportunites": typeof OpportunitesRoute;
+  "/parametres": typeof ParametresRoute;
+  "/profil": typeof ProfilRoute;
+  "/.mcp/list-tools": typeof Char91DotmcpChar93ListToolsRoute;
+  "/.well-known/oauth-protected-resource": typeof Char91DotwellKnownChar93OauthProtectedResourceRoute;
+  "/.lovable/oauth/consent": typeof DotlovableOauthConsentRoute;
+  "/.mcp/invoke-tool/$tool": typeof Char91DotmcpChar93InvokeToolToolRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
+  fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
-    | '/'
-    | '/auth'
-    | '/calendrier'
-    | '/candidatures'
-    | '/contacts'
-    | '/documents'
-    | '/entreprises'
-    | '/import'
-    | '/mcp'
-    | '/opportunites'
-    | '/parametres'
-    | '/profil'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
-    | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
-  fileRoutesByTo: FileRoutesByTo
+    | "/"
+    | "/auth"
+    | "/calendrier"
+    | "/candidatures"
+    | "/contacts"
+    | "/documents"
+    | "/entreprises"
+    | "/import"
+    | "/mcp"
+    | "/opportunites"
+    | "/parametres"
+    | "/profil"
+    | "/.mcp/list-tools"
+    | "/.well-known/oauth-protected-resource"
+    | "/.lovable/oauth/consent"
+    | "/.mcp/invoke-tool/$tool";
+  fileRoutesByTo: FileRoutesByTo;
   to:
-    | '/'
-    | '/auth'
-    | '/calendrier'
-    | '/candidatures'
-    | '/contacts'
-    | '/documents'
-    | '/entreprises'
-    | '/import'
-    | '/mcp'
-    | '/opportunites'
-    | '/parametres'
-    | '/profil'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
-    | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
+    | "/"
+    | "/auth"
+    | "/calendrier"
+    | "/candidatures"
+    | "/contacts"
+    | "/documents"
+    | "/entreprises"
+    | "/import"
+    | "/mcp"
+    | "/opportunites"
+    | "/parametres"
+    | "/profil"
+    | "/.mcp/list-tools"
+    | "/.well-known/oauth-protected-resource"
+    | "/.lovable/oauth/consent"
+    | "/.mcp/invoke-tool/$tool";
   id:
-    | '__root__'
-    | '/'
-    | '/auth'
-    | '/calendrier'
-    | '/candidatures'
-    | '/contacts'
-    | '/documents'
-    | '/entreprises'
-    | '/import'
-    | '/mcp'
-    | '/opportunites'
-    | '/parametres'
-    | '/profil'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
-    | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
-  fileRoutesById: FileRoutesById
+    | "__root__"
+    | "/"
+    | "/auth"
+    | "/calendrier"
+    | "/candidatures"
+    | "/contacts"
+    | "/documents"
+    | "/entreprises"
+    | "/import"
+    | "/mcp"
+    | "/opportunites"
+    | "/parametres"
+    | "/profil"
+    | "/.mcp/list-tools"
+    | "/.well-known/oauth-protected-resource"
+    | "/.lovable/oauth/consent"
+    | "/.mcp/invoke-tool/$tool";
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AuthRoute: typeof AuthRoute
-  CalendrierRoute: typeof CalendrierRoute
-  CandidaturesRoute: typeof CandidaturesRoute
-  ContactsRoute: typeof ContactsRoute
-  DocumentsRoute: typeof DocumentsRoute
-  EntreprisesRoute: typeof EntreprisesRoute
-  ImportRoute: typeof ImportRoute
-  McpRoute: typeof McpRoute
-  OpportunitesRoute: typeof OpportunitesRoute
-  ParametresRoute: typeof ParametresRoute
-  ProfilRoute: typeof ProfilRoute
-  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
-  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
-  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
-  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  IndexRoute: typeof IndexRoute;
+  AuthRoute: typeof AuthRoute;
+  CalendrierRoute: typeof CalendrierRoute;
+  CandidaturesRoute: typeof CandidaturesRoute;
+  ContactsRoute: typeof ContactsRoute;
+  DocumentsRoute: typeof DocumentsRoute;
+  EntreprisesRoute: typeof EntreprisesRoute;
+  ImportRoute: typeof ImportRoute;
+  McpRoute: typeof McpRoute;
+  OpportunitesRoute: typeof OpportunitesRoute;
+  ParametresRoute: typeof ParametresRoute;
+  ProfilRoute: typeof ProfilRoute;
+  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute;
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute;
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute;
+  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute;
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/calendrier': {
-      id: '/calendrier'
-      path: '/calendrier'
-      fullPath: '/calendrier'
-      preLoaderRoute: typeof CalendrierRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/candidatures': {
-      id: '/candidatures'
-      path: '/candidatures'
-      fullPath: '/candidatures'
-      preLoaderRoute: typeof CandidaturesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/contacts': {
-      id: '/contacts'
-      path: '/contacts'
-      fullPath: '/contacts'
-      preLoaderRoute: typeof ContactsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/documents': {
-      id: '/documents'
-      path: '/documents'
-      fullPath: '/documents'
-      preLoaderRoute: typeof DocumentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/entreprises': {
-      id: '/entreprises'
-      path: '/entreprises'
-      fullPath: '/entreprises'
-      preLoaderRoute: typeof EntreprisesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/import': {
-      id: '/import'
-      path: '/import'
-      fullPath: '/import'
-      preLoaderRoute: typeof ImportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/opportunites': {
-      id: '/opportunites'
-      path: '/opportunites'
-      fullPath: '/opportunites'
-      preLoaderRoute: typeof OpportunitesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/parametres': {
-      id: '/parametres'
-      path: '/parametres'
-      fullPath: '/parametres'
-      preLoaderRoute: typeof ParametresRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profil': {
-      id: '/profil'
-      path: '/profil'
-      fullPath: '/profil'
-      preLoaderRoute: typeof ProfilRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.mcp/list-tools': {
-      id: '/.mcp/list-tools'
-      path: '/.mcp/list-tools'
-      fullPath: '/.mcp/list-tools'
-      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.lovable/oauth/consent': {
-      id: '/.lovable/oauth/consent'
-      path: '/.lovable/oauth/consent'
-      fullPath: '/.lovable/oauth/consent'
-      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.mcp/invoke-tool/$tool': {
-      id: '/.mcp/invoke-tool/$tool'
-      path: '/.mcp/invoke-tool/$tool'
-      fullPath: '/.mcp/invoke-tool/$tool'
-      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+    "/": {
+      id: "/";
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/auth": {
+      id: "/auth";
+      path: "/auth";
+      fullPath: "/auth";
+      preLoaderRoute: typeof AuthRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/calendrier": {
+      id: "/calendrier";
+      path: "/calendrier";
+      fullPath: "/calendrier";
+      preLoaderRoute: typeof CalendrierRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/candidatures": {
+      id: "/candidatures";
+      path: "/candidatures";
+      fullPath: "/candidatures";
+      preLoaderRoute: typeof CandidaturesRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/contacts": {
+      id: "/contacts";
+      path: "/contacts";
+      fullPath: "/contacts";
+      preLoaderRoute: typeof ContactsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/documents": {
+      id: "/documents";
+      path: "/documents";
+      fullPath: "/documents";
+      preLoaderRoute: typeof DocumentsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/entreprises": {
+      id: "/entreprises";
+      path: "/entreprises";
+      fullPath: "/entreprises";
+      preLoaderRoute: typeof EntreprisesRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/import": {
+      id: "/import";
+      path: "/import";
+      fullPath: "/import";
+      preLoaderRoute: typeof ImportRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/mcp": {
+      id: "/mcp";
+      path: "/mcp";
+      fullPath: "/mcp";
+      preLoaderRoute: typeof McpRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/opportunites": {
+      id: "/opportunites";
+      path: "/opportunites";
+      fullPath: "/opportunites";
+      preLoaderRoute: typeof OpportunitesRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/parametres": {
+      id: "/parametres";
+      path: "/parametres";
+      fullPath: "/parametres";
+      preLoaderRoute: typeof ParametresRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/profil": {
+      id: "/profil";
+      path: "/profil";
+      fullPath: "/profil";
+      preLoaderRoute: typeof ProfilRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/.mcp/list-tools": {
+      id: "/.mcp/list-tools";
+      path: "/.mcp/list-tools";
+      fullPath: "/.mcp/list-tools";
+      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/.well-known/oauth-protected-resource": {
+      id: "/.well-known/oauth-protected-resource";
+      path: "/.well-known/oauth-protected-resource";
+      fullPath: "/.well-known/oauth-protected-resource";
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/.lovable/oauth/consent": {
+      id: "/.lovable/oauth/consent";
+      path: "/.lovable/oauth/consent";
+      fullPath: "/.lovable/oauth/consent";
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/.mcp/invoke-tool/$tool": {
+      id: "/.mcp/invoke-tool/$tool";
+      path: "/.mcp/invoke-tool/$tool";
+      fullPath: "/.mcp/invoke-tool/$tool";
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
   }
 }
 
@@ -376,17 +376,17 @@ const rootRouteChildren: RootRouteChildren = {
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
-}
+};
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+  ._addFileTypes<FileRouteTypes>();
 
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
+import type { getRouter } from "./router.tsx";
+import type { startInstance } from "./start.ts";
+declare module "@tanstack/react-start" {
   interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+    ssr: true;
+    router: Awaited<ReturnType<typeof getRouter>>;
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>;
   }
 }

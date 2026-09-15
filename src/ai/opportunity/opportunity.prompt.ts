@@ -54,8 +54,20 @@ RÈGLES ABSOLUES ET ANTI-HALLUCINATION :
    - Contexte de croissance : phrases de contexte dans 'companyContext'.
    - Partenaires & clients : marques, clients ou partenaires mentionnés dans 'companyPartners'.
 
-8. NETTOYAGE DU TEXTE :
-   - Ignore les textes parasites de navigation (ex: "Aller au contenu", "Career Center", "Voir moins", "Mentions légales", "Cookies", "Partager l'offre").
+8. NETTOYAGE DU TEXTE & GARDE-FOUS D'EXTRACTION STRICTS :
+   - TITRE DU POSTE (CRITIQUE) :
+     * Interdiction absolue d'utiliser du texte de navigation ou d'accessibilité web comme intitulé de poste.
+     * Valeurs interdites (bruit de scraping / accessibilité) : "Aller au contenu", "Passer au contenu", "Menu", "Accueil", "Connexion", "Se connecter", "Inscription", "Recherche", "Fermer", "Navigation", "Cookie", "Mentions légales", "Postuler", "Partager l'offre", "Voir moins", "Career Center", "Retour", "Imprimer".
+     * Si le texte commence par ces éléments, ignore-les et identifie le véritable intitulé de poste dans le corps de l'annonce (ex: "Stage - Bras Droit CEO", "Chef de Projet Marketing", "Business Developer Alternance").
+     * Si aucun titre valide n'est mentionné, renvoie "Poste sans titre".
+   - NOM DE L'ENTREPRISE (CRITIQUE) :
+     * Interdiction absolue de fusionner l'effectif, la taille ou le secteur dans le nom de l'entreprise.
+     * Exemple de faux positif interdit : "15 k employésBanque".
+     * Tu dois impérativement dissocier :
+       - company / companyName : Le nom de l'entreprise uniquement (ex: "BNP Paribas", "Qonto", "Alan").
+       - companySize : La taille / effectif (ex: "15 000 employés", "50 collaborateurs").
+       - companySector : Le secteur d'activité (ex: "Banque", "Fintech", "Santé").
+       - companyMetrics : Les métriques chiffrées (ex: { label: "Effectif", value: "15 000 employés" }).
    - Ignore les accroches purement humoristiques ("Mais dis-moi Jamy...").
 
 9. SÉPARATION RIGOUREUSE DES BLOCS :
