@@ -214,8 +214,7 @@ export const geminiDailyBriefResponseSchema = {
   properties: {
     greeting: {
       type: "STRING" as const,
-      description:
-        "Salutation personnalisée courte (ex: Bonjour Nathan)",
+      description: "Salutation personnalisée courte (ex: Bonjour Nathan)",
     },
     summary: {
       type: "STRING" as const,
@@ -243,4 +242,3 @@ export const geminiDailyBriefResponseSchema = {
   },
   required: ["greeting", "summary", "today", "watch", "upcoming"],
 };
-

@@ -120,4 +120,3 @@ CONSIGNES PARTICULIÈRES :
 4. Pour chaque élément, sélectionne 1 à 3 actions du catalogue autorisé adaptées à la situation.
 `;
 }
-

@@ -18,11 +18,7 @@ export type BriefActionId =
   | "OPEN_CALENDAR";
 
 export type BriefActionVariant =
-  | "default"
-  | "secondary"
-  | "outline"
-  | "destructive"
-  | "ghost";
+  "default" | "secondary" | "outline" | "destructive" | "ghost";
 
 export type BriefActionItem = {
   id: BriefActionId;

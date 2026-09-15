@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Briefcase,
   Building2,
@@ -128,9 +128,14 @@ function EntreprisesPage() {
   const [isEditingNotes, setIsEditingNotes] = useState(false);
 
   // Synchronisation initiale prudente si opportunités chargées
+  const lastSyncHashRef = useRef<string>("");
   useEffect(() => {
     if (candidatures.length > 0 && !loadingEntreprises) {
-      void syncWithOpportunites(candidatures, contacts);
+      const syncKey = `${candidatures.length}:${candidatures.map((c) => c.id).join(",")}:${contacts.length}`;
+      if (lastSyncHashRef.current !== syncKey) {
+        lastSyncHashRef.current = syncKey;
+        void syncWithOpportunites(candidatures, contacts);
+      }
     }
   }, [candidatures, contacts, loadingEntreprises, syncWithOpportunites]);
 
@@ -434,11 +439,18 @@ function EntreprisesPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {filteredEntreprises.map((e, i) => {
           return (
-            <button
+            <div
               key={e.id}
-              type="button"
+              role="button"
+              tabIndex={0}
               onClick={() => setSelectedEntreprise(e)}
-              className="glass-card pop-in group relative flex min-w-0 flex-col gap-3.5 p-5 text-left transition hover:border-primary/40 hover:shadow-[0_20px_50px_-30px_rgba(124,92,255,0.4)]"
+              onKeyDown={(ev) => {
+                if (ev.key === "Enter" || ev.key === " ") {
+                  ev.preventDefault();
+                  setSelectedEntreprise(e);
+                }
+              }}
+              className="glass-card pop-in group relative flex min-w-0 cursor-pointer flex-col gap-3.5 p-5 text-left transition hover:border-primary/40 hover:shadow-[0_20px_50px_-30px_rgba(124,92,255,0.4)]"
               style={{ animationDelay: `${Math.min(i, 12) * 35}ms` }}
             >
               {/* En-tête : icône, nom, favori */}
@@ -524,7 +536,7 @@ function EntreprisesPage() {
                   </span>
                 )}
               </div>
-            </button>
+            </div>
           );
         })}
       </div>

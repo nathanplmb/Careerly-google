@@ -242,4 +242,3 @@ export async function generateDailyBriefIA(
     return generateDeterministicDailyBrief(input, true);
   }
 }
-

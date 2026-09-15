@@ -220,7 +220,7 @@ export function emptyEntreprise(nom?: string): Entreprise {
 export function syncEntrepriseFromOpportunity(
   opp: Candidature,
   entreprises: Entreprise[],
-): { entreprise: Entreprise; isNew: boolean } {
+): { entreprise: Entreprise; isNew: boolean; hasChanged: boolean } {
   const oppNom =
     opp.companyName || opp.company || opp.entreprise || "Entreprise";
   const existing = findMatchingEntreprise(
@@ -267,11 +267,12 @@ export function syncEntrepriseFromOpportunity(
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-    return { entreprise: newEnt, isNew: true };
+    return { entreprise: newEnt, isNew: true, hasChanged: true };
   }
 
   // Enrichissement prudent sans écraser les données manuelles de l'utilisateur
   const manualFields = existing.manualFields || [];
+  let hasChanged = false;
   const updated: Entreprise = { ...existing };
 
   if (
@@ -280,7 +281,13 @@ export function syncEntrepriseFromOpportunity(
       (opp.companyDescription &&
         opp.companyDescription.length > updated.description.length))
   ) {
-    if (opp.companyDescription) updated.description = opp.companyDescription;
+    if (
+      opp.companyDescription &&
+      opp.companyDescription !== updated.description
+    ) {
+      updated.description = opp.companyDescription;
+      hasChanged = true;
+    }
   }
 
   if (
@@ -288,11 +295,18 @@ export function syncEntrepriseFromOpportunity(
     !updated.secteur &&
     (opp.companySector || opp.secteur)
   ) {
-    updated.secteur = opp.companySector || opp.secteur;
+    const newSec = opp.companySector || opp.secteur || null;
+    if (newSec && newSec !== updated.secteur) {
+      updated.secteur = newSec;
+      hasChanged = true;
+    }
   }
 
   if (!manualFields.includes("taille") && !updated.taille && opp.companySize) {
-    updated.taille = opp.companySize;
+    if (opp.companySize !== updated.taille) {
+      updated.taille = opp.companySize;
+      hasChanged = true;
+    }
   }
 
   if (
@@ -300,7 +314,11 @@ export function syncEntrepriseFromOpportunity(
     !updated.siege &&
     (opp.companyLocation || opp.lieu)
   ) {
-    updated.siege = opp.companyLocation || opp.lieu;
+    const newSiege = opp.companyLocation || opp.lieu || null;
+    if (newSiege && newSiege !== updated.siege) {
+      updated.siege = newSiege;
+      hasChanged = true;
+    }
   }
 
   if (
@@ -308,40 +326,60 @@ export function syncEntrepriseFromOpportunity(
     !updated.siteWeb &&
     (opp.companyWebsite || opp.lien)
   ) {
-    updated.siteWeb = opp.companyWebsite || opp.lien;
+    const newWeb = opp.companyWebsite || opp.lien || null;
+    if (newWeb && newWeb !== updated.siteWeb) {
+      updated.siteWeb = newWeb;
+      hasChanged = true;
+    }
   }
 
   // Fusion des chiffres clés sans doublons
   if (Array.isArray(opp.companyMetrics) && opp.companyMetrics.length > 0) {
     const currentMetrics = new Set(updated.chiffresCles || []);
+    const initialSize = currentMetrics.size;
     for (const m of opp.companyMetrics) {
       currentMetrics.add(
         `${m.label} : ${m.value}${m.context ? ` (${m.context})` : ""}`,
       );
     }
-    updated.chiffresCles = Array.from(currentMetrics);
+    if (currentMetrics.size > initialSize) {
+      updated.chiffresCles = Array.from(currentMetrics);
+      hasChanged = true;
+    }
   }
 
   // Fusion des contextes
   if (Array.isArray(opp.companyContext) && opp.companyContext.length > 0) {
     const currentContext = new Set(updated.contexte || []);
+    const initialSize = currentContext.size;
     for (const ctx of opp.companyContext) {
       currentContext.add(ctx);
     }
-    updated.contexte = Array.from(currentContext);
+    if (currentContext.size > initialSize) {
+      updated.contexte = Array.from(currentContext);
+      hasChanged = true;
+    }
   }
 
   // Fusion des partenaires
   if (Array.isArray(opp.companyPartners) && opp.companyPartners.length > 0) {
     const currentPartners = new Set(updated.partenaires || []);
+    const initialSize = currentPartners.size;
     for (const p of opp.companyPartners) {
       currentPartners.add(p);
     }
-    updated.partenaires = Array.from(currentPartners);
+    if (currentPartners.size > initialSize) {
+      updated.partenaires = Array.from(currentPartners);
+      hasChanged = true;
+    }
   }
 
-  updated.updatedAt = new Date().toISOString();
-  return { entreprise: updated, isNew: false };
+  if (hasChanged) {
+    updated.updatedAt = new Date().toISOString();
+    return { entreprise: updated, isNew: false, hasChanged: true };
+  }
+
+  return { entreprise: existing, isNew: false, hasChanged: false };
 }
 
 /**

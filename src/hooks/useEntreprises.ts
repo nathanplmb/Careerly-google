@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useSession } from "@/hooks/useSession";
 import {
@@ -27,6 +27,9 @@ export function useEntreprises() {
 
   const [entreprises, setEntreprises] = useState<Entreprise[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const entreprisesRef = useRef<Entreprise[]>([]);
+  entreprisesRef.current = entreprises;
 
   // Chargement initial (Cloud ou Local)
   useEffect(() => {
@@ -158,27 +161,30 @@ export function useEntreprises() {
       updatedEntreprises: Entreprise[];
       patchedCandidatures: Candidature[];
     }> => {
-      let currentList = [...entreprises];
+      let currentList = [...entreprisesRef.current];
       const patchedCands: Candidature[] = [];
+      let anyChanged = false;
 
       for (const opp of candidatures) {
         const oppNom = opp.companyName || opp.company || opp.entreprise || "";
         if (!oppNom.trim()) continue;
 
-        const { entreprise, isNew } = syncEntrepriseFromOpportunity(
+        const { entreprise, isNew, hasChanged } = syncEntrepriseFromOpportunity(
           opp,
           currentList,
         );
 
         if (isNew) {
           currentList = [entreprise, ...currentList];
+          anyChanged = true;
           if (isCloudUser && userId) {
             void upsertEntreprise(entreprise, userId);
           }
-        } else {
+        } else if (hasChanged) {
           currentList = currentList.map((item) =>
             item.id === entreprise.id ? entreprise : item,
           );
+          anyChanged = true;
           if (isCloudUser && userId) {
             void upsertEntreprise(entreprise, userId);
           }
@@ -193,15 +199,17 @@ export function useEntreprises() {
         }
       }
 
-      setEntreprises(currentList);
-      saveEntreprisesLocal(currentList);
+      if (anyChanged) {
+        setEntreprises(currentList);
+        saveEntreprisesLocal(currentList);
+      }
 
       return {
         updatedEntreprises: currentList,
         patchedCandidatures: patchedCands,
       };
     },
-    [entreprises, isCloudUser, userId],
+    [isCloudUser, userId],
   );
 
   /**

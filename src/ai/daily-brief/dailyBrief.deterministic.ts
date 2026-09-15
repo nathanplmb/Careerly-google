@@ -311,7 +311,10 @@ export function generateDeterministicDailyBrief(
     }
 
     // 3. RELANCES
-    if (relance && (opp.statut === "Candidature envoyée" || opp.statut === "Relancée")) {
+    if (
+      relance &&
+      (opp.statut === "Candidature envoyée" || opp.statut === "Relancée")
+    ) {
       const diff = calculateDaysDiff(currentDate, relance);
 
       if (diff === 0) {
@@ -476,7 +479,9 @@ export function generateDeterministicDailyBrief(
     const diff = calculateDaysDiff(currentDate, ev.date);
     if (
       diff === 0 &&
-      !todayCandidates.some((t) => t.date === ev.date && t.title.includes(ev.titre))
+      !todayCandidates.some(
+        (t) => t.date === ev.date && t.title.includes(ev.titre),
+      )
     ) {
       todayCandidates.push({
         id: `cal-today-${ev.date}-${ev.titre}`,
@@ -512,7 +517,9 @@ export function generateDeterministicDailyBrief(
       diff !== null &&
       diff > 0 &&
       diff <= 14 &&
-      !upcomingCandidates.some((u) => u.date === ev.date && u.title.includes(ev.titre))
+      !upcomingCandidates.some(
+        (u) => u.date === ev.date && u.title.includes(ev.titre),
+      )
     ) {
       upcomingCandidates.push({
         id: `cal-up-${ev.date}-${ev.titre}`,
@@ -579,4 +586,3 @@ export function generateDeterministicDailyBrief(
     isFallback,
   };
 }
-
