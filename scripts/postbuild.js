@@ -52,27 +52,12 @@ const htmlContent = `<!DOCTYPE html>
 fs.writeFileSync(path.join(distDir, "index.html"), htmlContent);
 console.log("Postbuild complete: dist/index.html generated successfully!");
 
-// Patch missing Vercel output files (NFT + symbol bug fix)
-const vercelServer = path.join(rootDir, ".vercel", "output", "functions", "__server.func");
-const outputServer = path.join(rootDir, ".output", "server");
-if (fs.existsSync(vercelServer) && fs.existsSync(outputServer)) {
-  console.log("Patching missing Vercel output files...");
-  const copyMissing = (src, dest) => {
-    if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
-    const entries = fs.readdirSync(src, { withFileTypes: true });
-    for (const entry of entries) {
-      const srcPath = path.join(src, entry.name);
-      const destPath = path.join(dest, entry.name);
-      if (entry.isDirectory()) {
-        copyMissing(srcPath, destPath);
-      } else {
-        if (!fs.existsSync(destPath)) {
-          fs.copyFileSync(srcPath, destPath);
-          console.log(`Restored missing Vercel file: ${srcPath.replace(rootDir, '')}`);
-        }
-      }
-    }
-  };
-  copyMissing(outputServer, vercelServer);
-  console.log("Patching complete.");
+const vercelDir = path.join(rootDir, ".vercel");
+const outputDir = path.join(rootDir, ".output");
+if (fs.existsSync(vercelDir)) {
+  fs.rmSync(vercelDir, { recursive: true, force: true });
 }
+if (fs.existsSync(outputDir)) {
+  fs.rmSync(outputDir, { recursive: true, force: true });
+}
+console.log("Purged .vercel and .output folders to ensure pure static deployment.");
