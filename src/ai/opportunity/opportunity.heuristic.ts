@@ -974,12 +974,7 @@ export function extractExplicitDeadlineFromText(text: string): string | null {
     const textualMatch = candidateSegment.match(
       /\b([0-2]?\d|3[01])\s+([a-zA-ZÀ-ÿ.]+)\s+(202\d)\b/,
     );
-    if (
-      textualMatch &&
-      textualMatch[1] &&
-      textualMatch[2] &&
-      textualMatch[3]
-    ) {
+    if (textualMatch && textualMatch[1] && textualMatch[2] && textualMatch[3]) {
       const day = textualMatch[1].padStart(2, "0");
       const monthStr = textualMatch[2].toLowerCase().replace(/\.$/, "");
       const month = FRENCH_MONTHS_MAP[monthStr];

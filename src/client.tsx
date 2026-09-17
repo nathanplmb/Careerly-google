@@ -13,14 +13,14 @@ startTransition(() => {
     root.render(
       <StrictMode>
         <RouterProvider router={router} />
-      </StrictMode>
+      </StrictMode>,
     );
   } else {
     hydrateRoot(
       rootElement,
       <StrictMode>
         <RouterProvider router={router} />
-      </StrictMode>
+      </StrictMode>,
     );
   }
 });

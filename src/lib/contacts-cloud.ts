@@ -247,8 +247,7 @@ export async function upsertContact(
   }
 
   if (isSupabaseConfigured()) {
-    const { data, error } = await (supabase
-      .from("contacts") as any)
+    const { data, error } = await (supabase.from("contacts") as any)
       .upsert(row)
       .select()
       .single();
@@ -282,7 +281,9 @@ export async function batchUpsertContacts(
 
   if (isSupabaseConfigured()) {
     const rows = contactsList.map((c) => toRow(c, userId));
-    const { data, error } = await (supabase.from("contacts") as any).upsert(rows);
+    const { data, error } = await (supabase.from("contacts") as any).upsert(
+      rows,
+    );
     if (error) throw error;
     if (Array.isArray(data)) {
       return (data as unknown as Row[]).map(toContact);

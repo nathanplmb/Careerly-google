@@ -893,9 +893,7 @@ export function DailyBrief({
             <div className="space-y-3.5 py-2">
               {(() => {
                 const c = emailModalData.cand;
-                const contactPrenom = c.contact
-                  ? c.contact.split(" ")[0]
-                  : "";
+                const contactPrenom = c.contact ? c.contact.split(" ")[0] : "";
                 const dateEnvStr = c.dateEnvoi ? formatDate(c.dateEnvoi) : "";
 
                 const subject =

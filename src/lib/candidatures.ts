@@ -593,44 +593,34 @@ export function normalizeCandidature(c: Partial<Candidature>): Candidature {
     contractType:
       c.contractType ??
       ((c as Record<string, unknown>)["contract_type"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       ((c as Record<string, unknown>)["typeContrat"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       base.contractType,
     duration:
       c.duration ??
       ((c as Record<string, unknown>)["duree"] as string | null | undefined) ??
       ((c as Record<string, unknown>)["contract_duration"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       base.duration,
     startDate:
       c.startDate ??
       ((c as Record<string, unknown>)["start_date"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       ((c as Record<string, unknown>)["dateDebut"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       base.startDate,
     endDate:
       c.endDate ??
       ((c as Record<string, unknown>)["end_date"] as
-        | string
-        | null
-        | undefined) ??
-      ((c as Record<string, unknown>)["dateFin"] as string | null | undefined) ??
+        string | null | undefined) ??
+      ((c as Record<string, unknown>)["dateFin"] as
+        string | null | undefined) ??
       base.endDate,
     salary:
       c.salary ??
-      ((c as Record<string, unknown>)["salaire"] as string | null | undefined) ??
+      ((c as Record<string, unknown>)["salaire"] as
+        string | null | undefined) ??
       base.salary,
     salaryMin:
       typeof c.salaryMin === "number"
@@ -647,41 +637,29 @@ export function normalizeCandidature(c: Partial<Candidature>): Candidature {
     salaryCurrency:
       c.salaryCurrency ??
       ((c as Record<string, unknown>)["salary_currency"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       base.salaryCurrency,
     remotePolicy:
       c.remotePolicy ??
       ((c as Record<string, unknown>)["remote_policy"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       ((c as Record<string, unknown>)["teletravail"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       base.remotePolicy,
     remoteDetails:
       c.remoteDetails ??
       ((c as Record<string, unknown>)["remote_details"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       base.remoteDetails,
     jobFunction:
       c.jobFunction ??
       ((c as Record<string, unknown>)["job_function"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       base.jobFunction,
     educationLevel:
       c.educationLevel ??
       ((c as Record<string, unknown>)["education_level"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       base.educationLevel,
 
     responsibilities: Array.isArray(c.responsibilities)
@@ -708,78 +686,56 @@ export function normalizeCandidature(c: Partial<Candidature>): Candidature {
     experienceRequirements:
       c.experienceRequirements ??
       ((c as Record<string, unknown>)["experience_requirements"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       base.experienceRequirements,
     educationRequirements: Array.isArray(c.educationRequirements)
       ? c.educationRequirements
       : Array.isArray((c as Record<string, unknown>)["education_requirements"])
-        ? ((c as Record<string, unknown>)[
-            "education_requirements"
-          ] as string[])
+        ? ((c as Record<string, unknown>)["education_requirements"] as string[])
         : base.educationRequirements,
 
     parentCompany:
       c.parentCompany ??
       c.groupName ??
       ((c as Record<string, unknown>)["parent_company"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       ((c as Record<string, unknown>)["group_name"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       base.parentCompany,
     groupName:
       c.groupName ??
       c.parentCompany ??
       ((c as Record<string, unknown>)["group_name"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       ((c as Record<string, unknown>)["parent_company"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       base.groupName,
 
     companyDescription:
       c.companyDescription ??
       ((c as Record<string, unknown>)["company_description"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       base.companyDescription,
     companySector:
       c.companySector ??
       c.secteur ??
       ((c as Record<string, unknown>)["company_sector"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       base.companySector,
     companySize:
       c.companySize ??
       ((c as Record<string, unknown>)["company_size"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       base.companySize,
     companyLocation:
       c.companyLocation ??
       ((c as Record<string, unknown>)["company_location"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       base.companyLocation,
     companyWebsite:
       c.companyWebsite ??
       ((c as Record<string, unknown>)["company_website"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       base.companyWebsite,
     companyContext: Array.isArray(c.companyContext)
       ? c.companyContext
@@ -807,14 +763,16 @@ export function normalizeCandidature(c: Partial<Candidature>): Candidature {
     applicationMethod:
       c.applicationMethod ??
       ((c as Record<string, unknown>)["application_method"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       base.applicationMethod,
     applicationRequirements: Array.isArray(c.applicationRequirements)
       ? c.applicationRequirements
-      : Array.isArray((c as Record<string, unknown>)["application_requirements"])
-        ? ((c as Record<string, unknown>)["application_requirements"] as string[])
+      : Array.isArray(
+            (c as Record<string, unknown>)["application_requirements"],
+          )
+        ? ((c as Record<string, unknown>)[
+            "application_requirements"
+          ] as string[])
         : base.applicationRequirements,
 
     benefits: Array.isArray(c.benefits)
@@ -826,31 +784,23 @@ export function normalizeCandidature(c: Partial<Candidature>): Candidature {
     sourceType:
       c.sourceType ??
       ((c as Record<string, unknown>)["source_type"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       base.sourceType,
     sourceName:
       c.sourceName ??
       c.source ??
       ((c as Record<string, unknown>)["source_name"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       base.sourceName,
     sourcePublishedAt:
       c.sourcePublishedAt ??
       ((c as Record<string, unknown>)["source_published_at"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       base.sourcePublishedAt,
     extractedAt:
       c.extractedAt ??
       ((c as Record<string, unknown>)["extracted_at"] as
-        | string
-        | null
-        | undefined) ??
+        string | null | undefined) ??
       base.extractedAt,
   };
 }

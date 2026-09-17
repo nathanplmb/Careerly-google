@@ -8,7 +8,11 @@ const ExtraireOpportuniteInput = z.object({
   url: z.string().optional(),
 });
 
-export const extraireOpportuniteServerFn = async ({ data }: { data: unknown }): Promise<OpportunityExtractedData> => {
+export const extraireOpportuniteServerFn = async ({
+  data,
+}: {
+  data: unknown;
+}): Promise<OpportunityExtractedData> => {
   const parsedData = ExtraireOpportuniteInput.parse(data);
   const { extraireOpportuniteIA } = await import("./opportunity.service");
   return await extraireOpportuniteIA(parsedData.text, parsedData.url);

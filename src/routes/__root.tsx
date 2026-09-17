@@ -5,12 +5,9 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
-  HeadContent,
-  Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
-
-import appCss from "../styles.css?url";
+import "../styles.css";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -42,6 +39,7 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
+
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
 
@@ -75,13 +73,11 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           Une nouvelle version de l'application est disponible ou un module n'a
           pas pu être chargé.
         </p>
-
         {error?.message && (
           <div className="p-3 text-left rounded-lg bg-red-500/10 border border-red-500/20 text-[11px] font-mono text-red-300 break-words max-h-32 overflow-y-auto">
             {error.message}
           </div>
         )}
-
         <div className="pt-2 flex flex-col sm:flex-row justify-center gap-2">
           <button
             onClick={() => {
@@ -105,79 +101,11 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   {
-    head: () => ({
-      meta: [
-        { charSet: "utf-8" },
-        { name: "viewport", content: "width=device-width, initial-scale=1" },
-        {
-          title:
-            "NACORA — Pilotez vos candidatures et votre carrière avec l'IA",
-        },
-        {
-          name: "description",
-          content:
-            "NACORA centralise vos candidatures, relances et entretiens, avec un match IA et un brief quotidien.",
-        },
-        {
-          property: "og:title",
-          content: "NACORA — Votre copilote carrière intelligent",
-        },
-        {
-          property: "og:description",
-          content:
-            "Suivi des candidatures, match IA et actions prioritaires du jour, dans une seule app.",
-        },
-        { property: "og:type", content: "website" },
-        { name: "twitter:card", content: "summary_large_image" },
-      ],
-      links: [
-        {
-          rel: "stylesheet",
-          href: appCss,
-        },
-        { rel: "preconnect", href: "https://fonts.googleapis.com" },
-        {
-          rel: "preconnect",
-          href: "https://fonts.gstatic.com",
-          crossOrigin: "anonymous",
-        },
-        {
-          rel: "stylesheet",
-          href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap",
-        },
-        { rel: "icon", href: "/favicon.png", type: "image/png" },
-      ],
-      scripts: [
-        {
-          children: `try{if(typeof window!=="undefined"){window.process=window.process||{env:{NODE_ENV:"development",TSS_ROUTER_BASEPATH:""}};window.global=window.global||window;}}catch(e){}`,
-        },
-      ],
-    }),
-    shellComponent: RootShell,
     component: RootComponent,
     notFoundComponent: NotFoundComponent,
     errorComponent: ErrorComponent,
   },
 );
-
-function RootShell({ children }: { children: ReactNode }) {
-  return (
-    <html lang="fr" className="dark">
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `try{if(typeof window!=="undefined"){window.process=window.process||{env:{NODE_ENV:"development",TSS_ROUTER_BASEPATH:""}};window.global=window.global||window;}}catch(e){}`,
-          }}
-        />
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-        <Scripts />
-      </body>
-    </html>
-  );
-}
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
@@ -257,7 +185,6 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <Toaster />
     </QueryClientProvider>

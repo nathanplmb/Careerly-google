@@ -642,8 +642,7 @@ export async function upsertCandidature(
 
   if (isSupabaseConfigured()) {
     try {
-      const { data, error } = await (supabase
-        .from("candidatures") as any)
+      const { data, error } = await (supabase.from("candidatures") as any)
         .upsert(row)
         .select()
         .single();
@@ -720,8 +719,7 @@ export async function insertManyCandidatures(
   }
 
   if (isSupabaseConfigured()) {
-    const { data, error } = await (supabase
-      .from("candidatures") as any)
+    const { data, error } = await (supabase.from("candidatures") as any)
       .insert(items.map((c) => toRow(c, userId)))
       .select();
     if (error) throw error;
