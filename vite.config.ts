@@ -12,6 +12,11 @@ export default defineConfig({
     plugins: [mcpPlugin()],
     build: {
       reportCompressedSize: false,
+      rollupOptions: {
+        output: {
+          chunkFileNames: "assets/c_[hash].js",
+        },
+      },
     },
     define: {
       "process.env.NODE_ENV": JSON.stringify(
@@ -27,5 +32,10 @@ export default defineConfig({
   },
   nitro: {
     preset: process.env["VERCEL"] ? "vercel" : undefined,
+    rollupConfig: {
+      output: {
+        chunkFileNames: "_libs/c_[hash].mjs",
+      },
+    },
   },
 });

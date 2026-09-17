@@ -5,10 +5,9 @@ const rootDir = process.cwd();
 const distDir = path.join(rootDir, "dist");
 const outputPublicDir = path.join(rootDir, ".output", "public");
 
-if (fs.existsSync(distDir)) {
-  fs.rmSync(distDir, { recursive: true, force: true });
+if (!fs.existsSync(distDir)) {
+  fs.mkdirSync(distDir, { recursive: true });
 }
-fs.mkdirSync(distDir, { recursive: true });
 
 // Copy public assets from .output/public to dist if present
 if (fs.existsSync(outputPublicDir)) {
