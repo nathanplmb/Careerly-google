@@ -99,7 +99,7 @@ export function generateDeterministicDailyBrief(
     if (opp.archive) continue;
 
     const company = (opp.entreprise || "Opportunité").trim();
-    const shortRole = simplifyJobTitle(opp.poste || opp.titre);
+    const shortRole = simplifyJobTitle(opp.poste || "") || "";
     const deadline = opp.applicationDeadline || opp.dateLimite;
     const relance = opp.followUpDate || opp.dateRelance;
     const entretien = opp.interviewDate || opp.secondInterviewDate;
@@ -153,7 +153,7 @@ export function generateDeterministicDailyBrief(
           primaryAction,
           secondaryActions,
           recommendedActions: [primaryAction, ...secondaryActions],
-          actionLabel: primaryAction.label,
+          actionLabel: primaryAction.label || "Action",
           actionType: "prepare",
           score: 125,
         });
@@ -187,7 +187,7 @@ export function generateDeterministicDailyBrief(
           primaryAction,
           secondaryActions,
           recommendedActions: [primaryAction, ...secondaryActions],
-          actionLabel: primaryAction.label,
+          actionLabel: primaryAction.label || "Action",
           actionType: "prepare",
           score: 115,
         });
@@ -221,7 +221,7 @@ export function generateDeterministicDailyBrief(
           primaryAction,
           secondaryActions,
           recommendedActions: [primaryAction, ...secondaryActions],
-          actionLabel: primaryAction.label,
+          actionLabel: primaryAction.label || "Action",
           actionType: "prepare",
           score: 95,
         });
@@ -273,7 +273,7 @@ export function generateDeterministicDailyBrief(
           primaryAction,
           secondaryActions,
           recommendedActions: [primaryAction, ...secondaryActions],
-          actionLabel: primaryAction.label,
+          actionLabel: primaryAction.label || "Action",
           actionType: isReadyToSend ? "view_opportunity" : "prepare",
           score: 118,
         });
@@ -316,7 +316,7 @@ export function generateDeterministicDailyBrief(
           primaryAction,
           secondaryActions,
           recommendedActions: [primaryAction, ...secondaryActions],
-          actionLabel: primaryAction.label,
+          actionLabel: primaryAction.label || "Action",
           actionType: isReadyToSend ? "view_opportunity" : "prepare",
           score: 104,
         });
@@ -352,7 +352,7 @@ export function generateDeterministicDailyBrief(
           primaryAction,
           secondaryActions,
           recommendedActions: [primaryAction, ...secondaryActions],
-          actionLabel: primaryAction.label,
+          actionLabel: primaryAction.label || "Action",
           actionType: "prepare",
           score: 91 - diff,
         });
@@ -388,7 +388,7 @@ export function generateDeterministicDailyBrief(
           primaryAction,
           secondaryActions,
           recommendedActions: [primaryAction, ...secondaryActions],
-          actionLabel: primaryAction.label,
+          actionLabel: primaryAction.label || "Action",
           actionType: "update_deadline",
           score: 93,
         });
@@ -429,7 +429,7 @@ export function generateDeterministicDailyBrief(
         primaryAction,
         secondaryActions,
         recommendedActions: [primaryAction, ...secondaryActions],
-        actionLabel: primaryAction.label,
+        actionLabel: primaryAction.label || "Action",
         actionType: "view_opportunity",
         score: 96,
       });
@@ -483,7 +483,7 @@ export function generateDeterministicDailyBrief(
               primaryAction,
               secondaryActions,
               recommendedActions: [primaryAction, ...secondaryActions],
-              actionLabel: primaryAction.label,
+              actionLabel: primaryAction.label || "Action",
               actionType: "follow_up",
               score: 94,
             });
@@ -521,7 +521,7 @@ export function generateDeterministicDailyBrief(
               primaryAction,
               secondaryActions,
               recommendedActions: [primaryAction, ...secondaryActions],
-              actionLabel: primaryAction.label,
+              actionLabel: primaryAction.label || "Action",
               actionType: "follow_up",
               score: 90,
             });
@@ -563,7 +563,7 @@ export function generateDeterministicDailyBrief(
             primaryAction,
             secondaryActions,
             recommendedActions: [primaryAction, ...secondaryActions],
-            actionLabel: primaryAction.label,
+            actionLabel: primaryAction.label || "Action",
             actionType: "follow_up",
             score: 86,
           });
@@ -615,12 +615,12 @@ export function generateDeterministicDailyBrief(
         date: null,
         dateContext: "Dossier prêt",
         priority: "high",
-        message: readyMessages[readyIndex % readyMessages.length],
+        message: readyMessages[readyIndex % readyMessages.length]!,
         reason: "Candidature préparée prête à l'envoi",
         primaryAction,
         secondaryActions,
         recommendedActions: [primaryAction, ...secondaryActions],
-        actionLabel: primaryAction.label,
+        actionLabel: primaryAction.label || "Action",
         actionType: "view_opportunity",
         score: 82,
       });
@@ -662,7 +662,7 @@ export function generateDeterministicDailyBrief(
         primaryAction,
         secondaryActions,
         recommendedActions: [primaryAction, ...secondaryActions],
-        actionLabel: primaryAction.label,
+        actionLabel: primaryAction.label || "Action",
         actionType: "analyze",
         score: 77,
       });
@@ -710,12 +710,12 @@ export function generateDeterministicDailyBrief(
         date: null,
         dateContext: "À préparer",
         priority: "medium",
-        message: prepMessages[prepIndex % prepMessages.length],
+        message: prepMessages[prepIndex % prepMessages.length]!,
         reason: "Préparation en cours à finaliser",
         primaryAction,
         secondaryActions,
         recommendedActions: [primaryAction, ...secondaryActions],
-        actionLabel: primaryAction.label,
+        actionLabel: primaryAction.label || "Action",
         actionType: "prepare",
         score: opp.hasArguments ? 76 : 75,
       });
@@ -771,14 +771,14 @@ export function generateDeterministicDailyBrief(
         priority: isStalled ? "medium" : "low",
         message: isStalled
           ? "Cette opportunité attend d'être préparée."
-          : savedMessages[savedIndex % savedMessages.length],
+          : savedMessages[savedIndex % savedMessages.length]!,
         reason: isStalled
           ? "Opportunité en sommeil"
           : "Opportunité récemment sauvegardée",
         primaryAction,
         secondaryActions,
         recommendedActions: [primaryAction, ...secondaryActions],
-        actionLabel: primaryAction.label,
+        actionLabel: primaryAction.label || "Action",
         actionType: "prepare",
         score: isStalled ? 65 : 55,
       });
@@ -819,7 +819,7 @@ export function generateDeterministicDailyBrief(
         primaryAction,
         secondaryActions: [],
         recommendedActions: [primaryAction],
-        actionLabel: primaryAction.label,
+        actionLabel: primaryAction.label || "Action",
         actionType: "view_calendar",
         score: isToday ? 105 : 97,
       });

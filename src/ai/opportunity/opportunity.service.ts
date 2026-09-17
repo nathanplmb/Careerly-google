@@ -94,11 +94,9 @@ function cleanJsonString(raw: string): string {
  * 5. gemini-2.5-flash : Fallback haute disponibilité
  */
 const CANDIDATE_MODELS = [
-  "gemini-3.8-flash",
-  "gemini-3.7-flash",
-  "gemini-flash-latest",
-  "gemini-3.1-flash-lite",
   "gemini-2.5-flash",
+  "gemini-1.5-pro",
+  "gemini-1.5-flash"
 ];
 
 async function generateContentWithFallback(

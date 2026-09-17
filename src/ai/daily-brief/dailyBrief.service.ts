@@ -94,7 +94,7 @@ function sanitizeBriefItems(
 
     // Normalisation des actions recommandées
     const sanitizedActions = (item.recommendedActions || [])
-      .map((action) => {
+      .map((action: any) => {
         const canonicalId = VALID_ACTIONS_MAP[action.id];
         if (!canonicalId) return null;
         return {
@@ -103,7 +103,7 @@ function sanitizeBriefItems(
           variant: action.variant || "secondary",
         };
       })
-      .filter((a): a is NonNullable<typeof a> => a !== null);
+      .filter((a: any): a is NonNullable<typeof a> => a !== null);
 
     // Si aucune action n'a été spécifiée ou toutes invalides, fournir une action par défaut
     if (sanitizedActions.length === 0) {
