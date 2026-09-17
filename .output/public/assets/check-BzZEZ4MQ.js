@@ -1,1 +1,0 @@
-import{K as e}from"./auth-local-DtVv7I0p.js";var t=e(`check`,[[`path`,{d:`M20 6 9 17l-5-5`,key:`1gmf2c`}]]);export{t};

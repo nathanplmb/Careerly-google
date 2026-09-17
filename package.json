@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "NODE_OPTIONS=--max-old-space-size=2560 vite build",
+    "build": "NODE_OPTIONS=--max-old-space-size=1536 vite build",
     "postbuild": "node scripts/postbuild.js",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
