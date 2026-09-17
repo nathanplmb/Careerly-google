@@ -24,13 +24,9 @@ import {
   ScanLine,
   Menu,
   X,
-  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/Logo";
-import { auth, isFirebaseConfigured } from "@/integrations/firebase/client";
-import { getCompteActif } from "@/lib/auth-local";
-import { checkIsAdmin } from "@/lib/admin";
 
 type Item = {
   label: string;
@@ -133,33 +129,6 @@ export function AppShell({
   const [local, setLocal] = useState("");
   const value = searchValue ?? local;
   const [menuOpen, setMenuOpen] = useState(false);
-  const [isAdminUser, setIsAdminUser] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    async function check() {
-      const fUser = auth.currentUser;
-      const lUser = getCompteActif();
-      const email = (fUser?.email || lUser?.email || "").toLowerCase();
-      const uid = fUser?.uid || lUser?.id || "";
-      if (email === "nathpa1423@gmail.com") {
-        if (active) setIsAdminUser(true);
-        return;
-      }
-      if (uid) {
-        const isAdm = await checkIsAdmin(uid);
-        if (active) setIsAdminUser(isAdm);
-      }
-    }
-    check();
-    const unsub = auth.onAuthStateChanged(() => {
-      check();
-    });
-    return () => {
-      active = false;
-      unsub();
-    };
-  }, []);
 
   useEffect(() => {
     setMenuOpen(false);
@@ -241,16 +210,6 @@ export function AppShell({
             <div className="my-4 h-px bg-sidebar-border" />
 
             <div className="flex flex-col gap-1">
-              {isAdminUser && (
-                <NavRow
-                  item={{
-                    label: "Administration",
-                    icon: Shield,
-                    to: "/admin",
-                  }}
-                  active={pathname === "/admin"}
-                />
-              )}
               <NavRow
                 item={{
                   label: "Paramètres",
@@ -303,20 +262,6 @@ export function AppShell({
         </nav>
 
         <div className="px-3 pb-3">
-          {isAdminUser && (
-            <Link
-              to="/admin"
-              className={cn(
-                "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium transition-colors mb-1",
-                pathname === "/admin"
-                  ? "bg-primary/15 text-foreground ring-1 ring-primary/35 font-semibold"
-                  : "text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground",
-              )}
-            >
-              <Shield className="size-[18px] text-primary" /> Administration
-            </Link>
-          )}
-
           <Link
             to="/parametres"
             className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent/50 hover:text-foreground"

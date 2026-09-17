@@ -1,28 +1,14 @@
 {
   "entities": {
-    "Admin": {
-      "title": "Admin",
-      "description": "Rôle administrateur sécurisé de la plateforme NACORA",
-      "type": "object",
-      "properties": {
-        "user_id": { "type": "string" },
-        "email": { "type": "string" },
-        "role": { "type": "string" },
-        "creeLe": { "type": "string" }
-      },
-      "required": ["user_id", "email"]
-    },
     "Profil": {
       "title": "Profil",
       "description": "Profil professionnel du candidat",
       "type": "object",
       "properties": {
         "user_id": { "type": "string" },
-        "email": { "type": "string" },
         "prenom": { "type": "string" },
         "nom": { "type": "string" },
         "titre": { "type": "string" },
-        "provider": { "type": "string" },
         "updatedAt": { "type": "string" }
       },
       "required": ["user_id"]
@@ -68,10 +54,6 @@
     }
   },
   "firestore": {
-    "/admins/{adminId}": {
-      "schema": { "$ref": "#/entities/Admin" },
-      "description": "Enregistrement des administrateurs autorisés"
-    },
     "/profils/{userId}": {
       "schema": { "$ref": "#/entities/Profil" },
       "description": "Profil individuel par utilisateur"

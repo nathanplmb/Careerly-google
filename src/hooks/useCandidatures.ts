@@ -346,24 +346,18 @@ async function migrateExistingOpportunities(
 // Cache mémoire partagé et ensemble d'écouteurs pour garantir la cohérence instantanée inter-pages
 let hasHydrated = false;
 let memoryCache: Candidature[] | null = null;
-let currentCacheUserId: string | null | undefined = undefined;
 const listeners = new Set<(items: Candidature[]) => void>();
-
-export function resetCandidaturesMemoryCache(newUserId?: string) {
-  currentCacheUserId = newUserId;
-  memoryCache = loadCandidatures(newUserId);
-  listeners.forEach((listener) => listener(memoryCache || []));
-}
 
 function notifyCandidatureChange(newItems: Candidature[], userId?: string) {
   memoryCache = newItems;
-  currentCacheUserId = userId;
   saveCandidatures(newItems, userId);
   listeners.forEach((listener) => listener(newItems));
 }
 
 /**
- * Fusionne les candidatures cloud et locales de façon strictement cloisonnée par utilisateur.
+ * Fusionne intelligemment les candidatures cloud et locales sans perte de données.
+ * Si un élément local a été créé/modifié et n'est pas encore dans le cloud (ou plus récent),
+ * il est conservé et ré-envoyé vers le cloud.
  */
 function mergeCloudAndLocalCandidatures(
   cloudItems: Candidature[],
@@ -372,6 +366,11 @@ function mergeCloudAndLocalCandidatures(
 ): Candidature[] {
   if (localItems.length === 0) return cloudItems;
   if (cloudItems.length === 0) {
+    if (userId) {
+      localItems.forEach((item) => {
+        void upsertCandidature(item, userId).catch(() => undefined);
+      });
+    }
     return localItems;
   }
 
@@ -414,16 +413,15 @@ function mergeCloudAndLocalCandidatures(
  * Partagé par toutes les pages (dashboard, opportunités, calendrier, entreprises…).
  */
 export function useCandidatures() {
-  const { user, firebaseUser, loading: authLoading } = useSession();
+  const { user, loading: authLoading } = useSession();
   const userId = user?.id;
-  const isCloudUser = Boolean(firebaseUser?.uid && firebaseUser.uid === userId);
+  const isCloudUser = Boolean(userId);
 
   // Pour le premier rendu d'hydratation SSR : toujours [] pour correspondre fidèlement au HTML du serveur.
   // Lors des navigations suivantes côté client (hasHydrated = true) : données instantanées depuis le cache mémoire.
   const [items, setItems] = useState<Candidature[]>(() => {
     if (!hasHydrated) return [];
-    if (currentCacheUserId === userId && memoryCache !== null)
-      return memoryCache;
+    if (memoryCache !== null) return memoryCache;
     return loadCandidatures(userId);
   });
   const [ready, setReady] = useState(() => hasHydrated);
@@ -440,22 +438,12 @@ export function useCandidatures() {
     };
   }, []);
 
-  // Détection de changement d'utilisateur (connexion, déconnexion, bascule de compte)
-  useEffect(() => {
-    if (currentCacheUserId !== userId) {
-      currentCacheUserId = userId;
-      const userItems = loadCandidatures(userId);
-      memoryCache = userItems;
-      setItems(userItems);
-    }
-  }, [userId]);
-
   // Hydratation client initiale
   useEffect(() => {
     if (!hasHydrated) {
       hasHydrated = true;
-      currentCacheUserId = userId;
-      const initial = loadCandidatures(userId);
+      const initial =
+        memoryCache !== null ? memoryCache : loadCandidatures(userId);
       memoryCache = initial;
       setItems(initial);
       setReady(true);
@@ -467,10 +455,13 @@ export function useCandidatures() {
     let cancelled = false;
 
     if (!isCloudUser || !userId) {
-      const localItems = loadCandidatures(userId);
-      void migrateExistingOpportunities(localItems, userId).then((migrated) => {
+      console.info(
+        "[OPPORTUNITY LOAD LOCAL] Mode hors ligne / non authentifié",
+      );
+      const localItems = memoryCache ?? loadCandidatures();
+      void migrateExistingOpportunities(localItems).then((migrated) => {
         if (!cancelled) {
-          notifyCandidatureChange(migrated, userId);
+          notifyCandidatureChange(migrated);
           setReady(true);
         }
       });
@@ -483,7 +474,7 @@ export function useCandidatures() {
         console.info("[OPPORTUNITY LOAD SYNC START]", { userId });
         const cloud = await fetchCandidatures(userId);
         if (!cancelled) {
-          const currentLocal = loadCandidatures(userId);
+          const currentLocal = memoryCache ?? loadCandidatures(userId);
           const merged = mergeCloudAndLocalCandidatures(
             cloud,
             currentLocal,
@@ -499,8 +490,10 @@ export function useCandidatures() {
         console.warn("[OPPORTUNITY LOAD SYNC FAILED, USING CACHE]", err);
         if (!cancelled) {
           const cachedItems = loadCandidatures(userId);
+          const fallbackItems =
+            cachedItems.length > 0 ? cachedItems : loadCandidatures();
           const migrated = await migrateExistingOpportunities(
-            cachedItems,
+            fallbackItems,
             userId,
           );
           notifyCandidatureChange(migrated, userId);
@@ -525,7 +518,7 @@ export function useCandidatures() {
       if (document.visibilityState !== "visible") return;
       void fetchCandidatures(userId)
         .then((cloud) => {
-          const currentLocal = loadCandidatures(userId);
+          const currentLocal = memoryCache ?? loadCandidatures(userId);
           const merged = mergeCloudAndLocalCandidatures(
             cloud,
             currentLocal,

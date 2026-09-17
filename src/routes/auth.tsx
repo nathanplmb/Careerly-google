@@ -40,7 +40,6 @@ import {
   auth as firebaseAuth,
   isFirebaseConfigured,
 } from "@/integrations/firebase/client";
-import { ensureUserProfilRegistered } from "@/lib/profil-cloud";
 import {
   connecterUtilisateurLocal,
   getComptesEnregistres,
@@ -196,15 +195,6 @@ function AuthPage() {
             dernierAccesLe: new Date().toISOString(),
           };
           setCompteActif(localUser);
-          void ensureUserProfilRegistered({
-            uid: u.uid,
-            email: u.email,
-            displayName: u.displayName,
-            photoURL: u.photoURL,
-            provider: "google",
-            prenom: prenomUser,
-            nom: nomUser,
-          });
 
           toast.success(
             `Ravi de vous revoir ${prenomUser} ! Connecté avec succès via Google (${u.email}).`,
@@ -257,18 +247,6 @@ function AuthPage() {
           dernierAccesLe: new Date().toISOString(),
         };
         setCompteActif(localUser);
-        void ensureUserProfilRegistered({
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-          provider:
-            user.providerData?.[0]?.providerId === "google.com"
-              ? "google"
-              : "email",
-          prenom: prenomUser,
-          nom: nomUser,
-        });
         rediriger();
       });
     }
@@ -377,20 +355,7 @@ function AuthPage() {
     // 1. Firebase Auth si configuré
     if (isFirebaseConfigured()) {
       try {
-        const cred = await signInWithEmailAndPassword(
-          firebaseAuth,
-          email.trim(),
-          password,
-        );
-        if (cred.user) {
-          void ensureUserProfilRegistered({
-            uid: cred.user.uid,
-            email: cred.user.email,
-            displayName: cred.user.displayName,
-            photoURL: cred.user.photoURL,
-            provider: "email",
-          });
-        }
+        await signInWithEmailAndPassword(firebaseAuth, email.trim(), password);
         setLoading(false);
         toast.success("Connexion réussie ! Bienvenue sur NACORA.");
         rediriger();
@@ -456,15 +421,6 @@ function AuthPage() {
         if (res.user) {
           await updateProfile(res.user, {
             displayName: `${prenom} ${nom}`.trim() || "Membre",
-          });
-          await ensureUserProfilRegistered({
-            uid: res.user.uid,
-            email: res.user.email,
-            displayName: `${prenom} ${nom}`.trim(),
-            provider: "email",
-            prenom: prenom.trim(),
-            nom: nom.trim(),
-            ecole: ecole.trim(),
           });
           setLoading(false);
           toast.success(
@@ -656,15 +612,6 @@ function AuthPage() {
           dernierAccesLe: new Date().toISOString(),
         };
         setCompteActif(localUser);
-        void ensureUserProfilRegistered({
-          uid: u.uid,
-          email: u.email,
-          displayName: u.displayName,
-          photoURL: u.photoURL,
-          provider: "google",
-          prenom: prenomUser,
-          nom: nomUser,
-        });
 
         setLoading(false);
         toast.success(

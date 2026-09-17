@@ -1,3 +1,4 @@
+import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import type { OpportunityExtractedData } from "./opportunity.types";
 
@@ -8,12 +9,9 @@ const ExtraireOpportuniteInput = z.object({
   url: z.string().optional(),
 });
 
-export const extraireOpportuniteServerFn = async ({
-  data,
-}: {
-  data: unknown;
-}): Promise<OpportunityExtractedData> => {
-  const parsedData = ExtraireOpportuniteInput.parse(data);
-  const { extraireOpportuniteIA } = await import("./opportunity.service");
-  return await extraireOpportuniteIA(parsedData.text, parsedData.url);
-};
+export const extraireOpportuniteServerFn = createServerFn({ method: "POST" })
+  .validator((data: unknown) => ExtraireOpportuniteInput.parse(data))
+  .handler(async ({ data }): Promise<OpportunityExtractedData> => {
+    const { extraireOpportuniteIA } = await import("./opportunity.service");
+    return await extraireOpportuniteIA(data.text, data.url);
+  });

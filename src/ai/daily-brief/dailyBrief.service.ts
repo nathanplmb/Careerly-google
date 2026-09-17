@@ -38,7 +38,6 @@ const CANDIDATE_MODELS = [
   "gemini-3.8-flash",
   "gemini-3.7-flash",
   "gemini-flash-latest",
-  "gemini-2.5-flash",
 ];
 
 const VALID_ACTIONS_MAP: Record<string, BriefActionId> = {
@@ -76,7 +75,7 @@ const VALID_ACTIONS_MAP: Record<string, BriefActionId> = {
  * - Actions conformes au catalogue autorisé
  */
 function sanitizeBriefItems(
-  items: any[],
+  items: BriefItem[],
   validOpportunityIds: Set<string>,
 ): BriefItem[] {
   const result: BriefItem[] = [];
@@ -94,7 +93,7 @@ function sanitizeBriefItems(
 
     // Normalisation des actions recommandées
     const sanitizedActions = (item.recommendedActions || [])
-      .map((action: any) => {
+      .map((action) => {
         const canonicalId = VALID_ACTIONS_MAP[action.id];
         if (!canonicalId) return null;
         return {
@@ -103,7 +102,7 @@ function sanitizeBriefItems(
           variant: action.variant || "secondary",
         };
       })
-      .filter((a: any): a is NonNullable<typeof a> => a !== null);
+      .filter((a): a is NonNullable<typeof a> => a !== null);
 
     // Si aucune action n'a été spécifiée ou toutes invalides, fournir une action par défaut
     if (sanitizedActions.length === 0) {
@@ -185,18 +184,6 @@ export async function generateDailyBriefIA(
       console.info(
         `[Daily Brief] Modèle ${model} temporairement indisponible (${attempt + 1}/${CANDIDATE_MODELS.length}), basculement automatique.`,
       );
-      const errMsg = err instanceof Error ? err.message : String(err);
-      const isTransient =
-        errMsg.includes("503") ||
-        errMsg.includes("high demand") ||
-        errMsg.includes("UNAVAILABLE") ||
-        errMsg.includes("429") ||
-        errMsg.includes("RESOURCE_EXHAUSTED");
-      if (isTransient && attempt < CANDIDATE_MODELS.length - 1) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, 250 * (attempt + 1)),
-        );
-      }
     }
   }
 

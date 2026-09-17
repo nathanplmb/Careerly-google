@@ -159,6 +159,7 @@ export function CandidatureSheet({
     setErrorMsg(null);
 
     let extracted: OpportunityExtractedData | null = null;
+    let fallbackUsed = false;
 
     // 1. Tentative d'analyse via TanStack Start Server Function
     try {
@@ -190,19 +191,24 @@ export function CandidatureSheet({
         }
       } catch (apiErr: unknown) {
         console.warn(
-          "[CandidatureSheet] Échec de l'endpoint distant:",
+          "[CandidatureSheet] Échec de l'endpoint distant, activation du moteur heuristique déterministe:",
           apiErr,
         );
-        setErrorMsg("L'extraction par l'IA a échoué. Veuillez réessayer ou remplir les champs manuellement.");
-        setAnalyzing(false);
-        return;
+        // 3. Repli local déterministe avec garde-fous stricts
+        extracted = extraireOpportuniteHeuristique(
+          pastedText,
+          optionalUrl.trim() || undefined,
+        );
+        fallbackUsed = true;
       }
     }
 
     if (!extracted) {
-      setErrorMsg("L'IA n'a pas pu extraire de données valides. Veuillez remplir les champs manuellement.");
-      setAnalyzing(false);
-      return;
+      extracted = extraireOpportuniteHeuristique(
+        pastedText,
+        optionalUrl.trim() || undefined,
+      );
+      fallbackUsed = true;
     }
 
     try {
@@ -221,6 +227,7 @@ export function CandidatureSheet({
         ...form,
         ...extracted,
         contractType: extracted.contractType ?? null,
+        typeContrat: extracted.contractType ?? null,
         applicationDeadline: extracted.applicationDeadline ?? null,
         dateLimite: extracted.applicationDeadline || "",
         source: extracted.source || form.source || "Autre",
@@ -230,41 +237,45 @@ export function CandidatureSheet({
         detail: pastedText,
         lien: optionalUrl.trim() || extracted.sourceUrl || form.lien,
         sourceUrl: optionalUrl.trim() || extracted.sourceUrl || form.sourceUrl,
-        requiredLanguages:
-          extracted.requiredLanguages && extracted.requiredLanguages.length > 0
-            ? extracted.requiredLanguages
-            : form.requiredLanguages,
+        // Conserver le statut existant ou "Sauvegardée" si nouveau
+        statut: form.statut || "Sauvegardée",
+        status: form.status || form.statut || "Sauvegardée",
       });
 
-      // Détection anti-doublon (même entreprise et même titre à 80%)
-      if (existingItems && existingItems.length > 0) {
-        const titleWords = updated.poste
-          .toLowerCase()
-          .split(" ")
-          .filter((w) => w.length > 3);
-        const match = existingItems.find((c) => {
-          if (!c.entreprise || !updated.entreprise) return false;
-          const sameCompany =
-            c.entreprise.toLowerCase() === updated.entreprise.toLowerCase();
-          if (!sameCompany) return false;
-          if (c.poste.toLowerCase() === updated.poste.toLowerCase())
-            return true;
-          const currentWords = c.poste
-            .toLowerCase()
-            .split(" ")
-            .filter((w) => w.length > 3);
-          const sharedWords = titleWords.filter((w) => currentWords.includes(w));
-          return sharedWords.length > 0;
-        });
-
-        if (match) {
-          setDuplicateMatch(match);
-        }
+      // Vérification des doublons
+      const allItems = existingItems || loadCandidatures();
+      const duplicate = findPotentialDuplicate(updated, allItems);
+      if (duplicate) {
+        setDuplicateMatch(duplicate);
       }
 
-      setMode("form");
+      // [OPPORTUNITY PREVIEW] Log structuré des données affichées dans l'interface
+      console.info(
+        "[OPPORTUNITY PREVIEW] Données prêtes pour affichage dans le formulaire:",
+        {
+          poste: updated.poste,
+          entreprise: updated.entreprise,
+          contractType: updated.contractType,
+          duration: updated.duration,
+          startDate: updated.startDate,
+          metricsCount: updated.companyMetrics?.length || 0,
+          missionsCount: updated.missionsList?.length || 0,
+          skillsCount: updated.requiredSkills?.length || 0,
+          companyMetrics: updated.companyMetrics,
+          extractionMethod:
+            extracted._extractionMethod || (fallbackUsed ? "heuristic" : "ai"),
+          modelUsed: extracted._modelUsed,
+        },
+      );
+
       setForm(updated);
-      setErrorMsg(null);
+      setMode("form");
+
+      if (fallbackUsed || extracted._extractionMethod === "heuristic") {
+        setErrorMsg(
+          "Analyse effectuée via le moteur heuristique de secours. Vous pouvez affiner ou compléter les champs.",
+        );
+      }
     } catch (normalizeErr) {
       console.error(
         "Erreur lors de la normalisation de l'offre extraite :",
@@ -276,7 +287,9 @@ export function CandidatureSheet({
     } finally {
       setAnalyzing(false);
     }
-  };  const handleOpenDuplicate = () => {
+  };
+
+  const handleOpenDuplicate = () => {
     if (duplicateMatch) {
       if (onOpenExisting) {
         onOpenExisting(duplicateMatch);

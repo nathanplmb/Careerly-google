@@ -231,7 +231,7 @@ function getDynamicSubtitle(actions: BriefItem[]): string {
   const candidatures = actions.filter((a) => a.type === "preparation");
 
   if (count === 1) {
-    if (entretiens.length === 1 && entretiens[0]) {
+    if (entretiens.length === 1) {
       const e = entretiens[0];
       if (e.dateContext === "Aujourd'hui") {
         return "Votre entretien a lieu aujourd'hui.";
@@ -241,7 +241,7 @@ function getDynamicSubtitle(actions: BriefItem[]): string {
       }
       return "Une préparation d'entretien mérite votre attention.";
     }
-    if (deadlines.length === 1 && deadlines[0]) {
+    if (deadlines.length === 1) {
       const d = deadlines[0];
       if (d.dateContext === "Échue") {
         return "Une date limite est arrivée à échéance.";
@@ -254,7 +254,7 @@ function getDynamicSubtitle(actions: BriefItem[]): string {
     if (relances.length === 1) {
       return "Une relance mérite d'être effectuée.";
     }
-    if (candidatures.length === 1 && candidatures[0]) {
+    if (candidatures.length === 1) {
       if (candidatures[0].dateContext === "Dossier prêt") {
         return "Votre candidature est prête à partir.";
       }
@@ -305,7 +305,6 @@ function getActionIcon(actionId: BriefActionId) {
     case "DEADLINE_REMOVE":
       return <CalendarX className="size-3.5" />;
     case "UPDATE_DEADLINE":
-    case "VERIFY_DEADLINE":
     case "PLAN_TOMORROW":
     case "PLAN_LATER":
       return <Clock className="size-3.5" />;
@@ -316,8 +315,6 @@ function getActionIcon(actionId: BriefActionId) {
     case "DELETE_OPPORTUNITY":
       return <Trash2 className="size-3.5" />;
     case "PREPARE_APPLICATION":
-    case "CONTINUE_APPLICATION":
-    case "PREPARE_INTERVIEW":
       return <Sparkles className="size-3.5" />;
     default:
       return <ArrowRight className="size-3.5" />;
@@ -389,13 +386,15 @@ export function DailyBrief({
         Boolean(c.preparedAt) ||
         (Boolean(c.preparation?.pourquoiEntreprise?.trim()) &&
           Boolean(c.preparation?.pourquoiPoste?.trim())),
-      hasContact: Boolean(c.contact),
+      hasContact: Boolean(c.contact || c.contactNom || c.contactEmail),
       contactNom:
-        c.contact && !c.contact.includes("@") && !c.contact.startsWith("http")
+        c.contactNom ||
+        (c.contact && !c.contact.includes("@") && !c.contact.startsWith("http")
           ? c.contact
-          : undefined,
+          : undefined),
       contactEmail:
-        c.contact && c.contact.includes("@") ? c.contact : undefined,
+        c.contactEmail ||
+        (c.contact && c.contact.includes("@") ? c.contact : undefined),
       archive: Boolean(c.archive),
     }));
 
@@ -455,8 +454,6 @@ export function DailyBrief({
         break;
 
       case "PREPARE_APPLICATION":
-      case "CONTINUE_APPLICATION":
-      case "PREPARE_INTERVIEW":
         if (cand && onOuvrir) {
           onOuvrir(cand, "workflow");
         } else {
@@ -530,7 +527,6 @@ export function DailyBrief({
         break;
 
       case "UPDATE_DEADLINE":
-      case "VERIFY_DEADLINE":
         if (cand) {
           setDeadlineModalItem(cand);
           setNewDeadlineValue(
@@ -893,7 +889,9 @@ export function DailyBrief({
             <div className="space-y-3.5 py-2">
               {(() => {
                 const c = emailModalData.cand;
-                const contactPrenom = c.contact ? c.contact.split(" ")[0] : "";
+                const contactPrenom = c.contactNom
+                  ? c.contactNom.split(" ")[0]
+                  : "";
                 const dateEnvStr = c.dateEnvoi ? formatDate(c.dateEnvoi) : "";
 
                 const subject =

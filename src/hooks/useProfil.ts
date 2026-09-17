@@ -11,14 +11,14 @@ export function useProfil(user: User | NormalizedUser | null) {
 
   useEffect(() => {
     let cancelled = false;
-    const local = loadProfil(userId);
+    const local = loadProfil();
     setProfil(local);
     if (!userId) return;
     void fetchProfil(userId)
       .then((cloud) => {
         if (!cancelled && cloud) {
           setProfil(cloud);
-          saveProfilLocal(cloud, userId);
+          saveProfilLocal(cloud);
         }
       })
       .catch(() => undefined);

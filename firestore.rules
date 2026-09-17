@@ -1,60 +1,17 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
-    function isSuperAdmin() {
-      return isSignedIn() && request.auth.token.email == "nathpa1423@gmail.com";
-    }
-
-    function isAdmin() {
-      return isSignedIn() && (
-        isSuperAdmin() || exists(/databases/$(database)/documents/admins/$(request.auth.uid))
-      );
-    }
-
-    // Admins registry: secure access & initialization
-    match /admins/{adminId} {
-      allow read: if isSignedIn() && (request.auth.uid == adminId || isAdmin() || isSuperAdmin());
-      allow create: if isSignedIn() && (request.auth.uid == adminId || isSuperAdmin()) && (
-        isSuperAdmin() || isAdmin()
-      );
-      allow update, delete: if isSuperAdmin() || isAdmin();
-    }
-
-    // Profils collection
     match /profils/{userId} {
-      allow read: if isOwner(userId) || isAdmin() || isSuperAdmin();
-      allow write: if isOwner(userId) || isAdmin() || isSuperAdmin();
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
-
-    // Subcollections under users/{userId}
     match /users/{userId}/candidatures/{candidatureId} {
-      allow read: if isOwner(userId) || isAdmin() || isSuperAdmin();
-      allow write: if isOwner(userId) || isAdmin() || isSuperAdmin();
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
-
     match /users/{userId}/contacts/{contactId} {
-      allow read: if isOwner(userId) || isAdmin() || isSuperAdmin();
-      allow write: if isOwner(userId) || isAdmin() || isSuperAdmin();
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
-
     match /users/{userId}/entreprises/{entrepriseId} {
-      allow read: if isOwner(userId) || isAdmin() || isSuperAdmin();
-      allow write: if isOwner(userId) || isAdmin() || isSuperAdmin();
-    }
-
-    match /users/{userId}/documents/{documentId} {
-      allow read: if isOwner(userId) || isAdmin() || isSuperAdmin();
-      allow write: if isOwner(userId) || isAdmin() || isSuperAdmin();
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }
-

@@ -104,11 +104,11 @@ function ProfilPage() {
   // Calcul du score de complétude et des rubriques
   const bilan = useMemo(() => calculerCompletudeProfil(profil), [profil]);
 
-  // Chargement initial du profil local après le montage client (garantie de parité SSR et isolation par compte)
+  // Chargement initial du profil local après le montage client (garantie de parité SSR)
   useEffect(() => {
-    const local = loadProfil(user?.id);
+    const local = loadProfil();
     setProfil(local);
-  }, [user?.id]);
+  }, []);
 
   // Synchronisation avec Firestore / Supabase en arrière-plan
   useEffect(() => {
@@ -142,7 +142,7 @@ function ProfilPage() {
     (patch: Partial<Profil>) => {
       setProfil((prev) => {
         const next = { ...prev, ...patch };
-        saveProfilLocal(next, user?.id);
+        saveProfilLocal(next);
         if (user?.id) {
           void saveProfilCloud(next, user.id).catch((err) => {
             console.warn("Auto-save cloud profil:", err);
@@ -164,7 +164,7 @@ function ProfilPage() {
   const enregistrer = useCallback(async () => {
     setSaving(true);
     const p = profilRef.current;
-    saveProfilLocal(p, user?.id);
+    saveProfilLocal(p);
 
     if (user?.id) {
       try {

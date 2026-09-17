@@ -155,13 +155,8 @@ export function getContactInitials(c: Partial<Contact>): string {
   const name = getContactFullName(c);
   if (!name || name === "Sans nom") return "??";
   const words = name.trim().split(/\s+/).filter(Boolean);
-  const firstWord = words[0];
-  if (!firstWord) return "??";
-  if (words.length === 1) return firstWord.slice(0, 2).toUpperCase();
-  const lastWord = words[words.length - 1] || "";
-  const firstChar = firstWord[0] || "";
-  const lastChar = lastWord[0] || "";
-  return (firstChar + lastChar).toUpperCase() || "??";
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
 }
 
 export function getContactCompany(c: Partial<Contact>): string {
@@ -360,9 +355,8 @@ export function enrichContactWithoutLoss(
     }
   }
   merged.candidatureIds = Array.from(oppIdsSet);
-  const firstOppId = merged.candidatureIds[0];
-  if (!merged.candidatureId && firstOppId) {
-    merged.candidatureId = firstOppId;
+  if (!merged.candidatureId && merged.candidatureIds.length > 0) {
+    merged.candidatureId = merged.candidatureIds[0];
   }
 
   // Sources : union sans doublons
@@ -575,10 +569,7 @@ export function parseLinkedInCsv(rawCsv: string): Partial<Contact>[] {
   if (rows.length < 2) return contacts;
 
   // Repérage des colonnes d'en-tête
-  const firstRow = rows[0];
-  if (!firstRow) return contacts;
-
-  const headerRow = firstRow.map((h) =>
+  const headerRow = rows[0].map((h) =>
     h
       .toLowerCase()
       .normalize("NFD")
@@ -614,7 +605,6 @@ export function parseLinkedInCsv(rawCsv: string): Partial<Contact>[] {
 
   for (let r = 1; r < rows.length; r++) {
     const row = rows[r];
-    if (!row) continue;
     const firstName = idxFirstName !== -1 ? row[idxFirstName] || "" : "";
     const lastName = idxLastName !== -1 ? row[idxLastName] || "" : "";
     const url = idxUrl !== -1 ? row[idxUrl] || "" : "";
@@ -670,14 +660,14 @@ export function parseRawContactInput(raw: string): Partial<Contact> {
   const emailMatch = text.match(
     /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/,
   );
-  if (emailMatch && emailMatch[1] && emailMatch[0]) {
+  if (emailMatch) {
     result.email = emailMatch[1];
     text = text.replace(emailMatch[0], " ");
   }
 
   // 2. Détection téléphone (+33 ou 0x xx xx xx xx)
   const phoneMatch = text.match(/(\+?\d[\d\s.\-()]{7,}\d)/);
-  if (phoneMatch && phoneMatch[1] && phoneMatch[0]) {
+  if (phoneMatch) {
     result.telephone = phoneMatch[1].trim();
     result.phone = result.telephone;
     text = text.replace(phoneMatch[0], " ");
@@ -685,7 +675,7 @@ export function parseRawContactInput(raw: string): Partial<Contact> {
 
   // 3. Détection parenthèses éventuelles pour le rôle (ex: "(RH)" ou "(Talent Acquisition)")
   const roleMatch = text.match(/\(([^)]+)\)/);
-  if (roleMatch && roleMatch[1] && roleMatch[0]) {
+  if (roleMatch) {
     result.poste = roleMatch[1].trim();
     result.jobTitle = result.poste;
     text = text.replace(roleMatch[0], " ");
@@ -764,40 +754,20 @@ export function contactEnTexte(c: Contact): string {
 
 export const CONTACTS_STORAGE_KEY = "careerly_contacts_v1";
 
-export function getContactsStorageKey(userId?: string): string {
-  return userId ? `nacora_${userId}_contacts_v1` : "nacora_guest_contacts_v1";
-}
-
-export function loadContactsLocal(userId?: string): Contact[] {
+export function loadContactsLocal(): Contact[] {
   if (typeof window === "undefined") return [];
   try {
-    const key = getContactsStorageKey(userId);
-    const raw = window.localStorage.getItem(key);
-    if (raw) {
-      return JSON.parse(raw) as Contact[];
-    }
-    if (userId) {
-      const oldRaw = window.localStorage.getItem(CONTACTS_STORAGE_KEY);
-      if (oldRaw) {
-        const parsed = JSON.parse(oldRaw) as Contact[];
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          window.localStorage.setItem(key, JSON.stringify(parsed));
-          window.localStorage.removeItem(CONTACTS_STORAGE_KEY);
-          return parsed;
-        }
-      }
-    }
-    return [];
+    const raw = window.localStorage.getItem(CONTACTS_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as Contact[]) : [];
   } catch {
     return [];
   }
 }
 
-export function saveContactsLocal(items: Contact[], userId?: string): void {
+export function saveContactsLocal(items: Contact[]): void {
   if (typeof window === "undefined") return;
   try {
-    const key = getContactsStorageKey(userId);
-    window.localStorage.setItem(key, JSON.stringify(items));
+    window.localStorage.setItem(CONTACTS_STORAGE_KEY, JSON.stringify(items));
   } catch {
     // ignorer
   }

@@ -6,7 +6,7 @@ import {
   deleteDoc,
   query,
 } from "firebase/firestore";
-import { db, auth, isFirebaseConfigured } from "@/integrations/firebase/client";
+import { db, isFirebaseConfigured } from "@/integrations/firebase/client";
 import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
 import {
   emptyPreparation,
@@ -337,7 +337,7 @@ function toCandidature(r: Row): Candidature {
       (rawObj["extractedAt"] as string) ||
       (rawObj["extracted_at"] as string) ||
       null,
-  } as unknown as Partial<Candidature>);
+  } as Partial<Candidature>);
 
   return cand;
 }
@@ -457,6 +457,8 @@ function toRow(c: Candidature, userId: string): Record<string, unknown> {
     educationRequirements: c.educationRequirements || [],
     education_requirements: c.educationRequirements || [],
 
+    companyId: c.companyId || null,
+    company_id: c.companyId || null,
     contactId: c.contactId || null,
     contact_id: c.contactId || null,
     contactIds: Array.isArray(c.contactIds) ? c.contactIds : [],
@@ -501,74 +503,62 @@ function toRow(c: Candidature, userId: string): Record<string, unknown> {
 export async function fetchCandidatures(
   userId?: string,
 ): Promise<Candidature[]> {
-  const effectiveUserId = userId || auth.currentUser?.uid;
   console.info("[OPPORTUNITY LOAD START]", {
-    userId: effectiveUserId,
+    userId,
     timestamp: new Date().toISOString(),
   });
 
-  if (!effectiveUserId) {
-    return [];
-  }
-
-  if (isFirebaseConfigured() && auth.currentUser) {
-    if (auth.currentUser.uid === effectiveUserId) {
-      try {
-        const colRef = collection(db, "users", effectiveUserId, "candidatures");
-        const snap = await getDocs(query(colRef));
-        const list: Candidature[] = [];
-        snap.forEach((docSnap) => {
-          const cand = toCandidature({
-            id: docSnap.id,
-            ...docSnap.data(),
-          } as Row);
-          list.push(cand);
-        });
-        console.info(
-          `[OPPORTUNITY LOAD SUCCESS] ${list.length} opportunités chargées depuis Firestore`,
-          list.map((c) => ({
-            id: c.id,
-            poste: c.poste,
-            entreprise: c.entreprise,
-            contractType: c.contractType,
-            duration: c.duration,
-            metricsCount: c.companyMetrics?.length || 0,
-          })),
-        );
-        return list;
-      } catch (e: unknown) {
-        const err = e as { message?: string };
-        console.warn(
-          "[OPPORTUNITY LOAD WARN] Firestore fetchCandidatures indisponible:",
-          err?.message || e,
-        );
-        return [];
-      }
+  if (isFirebaseConfigured() && userId) {
+    try {
+      const colRef = collection(db, "users", userId, "candidatures");
+      const snap = await getDocs(query(colRef));
+      const list: Candidature[] = [];
+      snap.forEach((docSnap) => {
+        const cand = toCandidature({
+          id: docSnap.id,
+          ...docSnap.data(),
+        } as Row);
+        list.push(cand);
+      });
+      console.info(
+        `[OPPORTUNITY LOAD SUCCESS] ${list.length} opportunités chargées depuis Firestore`,
+        list.map((c) => ({
+          id: c.id,
+          poste: c.poste,
+          entreprise: c.entreprise,
+          contractType: c.contractType,
+          duration: c.duration,
+          metricsCount: c.companyMetrics?.length || 0,
+        })),
+      );
+      return list;
+    } catch (e) {
+      console.error(
+        "[OPPORTUNITY LOAD ERROR] Firestore fetchCandidatures error:",
+        e,
+      );
+      throw e;
     }
   }
 
   if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from("candidatures")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) {
-        console.warn("[OPPORTUNITY LOAD WARN] Supabase fetch error:", error);
-        return [];
-      }
-      const list = (data as unknown as Row[]).map(toCandidature);
-      console.info(
-        `[OPPORTUNITY LOAD SUCCESS] ${list.length} opportunités chargées depuis Supabase`,
-      );
-      return list;
-    } catch {
-      return [];
+    const { data, error } = await supabase
+      .from("candidatures")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) {
+      console.error("[OPPORTUNITY LOAD ERROR] Supabase fetch error:", error);
+      throw error;
     }
+    const list = (data as unknown as Row[]).map(toCandidature);
+    console.info(
+      `[OPPORTUNITY LOAD SUCCESS] ${list.length} opportunités chargées depuis Supabase`,
+    );
+    return list;
   }
 
   console.info(
-    "[OPPORTUNITY LOAD LOCAL] Utilisation du stockage local sécurisé.",
+    "[OPPORTUNITY LOAD EMPTY] Ni Firestore ni Supabase n'est configuré.",
   );
   return [];
 }
@@ -577,47 +567,34 @@ export async function upsertCandidature(
   c: Candidature,
   userId: string,
 ): Promise<Candidature> {
-  const effectiveUserId = userId || auth.currentUser?.uid;
-  if (!effectiveUserId) return c;
-
   console.info("[OPPORTUNITY SAVE START]", {
     id: c.id,
     poste: c.poste,
     entreprise: c.entreprise,
-    userId: effectiveUserId,
+    userId,
   });
-  const row = toRow(c, effectiveUserId);
+  const row = toRow(c, userId);
   console.info("[OPPORTUNITY SAVE PAYLOAD]", {
-    id: row["id"],
-    entreprise: row["entreprise"],
-    poste: row["poste"],
-    contractType: row["contractType"],
-    duration: row["duration"],
-    startDate: row["startDate"],
-    metricsCount: Array.isArray(row["companyMetrics"])
-      ? (row["companyMetrics"] as unknown[]).length
+    id: row.id,
+    entreprise: row.entreprise,
+    poste: row.poste,
+    contractType: row.contractType,
+    duration: row.duration,
+    startDate: row.startDate,
+    metricsCount: Array.isArray(row.companyMetrics)
+      ? (row.companyMetrics as unknown[]).length
       : 0,
-    missionsCount: Array.isArray(row["missionsList"])
-      ? (row["missionsList"] as unknown[]).length
+    missionsCount: Array.isArray(row.missionsList)
+      ? (row.missionsList as unknown[]).length
       : 0,
-    skillsCount: Array.isArray(row["requiredSkills"])
-      ? (row["requiredSkills"] as unknown[]).length
+    skillsCount: Array.isArray(row.requiredSkills)
+      ? (row.requiredSkills as unknown[]).length
       : 0,
   });
 
-  if (
-    isFirebaseConfigured() &&
-    auth.currentUser &&
-    auth.currentUser.uid === effectiveUserId
-  ) {
+  if (isFirebaseConfigured() && userId) {
     try {
-      const docRef = doc(
-        db,
-        "users",
-        effectiveUserId,
-        "candidatures",
-        row["id"] as string,
-      );
+      const docRef = doc(db, "users", userId, "candidatures", row.id as string);
       await setDoc(docRef, row, { merge: true });
       const saved = toCandidature(row as unknown as Row);
       console.info(
@@ -630,35 +607,31 @@ export async function upsertCandidature(
         },
       );
       return saved;
-    } catch (e: unknown) {
-      const err = e as { message?: string };
-      console.warn(
-        "[OPPORTUNITY SAVE WARN] Échec écriture Firestore setDoc:",
-        err?.message || e,
+    } catch (e) {
+      console.error(
+        "[OPPORTUNITY SAVE ERROR] Échec écriture Firestore setDoc:",
+        e,
       );
-      return c;
+      throw e;
     }
   }
 
   if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await (supabase.from("candidatures") as any)
-        .upsert(row)
-        .select()
-        .single();
-      if (error) {
-        console.warn("[OPPORTUNITY SAVE WARN] Supabase upsert error:", error);
-        return c;
-      }
-      const saved = toCandidature(data as unknown as Row);
-      console.info(
-        "[OPPORTUNITY SAVE SUCCESS] Enregistrement Supabase confirmé:",
-        { id: saved.id },
-      );
-      return saved;
-    } catch {
-      return c;
+    const { data, error } = await supabase
+      .from("candidatures")
+      .upsert(row as unknown as Record<string, unknown>)
+      .select()
+      .single();
+    if (error) {
+      console.error("[OPPORTUNITY SAVE ERROR] Supabase upsert error:", error);
+      throw error;
     }
+    const saved = toCandidature(data as unknown as Row);
+    console.info(
+      "[OPPORTUNITY SAVE SUCCESS] Enregistrement Supabase confirmé:",
+      { id: saved.id },
+    );
+    return saved;
   }
 
   console.info(
@@ -668,34 +641,19 @@ export async function upsertCandidature(
 }
 
 export async function deleteCandidature(id: string, userId?: string) {
-  const effectiveUserId = userId || auth.currentUser?.uid;
-  if (!effectiveUserId) return;
-
-  if (
-    isFirebaseConfigured() &&
-    auth.currentUser &&
-    auth.currentUser.uid === effectiveUserId
-  ) {
+  if (isFirebaseConfigured() && userId) {
     try {
-      const docRef = doc(db, "users", effectiveUserId, "candidatures", id);
+      const docRef = doc(db, "users", userId, "candidatures", id);
       await deleteDoc(docRef);
       return;
-    } catch (e: unknown) {
-      const err = e as { message?: string };
-      console.warn("Firestore deleteCandidature notice:", err?.message || e);
+    } catch (e) {
+      console.warn("Firestore deleteCandidature error:", e);
     }
   }
 
   if (isSupabaseConfigured()) {
-    try {
-      const { error } = await supabase
-        .from("candidatures")
-        .delete()
-        .eq("id", id);
-      if (error) throw error;
-    } catch {
-      // ignorer
-    }
+    const { error } = await supabase.from("candidatures").delete().eq("id", id);
+    if (error) throw error;
   }
 }
 
@@ -719,8 +677,14 @@ export async function insertManyCandidatures(
   }
 
   if (isSupabaseConfigured()) {
-    const { data, error } = await (supabase.from("candidatures") as any)
-      .insert(items.map((c) => toRow(c, userId)))
+    const { data, error } = await supabase
+      .from("candidatures")
+      .insert(
+        items.map((c) => toRow(c, userId)) as unknown as Record<
+          string,
+          unknown
+        >[],
+      )
       .select();
     if (error) throw error;
     return (data as unknown as Row[]).map(toCandidature);

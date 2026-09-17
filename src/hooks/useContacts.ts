@@ -19,9 +19,9 @@ import type { Candidature } from "@/lib/candidatures";
 import type { Entreprise } from "@/lib/entreprises";
 
 export function useContacts() {
-  const { user, firebaseUser, loading: authLoading } = useSession();
+  const { user, loading: authLoading } = useSession();
   const userId = user?.id;
-  const isCloudUser = Boolean(firebaseUser?.uid && firebaseUser.uid === userId);
+  const isCloudUser = Boolean(userId);
 
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +32,7 @@ export function useContacts() {
     let cancelled = false;
 
     if (!isCloudUser || !userId) {
-      setContacts(loadContactsLocal(userId));
+      setContacts(loadContactsLocal());
       setLoading(false);
       return;
     }
@@ -44,16 +44,19 @@ export function useContacts() {
         if (!cancelled) {
           if (cloud.length > 0) {
             setContacts(cloud);
-            saveContactsLocal(cloud, userId);
+            saveContactsLocal(cloud);
           } else {
-            const local = loadContactsLocal(userId);
+            const local = loadContactsLocal();
             setContacts(local);
+            if (local.length > 0) {
+              void batchUpsertContacts(local, userId);
+            }
           }
         }
       } catch (err) {
         console.warn("Échec récupération contacts cloud, repli local:", err);
         if (!cancelled) {
-          setContacts(loadContactsLocal(userId));
+          setContacts(loadContactsLocal());
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -82,7 +85,7 @@ export function useContacts() {
         const next = exists
           ? prev.map((c) => (c.id === updated.id ? updated : c))
           : [updated, ...prev];
-        saveContactsLocal(next, userId);
+        saveContactsLocal(next);
         return next;
       });
 
@@ -107,7 +110,7 @@ export function useContacts() {
     async (id: string): Promise<void> => {
       setContacts((prev) => {
         const next = prev.filter((item) => item.id !== id);
-        saveContactsLocal(next, userId);
+        saveContactsLocal(next);
         return next;
       });
 
@@ -138,7 +141,6 @@ export function useContacts() {
 
       for (let i = 0; i < incomingList.length; i++) {
         const incoming = incomingList[i];
-        if (!incoming) continue;
         const matchResult = findMatchingContact(incoming, currentContacts);
         const userChoice = resolutions?.[incoming.id || `idx_${i}`];
 
@@ -163,7 +165,7 @@ export function useContacts() {
         } else {
           // Nouveau contact ou choix explicite "both" (créer doublon séparé)
           const newContact: Contact = {
-            ...emptyContact(incoming.nom || incoming.fullName || ""),
+            ...emptyContact(incoming.nom || incoming.fullName),
             ...incoming,
             id: crypto.randomUUID(),
             createdAt: new Date().toISOString(),
@@ -177,7 +179,7 @@ export function useContacts() {
       }
 
       setContacts([...currentContacts]);
-      saveContactsLocal(currentContacts, userId);
+      saveContactsLocal(currentContacts);
 
       if (isCloudUser && userId && contactsToPersist.length > 0) {
         try {

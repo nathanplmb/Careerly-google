@@ -21,9 +21,9 @@ import type { Candidature } from "@/lib/candidatures";
 import type { Contact } from "@/lib/contacts";
 
 export function useEntreprises() {
-  const { user, firebaseUser, loading: authLoading } = useSession();
+  const { user, loading: authLoading } = useSession();
   const userId = user?.id;
-  const isCloudUser = Boolean(firebaseUser?.uid && firebaseUser.uid === userId);
+  const isCloudUser = Boolean(userId);
 
   const [entreprises, setEntreprises] = useState<Entreprise[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +37,7 @@ export function useEntreprises() {
     let cancelled = false;
 
     if (!isCloudUser || !userId) {
-      setEntreprises(loadEntreprisesLocal(userId));
+      setEntreprises(loadEntreprisesLocal());
       setLoading(false);
       return;
     }
@@ -49,17 +49,17 @@ export function useEntreprises() {
         if (!cancelled) {
           if (cloud.length > 0) {
             setEntreprises(cloud);
-            saveEntreprisesLocal(cloud, userId);
+            saveEntreprisesLocal(cloud);
           } else {
             // Repli local ou migration initiale
-            const local = loadEntreprisesLocal(userId);
+            const local = loadEntreprisesLocal();
             setEntreprises(local);
           }
         }
       } catch (err) {
         console.warn("Échec récupération entreprises cloud, repli local:", err);
         if (!cancelled) {
-          setEntreprises(loadEntreprisesLocal(userId));
+          setEntreprises(loadEntreprisesLocal());
         }
       } finally {
         if (!cancelled) {
@@ -89,7 +89,7 @@ export function useEntreprises() {
         const next = exists
           ? prev.map((item) => (item.id === e.id ? saved : item))
           : [saved, ...prev];
-        saveEntreprisesLocal(next, userId);
+        saveEntreprisesLocal(next);
         return next;
       });
       return saved;
@@ -102,7 +102,7 @@ export function useEntreprises() {
     async (id: string): Promise<void> => {
       setEntreprises((prev) => {
         const next = prev.filter((item) => item.id !== id);
-        saveEntreprisesLocal(next, userId);
+        saveEntreprisesLocal(next);
         return next;
       });
       if (isCloudUser && userId) {
@@ -201,7 +201,7 @@ export function useEntreprises() {
 
       if (anyChanged) {
         setEntreprises(currentList);
-        saveEntreprisesLocal(currentList, userId);
+        saveEntreprisesLocal(currentList);
       }
 
       return {

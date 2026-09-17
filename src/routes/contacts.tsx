@@ -41,7 +41,6 @@ import { useEntreprises } from "@/hooks/useEntreprises";
 import {
   emptyContact,
   getContactFullName,
-  getContactInitials,
   getContactCompany,
   getContactJobTitle,
   TYPES_CONTACT,
@@ -212,7 +211,11 @@ export function ContactsPage() {
 
   // Helper pour initiales avatar
   const getInitials = (contact: Contact) => {
-    return getContactInitials(contact);
+    const name = getContactFullName(contact);
+    if (!name) return "CO";
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   };
 
   return (

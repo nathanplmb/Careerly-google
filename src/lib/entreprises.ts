@@ -85,9 +85,8 @@ export function normalizeCompanyName(name: string): string {
 
   s = s.replace(/\s+/g, " ").trim();
 
-  const alias = KNOWN_ALIASES[s];
-  if (alias) {
-    return alias;
+  if (KNOWN_ALIASES[s]) {
+    return KNOWN_ALIASES[s];
   }
 
   return s;
@@ -120,7 +119,7 @@ export function extractRootDomain(urlOrDomain?: string | null): string | null {
     }
 
     const parts = host.split(".");
-    if (parts.length >= 2 && parts[0]) {
+    if (parts.length >= 2) {
       return parts[0];
     }
     return host;
@@ -246,7 +245,10 @@ export function syncEntrepriseFromOpportunity(
       siege: opp.companyLocation || opp.lieu || null,
       siteWeb: opp.companyWebsite || null,
       chiffresCles: Array.isArray(opp.companyMetrics)
-        ? opp.companyMetrics.map((m) => `${m.label} : ${m.value}`)
+        ? opp.companyMetrics.map(
+            (m) =>
+              `${m.label} : ${m.value}${m.context ? ` (${m.context})` : ""}`,
+          )
         : [],
       contexte: Array.isArray(opp.companyContext) ? opp.companyContext : [],
       partenaires: Array.isArray(opp.companyPartners)
@@ -336,7 +338,9 @@ export function syncEntrepriseFromOpportunity(
     const currentMetrics = new Set(updated.chiffresCles || []);
     const initialSize = currentMetrics.size;
     for (const m of opp.companyMetrics) {
-      currentMetrics.add(`${m.label} : ${m.value}`);
+      currentMetrics.add(
+        `${m.label} : ${m.value}${m.context ? ` (${m.context})` : ""}`,
+      );
     }
     if (currentMetrics.size > initialSize) {
       updated.chiffresCles = Array.from(currentMetrics);
@@ -467,25 +471,10 @@ export function shouldKeepEntrepriseAfterOpportunityDeleted(
 // Stockage Local (localStorage)
 // ----------------------------------------------------
 
-export function getEntreprisesStorageKey(userId?: string): string {
-  return userId
-    ? `nacora_${userId}_entreprises_v1`
-    : "nacora_guest_entreprises_v1";
-}
-
-export function loadEntreprisesLocal(userId?: string): Entreprise[] {
+export function loadEntreprisesLocal(): Entreprise[] {
   if (typeof window === "undefined") return [];
   try {
-    const key = getEntreprisesStorageKey(userId);
-    let raw = localStorage.getItem(key);
-    if (!raw && userId) {
-      const oldRaw = localStorage.getItem(STORAGE_KEY_ENTREPRISES);
-      if (oldRaw) {
-        localStorage.setItem(key, oldRaw);
-        localStorage.removeItem(STORAGE_KEY_ENTREPRISES);
-        raw = oldRaw;
-      }
-    }
+    const raw = localStorage.getItem(STORAGE_KEY_ENTREPRISES);
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) {
@@ -498,14 +487,10 @@ export function loadEntreprisesLocal(userId?: string): Entreprise[] {
   }
 }
 
-export function saveEntreprisesLocal(
-  items: Entreprise[],
-  userId?: string,
-): void {
+export function saveEntreprisesLocal(items: Entreprise[]): void {
   if (typeof window === "undefined") return;
   try {
-    const key = getEntreprisesStorageKey(userId);
-    localStorage.setItem(key, JSON.stringify(items));
+    localStorage.setItem(STORAGE_KEY_ENTREPRISES, JSON.stringify(items));
   } catch (err) {
     console.warn("Échec écriture localStorage entreprises:", err);
   }
