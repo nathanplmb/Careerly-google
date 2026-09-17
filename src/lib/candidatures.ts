@@ -146,6 +146,8 @@ export type Candidature = {
   educationRequirements?: string[];
 
   companyName?: string | null;
+  parentCompany?: string | null;
+  groupName?: string | null;
   companyDescription?: string | null;
   companySector?: string | null;
   companySize?: string | null;
@@ -256,6 +258,8 @@ export function emptyCandidature(): Candidature {
 
     companyId: null,
     companyName: null,
+    parentCompany: null,
+    groupName: null,
     companyDescription: null,
     companySector: null,
     companySize: null,
@@ -666,6 +670,19 @@ export function normalizeCandidature(c: Partial<Candidature>): Candidature {
       : Array.isArray((c as Record<string, unknown>).education_requirements)
         ? ((c as Record<string, unknown>).education_requirements as string[])
         : base.educationRequirements,
+
+    parentCompany:
+      c.parentCompany ??
+      c.groupName ??
+      (c as Record<string, unknown>).parent_company ??
+      (c as Record<string, unknown>).group_name ??
+      base.parentCompany,
+    groupName:
+      c.groupName ??
+      c.parentCompany ??
+      (c as Record<string, unknown>).group_name ??
+      (c as Record<string, unknown>).parent_company ??
+      base.groupName,
 
     companyDescription:
       c.companyDescription ??
@@ -1231,10 +1248,19 @@ export const SEED: Candidature[] = [
   }),
 ];
 
-export function loadCandidatures(): Candidature[] {
+export function getStorageKey(userId?: string): string {
+  return userId ? `${STORAGE_KEY}_${userId}` : STORAGE_KEY;
+}
+
+export function loadCandidatures(userId?: string): Candidature[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const key = getStorageKey(userId);
+    let raw = window.localStorage.getItem(key);
+    // Si la clé avec userId est vide mais qu'on a un cache global initial, repli transparent
+    if (!raw && userId) {
+      raw = window.localStorage.getItem(STORAGE_KEY);
+    }
     if (!raw) return [];
     const parsed = JSON.parse(raw) as Partial<Candidature>[];
     return Array.isArray(parsed) ? parsed.map(normalizeCandidature) : [];
@@ -1243,9 +1269,16 @@ export function loadCandidatures(): Candidature[] {
   }
 }
 
-export function saveCandidatures(items: Candidature[]) {
+export function saveCandidatures(items: Candidature[], userId?: string) {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  try {
+    const key = getStorageKey(userId);
+    window.localStorage.setItem(key, JSON.stringify(items));
+    // Sauvegarder aussi sur la clé globale en secours
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  } catch (err) {
+    console.warn("Erreur écriture localStorage saveCandidatures:", err);
+  }
 }
 
 export function toCsv(items: Candidature[]): string {

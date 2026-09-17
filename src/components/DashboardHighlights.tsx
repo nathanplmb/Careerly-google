@@ -55,7 +55,7 @@ export function RecentCandidatures({
 }) {
   const recentes = items.slice(0, 5);
   return (
-    <section className="glass-card pop-in p-4 sm:p-5">
+    <section className="glass-card pop-in p-4 sm:p-5" suppressHydrationWarning>
       <header className="mb-3 flex items-center justify-between gap-3">
         <h2 className="text-[15px] font-bold">Mes candidatures récentes</h2>
         <Link
@@ -66,7 +66,7 @@ export function RecentCandidatures({
         </Link>
       </header>
 
-      <ul className="flex flex-col">
+      <ul className="flex flex-col" suppressHydrationWarning>
         {recentes.length === 0 && (
           <li className="py-6 text-center text-sm text-muted-foreground">
             Aucune candidature pour le moment.

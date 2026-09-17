@@ -49,6 +49,8 @@ export const OpportunityExtractionZodSchema = z.object({
 
   // Entreprise
   companyName: z.string().nullable().optional(),
+  parentCompany: z.string().nullable().optional(),
+  groupName: z.string().nullable().optional(),
   companyDescription: z.string().nullable().optional(),
   companySector: z.string().nullable().optional(),
   companySize: z.string().nullable().optional(),
@@ -99,7 +101,7 @@ export const geminiOpportunityResponseSchema = {
     contractType: {
       type: "STRING" as const,
       description:
-        "Type de contrat (ex: Stage, CDI, Alternance, CDD, Freelance)",
+        "Type de contrat (Stage, Alternance, VIE, CDI, CDD, Freelance, Intérim). RÈGLE PRIORITAIRE : Si le poste est un stage ou internship (même international ou en anglais), mettre Stage. VIE UNIQUEMENT si explicitement stipulé (Volontariat International en Entreprise / VIE / V.I.E).",
     },
     duration: {
       type: "STRING" as const,
@@ -144,7 +146,7 @@ export const geminiOpportunityResponseSchema = {
     applicationDeadline: {
       type: "STRING" as const,
       description:
-        "Date limite de candidature au format ISO YYYY-MM-DD si présente (ex: 2026-09-04), sinon null",
+        "Date limite de candidature au format ISO YYYY-MM-DD UNIQUEMENT si une date explicite est mentionnée. Si aucune date limite ou mentionné 'Pas de date limite' / 'Tant que l'offre est en ligne', mettre impérativement null. Ne JAMAIS inventer aujourd'hui comme date.",
     },
     jobFunction: {
       type: "STRING" as const,
@@ -240,7 +242,18 @@ export const geminiOpportunityResponseSchema = {
 
     companyName: {
       type: "STRING" as const,
-      description: "Nom de l'entreprise (ex: EXO)",
+      description:
+        "Nom précis de l'entreprise qui porte / publie l'offre (ex: Natixis, Alan)",
+    },
+    parentCompany: {
+      type: "STRING" as const,
+      description:
+        "Nom de la société mère ou du groupe si mentionné (ex: Groupe BPCE), sinon null",
+    },
+    groupName: {
+      type: "STRING" as const,
+      description:
+        "Nom du groupe d'appartenance si mentionné (ex: Groupe BPCE), sinon null",
     },
     companyDescription: {
       type: "STRING" as const,

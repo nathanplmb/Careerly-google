@@ -87,17 +87,27 @@ export function AccountMenu({ user }: { user: User | null }) {
     await queryClient.cancelQueries();
     queryClient.clear();
     setCompteActif(null);
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.removeItem("neoma-profil-v1");
+        window.localStorage.removeItem("careerly_candidatures_v1");
+        window.localStorage.removeItem("careerly_contacts_v1");
+        window.localStorage.removeItem("careerly_entreprises_v1");
+      } catch (err) {
+        console.warn("Erreur purge cache local:", err);
+      }
+    }
     if (isFirebaseConfigured()) {
       try {
         await firebaseSignOut(firebaseAuth);
-      } catch {
-        // Ignoré
+      } catch (err) {
+        console.warn("Erreur déconnexion Firebase:", err);
       }
     }
     try {
       await supabase.auth.signOut();
-    } catch {
-      // Ignoré
+    } catch (err) {
+      console.warn("Erreur déconnexion Supabase:", err);
     }
     toast.success("Déconnexion réussie");
     navigate({ to: "/auth", replace: true });

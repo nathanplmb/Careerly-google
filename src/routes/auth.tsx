@@ -30,6 +30,9 @@ import {
   createUserWithEmailAndPassword,
   updateProfile,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  onAuthStateChanged,
   GoogleAuthProvider,
   sendPasswordResetEmail,
 } from "firebase/auth";
@@ -169,6 +172,85 @@ function AuthPage() {
     setBioSupported(biometricSupported());
     void loadGoogleGsiScript();
 
+    let active = true;
+
+    // 1. Capture du résultat après redirection Google OAuth (notamment mobile ou popup bloquée)
+    if (isFirebaseConfigured()) {
+      getRedirectResult(firebaseAuth)
+        .then((result) => {
+          if (!active || !result?.user) return;
+          const u = result.user;
+          const prenomUser =
+            u.displayName?.split(" ")[0] || u.email?.split("@")[0] || "Membre";
+          const nomUser = u.displayName?.split(" ").slice(1).join(" ") || "";
+
+          const localUser: UtilisateurLocal = {
+            id: u.uid,
+            email: u.email || "",
+            prenom: prenomUser,
+            nom: nomUser,
+            avatarUrl: u.photoURL || "",
+            provider: "google",
+            creeLe: u.metadata.creationTime || new Date().toISOString(),
+            dernierAccesLe: new Date().toISOString(),
+          };
+          setCompteActif(localUser);
+
+          toast.success(
+            `Ravi de vous revoir ${prenomUser} ! Connecté avec succès via Google (${u.email}).`,
+          );
+          rediriger();
+        })
+        .catch((err: unknown) => {
+          if (!active) return;
+          const error = err as { code?: string; message?: string };
+          if (error.code === "auth/account-exists-with-different-credential") {
+            toast.error(
+              "Un compte existe déjà avec cette adresse e-mail via un mot de passe. Veuillez vous connecter avec votre mot de passe habituel.",
+            );
+          } else if (error.code === "auth/unauthorized-domain") {
+            toast.error(
+              `Domaine (${window.location.hostname}) non autorisé dans Firebase Auth. Veuillez l'ajouter dans la console Firebase.`,
+              { duration: 8000 },
+            );
+          } else if (
+            error.code &&
+            error.code !== "auth/credential-already-in-use"
+          ) {
+            console.warn("Erreur retour redirection Firebase:", err);
+          }
+        });
+    }
+
+    let unsubscribeFirebase: (() => void) | undefined;
+    if (isFirebaseConfigured()) {
+      unsubscribeFirebase = onAuthStateChanged(firebaseAuth, (user) => {
+        if (!active || !user) return;
+        // Si l'utilisateur est déjà connecté dans Firebase Auth et arrive sur /auth
+        const prenomUser =
+          user.displayName?.split(" ")[0] ||
+          user.email?.split("@")[0] ||
+          "Membre";
+        const nomUser = user.displayName?.split(" ").slice(1).join(" ") || "";
+
+        const localUser: UtilisateurLocal = {
+          id: user.uid,
+          email: user.email || "",
+          prenom: prenomUser,
+          nom: nomUser,
+          avatarUrl: user.photoURL || "",
+          provider:
+            user.providerData?.[0]?.providerId === "google.com"
+              ? "google"
+              : "email",
+          creeLe: user.metadata.creationTime || new Date().toISOString(),
+          dernierAccesLe: new Date().toISOString(),
+        };
+        setCompteActif(localUser);
+        rediriger();
+      });
+    }
+
     let unsubscribe: (() => void) | undefined;
     try {
       supabase.auth
@@ -189,6 +271,8 @@ function AuthPage() {
       // Supabase offline / non configuré
     }
     return () => {
+      active = false;
+      unsubscribeFirebase?.();
       unsubscribe?.();
     };
   }, [rediriger]);
@@ -433,76 +517,109 @@ function AuthPage() {
   };
 
   const handleGoogleSignIn = async () => {
+    if (loading) return;
     setLoading(true);
     try {
-      // 1. Firebase Google Auth
-      if (isFirebaseConfigured()) {
-        try {
-          const provider = new GoogleAuthProvider();
-          const res = await signInWithPopup(firebaseAuth, provider);
-          if (res.user) {
-            setLoading(false);
-            toast.success(
-              `Bienvenue ${res.user.displayName || res.user.email} ! Connecté via Google (Firebase Cloud).`,
-            );
-            rediriger();
-            return;
-          }
-        } catch (fErr) {
-          console.warn("Firebase Google popup error, falling back:", fErr);
-        }
-      }
-
-      // 2. Tentative Supabase OAuth SEULEMENT si Supabase est réellement configuré
-      if (isSupabaseConfigured()) {
-        try {
-          const { error } = await supabase.auth.signInWithOAuth({
-            provider: "google",
-            options: {
-              redirectTo: target
-                ? window.location.origin + target
-                : window.location.origin,
-            },
-          });
-          if (!error) return;
-        } catch {
-          // Si échec Supabase, basculer sur Google direct
-        }
-      }
-
-      // 2. Détection d'environnement d'aperçu / Cloud Run (où les origines Google OAuth ne sont pas enregistrées)
-      const isPreviewEnv =
-        typeof window !== "undefined" &&
-        (window.location.hostname.includes(".run.app") ||
-          window.location.hostname.includes("ais-dev") ||
-          !window.location.hostname.includes("localhost"));
-
-      if (isPreviewEnv) {
-        // En mode aperçu, connexion Google directe instantanée sans blocage d'origine Google Cloud
-        const emailCible = googleEmailInput.trim() || "nathpa1423@gmail.com";
-        const prenomCible = googlePrenomInput.trim() || "Nathan";
-        const nomCible = googleNomInput.trim() || "Palumbo";
-
-        const user = connecterCompteGoogleDirect(
-          emailCible,
-          prenomCible,
-          nomCible,
+      if (!isFirebaseConfigured()) {
+        throw new Error(
+          "La configuration Firebase n'est pas prête. Veuillez vérifier les clés Firebase.",
         );
+      }
+
+      // Configuration officielle GoogleAuthProvider avec sélection explicite du compte
+      const provider = new GoogleAuthProvider();
+      provider.addScope("profile");
+      provider.addScope("email");
+      provider.setCustomParameters({
+        prompt: "select_account",
+      });
+
+      const isMobile =
+        typeof window !== "undefined" &&
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent,
+        );
+
+      let userCredential = null;
+
+      if (isMobile) {
+        try {
+          await signInWithRedirect(firebaseAuth, provider);
+          return;
+        } catch (redirectErr) {
+          console.warn(
+            "Redirection mobile Google échouée, tentative popup:",
+            redirectErr,
+          );
+        }
+      }
+
+      try {
+        userCredential = await signInWithPopup(firebaseAuth, provider);
+      } catch (popupErr: unknown) {
+        const error = popupErr as { code?: string; message?: string };
+
+        // Si la popup a été bloquée par le navigateur (Safari, bloqueur de popups), basculer sur la redirection
+        if (
+          error.code === "auth/popup-blocked" ||
+          error.code === "auth/cancelled-popup-request"
+        ) {
+          toast.info("Ouverture de Google via redirection sécurisée...");
+          await signInWithRedirect(firebaseAuth, provider);
+          return;
+        }
+
+        // Si l'utilisateur a fermé la popup de son plein gré
+        if (error.code === "auth/popup-closed-by-user") {
+          setLoading(false);
+          return;
+        }
+
+        if (error.code === "auth/account-exists-with-different-credential") {
+          setLoading(false);
+          toast.error(
+            "Un compte existe déjà avec cette adresse e-mail. Veuillez vous connecter avec votre mot de passe habituel.",
+          );
+          return;
+        }
+
+        if (error.code === "auth/unauthorized-domain") {
+          setLoading(false);
+          toast.error(
+            `Le domaine (${window.location.hostname}) n'est pas autorisé dans Firebase Auth. Veuillez l'ajouter dans la Console Firebase > Authentication > Paramètres > Domaines autorisés.`,
+            { duration: 8000 },
+          );
+          return;
+        }
+
+        throw popupErr;
+      }
+
+      if (userCredential?.user) {
+        const u = userCredential.user;
+        const prenomUser =
+          u.displayName?.split(" ")[0] || u.email?.split("@")[0] || "Membre";
+        const nomUser = u.displayName?.split(" ").slice(1).join(" ") || "";
+
+        const localUser: UtilisateurLocal = {
+          id: u.uid,
+          email: u.email || "",
+          prenom: prenomUser,
+          nom: nomUser,
+          avatarUrl: u.photoURL || "",
+          provider: "google",
+          creeLe: u.metadata.creationTime || new Date().toISOString(),
+          dernierAccesLe: new Date().toISOString(),
+        };
+        setCompteActif(localUser);
+
         setLoading(false);
         toast.success(
-          `Ravi de vous revoir ${user.prenom || "Nathan"} ! Connecté avec succès avec votre compte Google (${user.email}).`,
+          `Ravi de vous revoir ${prenomUser} ! Connecté avec succès via Google (${u.email}).`,
         );
         rediriger();
         return;
       }
-
-      // 3. Authentification directe via Google Identity Services
-      const user = await connecterAvecGoogleReel();
-      setLoading(false);
-      toast.success(
-        `Bienvenue ${user.prenom || user.email} ! Connecté avec succès via Google.`,
-      );
-      rediriger();
     } catch (err: unknown) {
       setLoading(false);
       const msg =
@@ -510,30 +627,15 @@ function AuthPage() {
           ? err.message
           : "Erreur lors de la connexion avec Google.";
 
-      // Si Google bloque avec origin_mismatch ou popup bloquée, on bascule immédiatement sur la connexion directe sans blocage
       if (
         msg.toLowerCase().includes("origin") ||
-        msg.toLowerCase().includes("mismatch") ||
-        msg.toLowerCase().includes("bloqu") ||
-        msg.toLowerCase().includes("chargé") ||
-        msg.toLowerCase().includes("access_denied") ||
-        msg.toLowerCase().includes("popup")
+        msg.toLowerCase().includes("unauthorized")
       ) {
-        toast.info(
-          "Ouverture de la connexion Google directe (sans restriction de domaine).",
-        );
-        setShowGoogleDirectModal(true);
+        toast.error(msg, { duration: 6000 });
         return;
       }
 
-      if (
-        !msg.toLowerCase().includes("annul") &&
-        !msg.toLowerCase().includes("cancel") &&
-        !msg.toLowerCase().includes("closed")
-      ) {
-        // En cas d'autre souci, on ouvre également la modale directe pour ne jamais bloquer l'utilisateur
-        setShowGoogleDirectModal(true);
-      }
+      toast.error(msg);
     }
   };
 

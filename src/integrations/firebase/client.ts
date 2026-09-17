@@ -1,6 +1,10 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore, doc, getDocFromServer } from "firebase/firestore";
+import {
+  getAuth,
+  setPersistence,
+  browserLocalPersistence,
+} from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 import firebaseConfigJson from "../../../firebase-applet-config.json";
 
 const firebaseConfig = {
@@ -22,6 +26,14 @@ const firebaseConfig = {
 export const app =
   getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+
+// Assure la persistance locale durable dans le navigateur (rechargement, fermeture/réouverture)
+if (typeof window !== "undefined") {
+  setPersistence(auth, browserLocalPersistence).catch((error) => {
+    console.warn("Configuration persistance Firebase Auth:", error);
+  });
+}
+
 export const db =
   firebaseConfigJson.firestoreDatabaseId &&
   firebaseConfigJson.firestoreDatabaseId !== "(default)"
@@ -30,20 +42,4 @@ export const db =
 
 export function isFirebaseConfigured(): boolean {
   return Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);
-}
-
-// Validation connection
-async function testFirebaseConnection() {
-  if (!isFirebaseConfigured()) return;
-  try {
-    await getDocFromServer(doc(db, "test", "connection"));
-  } catch (error) {
-    if (error instanceof Error && error.message.includes("offline")) {
-      console.warn("Firebase Firestore is currently offline.");
-    }
-  }
-}
-
-if (typeof window !== "undefined") {
-  testFirebaseConnection().catch(() => {});
 }

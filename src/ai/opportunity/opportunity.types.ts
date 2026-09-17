@@ -31,6 +31,7 @@ export interface OpportunityExtractedData {
   remotePolicy?: string | null;
   remoteDetails?: string | null;
   applicationDeadline?: string | null;
+  dateLimite?: string | null;
   jobFunction?: string | null;
   educationLevel?: string | null;
   source?: string | null;
@@ -52,6 +53,8 @@ export interface OpportunityExtractedData {
 
   // Entreprise
   companyName?: string | null;
+  parentCompany?: string | null;
+  groupName?: string | null;
   companyDescription?: string | null;
   companySector?: string | null;
   companySize?: string | null;

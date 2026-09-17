@@ -22,6 +22,11 @@ import { useCandidatures } from "@/hooks/useCandidatures";
 import { useProfil } from "@/hooks/useProfil";
 import { fetchContacts } from "@/lib/contacts-cloud";
 import { supabase } from "@/integrations/supabase/client";
+import { signOut as firebaseSignOut } from "firebase/auth";
+import {
+  auth as firebaseAuth,
+  isFirebaseConfigured,
+} from "@/integrations/firebase/client";
 import { setCompteActif } from "@/lib/auth-local";
 import {
   appliquerCodeTransfert,
@@ -134,10 +139,27 @@ function ParametresPage() {
     await queryClient.cancelQueries();
     queryClient.clear();
     setCompteActif(null);
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.removeItem("neoma-profil-v1");
+        window.localStorage.removeItem("careerly_candidatures_v1");
+        window.localStorage.removeItem("careerly_contacts_v1");
+        window.localStorage.removeItem("careerly_entreprises_v1");
+      } catch (err) {
+        console.warn("Erreur purge cache:", err);
+      }
+    }
+    if (isFirebaseConfigured()) {
+      try {
+        await firebaseSignOut(firebaseAuth);
+      } catch (err) {
+        console.warn("Erreur signOut Firebase:", err);
+      }
+    }
     try {
       await supabase.auth.signOut();
-    } catch {
-      // Ignorer
+    } catch (err) {
+      console.warn("Erreur signOut Supabase:", err);
     }
     toast.success("Déconnexion réussie");
     navigate({ to: "/auth", replace: true });

@@ -18,6 +18,17 @@ import {
   extractCleanJobTitle,
   sanitizeCompanyAndMetrics,
   extraireOpportuniteHeuristique,
+  extractMissionsBlock,
+  extractBenefitsBlock,
+  extractCompanyMetrics,
+  extractSkillsAndTools,
+  extractQualities,
+  extractParentCompanyAndGroup,
+  resolveOpportunityContractType,
+  resolveApplicationDeadline,
+  extractExplicitDeadlineFromText,
+  hasNoDeadlineIndication,
+  isExplicitVie,
 } from "./opportunity.heuristic";
 
 // Re-exports pour compatibilité
@@ -27,6 +38,17 @@ export {
   extractCleanJobTitle,
   sanitizeCompanyAndMetrics,
   extraireOpportuniteHeuristique,
+  extractMissionsBlock,
+  extractBenefitsBlock,
+  extractCompanyMetrics,
+  extractSkillsAndTools,
+  extractQualities,
+  extractParentCompanyAndGroup,
+  resolveOpportunityContractType,
+  resolveApplicationDeadline,
+  extractExplicitDeadlineFromText,
+  hasNoDeadlineIndication,
+  isExplicitVie,
 };
 
 /**
@@ -64,19 +86,13 @@ function cleanJsonString(raw: string): string {
 }
 
 /**
- * Cascade de modèles Gemini :
- * 1. gemini-3.8-flash : Priorité absolue, puissant et optimisé pour le texte structuré
- * 2. gemini-3.7-flash : Modèle alternatif de haute performance
- * 3. gemini-3.6-flash : Deuxième modèle Flash
- * 4. gemini-2.5-flash : Flash stable
- * 5. gemini-flash-latest : Alias générique
- * 6. gemini-3.1-flash-lite : Filet de sécurité rapide
+ * Cascade de modèles Gemini officiels :
+ * 1. gemini-3.8-flash : Modèle principal ultra-rapide et haute précision
+ * 2. gemini-flash-latest : Alias de fallback automatique
+ * 3. gemini-3.1-flash-lite : Filet de sécurité réactif
  */
 const CANDIDATE_MODELS = [
   "gemini-3.8-flash",
-  "gemini-3.7-flash",
-  "gemini-3.6-flash",
-  "gemini-2.5-flash",
   "gemini-flash-latest",
   "gemini-3.1-flash-lite",
 ];
@@ -257,39 +273,12 @@ export async function extraireOpportuniteIA(
       ? data.company.trim()
       : "Entreprise inconnue");
 
-  // 3. Détection déterministe du type de contrat
-  let resolvedContractType = data.contractType || null;
-  if (
-    /\b(stage|stagiaire|internship|intern)\b/i.test(cleanedText) &&
-    (!resolvedContractType || resolvedContractType.toLowerCase() === "cdi")
-  ) {
-    resolvedContractType = "Stage";
-  } else if (
-    /\b(alternance|alternant|apprentissage|apprenti|contrat de pro(?:fessionnalisation)?)\b/i.test(
-      cleanedText,
-    ) &&
-    (!resolvedContractType || resolvedContractType.toLowerCase() === "cdi")
-  ) {
-    resolvedContractType = "Alternance";
-  } else if (
-    /\b(cdd|contrat à durée déterminée)\b/i.test(cleanedText) &&
-    !/\b(stage|alternance)\b/i.test(cleanedText)
-  ) {
-    resolvedContractType = "CDD";
-  } else if (
-    /\b(cdi|contrat à durée indéterminée)\b/i.test(cleanedText) &&
-    !/\b(stage|alternance|stagiaire)\b/i.test(cleanedText)
-  ) {
-    resolvedContractType = "CDI";
-  } else if (
-    /\b(v\.?i\.?e|volontariat international en entreprise)\b/i.test(cleanedText)
-  ) {
-    resolvedContractType = "VIE";
-  } else if (/\b(freelance|indépendant)\b/i.test(cleanedText)) {
-    resolvedContractType = "Freelance";
-  } else if (/\b(intérim|interim)\b/i.test(cleanedText)) {
-    resolvedContractType = "Intérim";
-  }
+  // 3. Détection déterministe du type de contrat avec ordre de priorité strict (Stage > Alternance > VIE explicite > CDD > CDI > Freelance)
+  const resolvedContractType = resolveOpportunityContractType(
+    data.contractType,
+    cleanedText,
+    resolvedTitle,
+  );
 
   // 4. Détection déterministe de la durée si omise
   let resolvedDuration = data.duration || null;
@@ -361,6 +350,12 @@ export async function extraireOpportuniteIA(
     }
   }
 
+  // 5. Résolution déterministe de la date limite selon le protocole strict anti-hallucination en 4 étapes
+  const resolvedDeadline = resolveApplicationDeadline(
+    data.applicationDeadline,
+    cleanedText,
+  );
+
   // Construction de l'objet final normalisé
   const extracted: OpportunityExtractedData = {
     title: resolvedTitle,
@@ -381,7 +376,8 @@ export async function extraireOpportuniteIA(
     salaryCurrency: data.salaryCurrency || null,
     remotePolicy: data.remotePolicy || null,
     remoteDetails: data.remoteDetails || null,
-    applicationDeadline: data.applicationDeadline || null,
+    applicationDeadline: resolvedDeadline,
+    dateLimite: resolvedDeadline || "",
     jobFunction: data.jobFunction || null,
     educationLevel: data.educationLevel || null,
     source:
@@ -434,6 +430,16 @@ export async function extraireOpportuniteIA(
       : [],
 
     companyName: resolvedCompany,
+    parentCompany:
+      data.parentCompany ||
+      data.groupName ||
+      companySanitized.parentCompany ||
+      null,
+    groupName:
+      data.groupName ||
+      data.parentCompany ||
+      companySanitized.groupName ||
+      null,
     companyDescription: data.companyDescription || null,
     companySector:
       companySanitized.extractedSector || data.companySector || null,
@@ -469,6 +475,60 @@ export async function extraireOpportuniteIA(
     _extractionMethod: "ai",
     _modelUsed: modelUsed,
   };
+
+  // --- FILETS DE SÉCURITÉ DÉTERMINISTES POUR LES SECTIONS CLÉS ---
+  // Si l'IA a omis les missions, avantages, compétences ou métriques alors qu'ils sont présents dans le texte :
+  if (extracted.missions.length === 0) {
+    const fallbackMissions = extractMissionsBlock(cleanedText);
+    if (fallbackMissions.length > 0) {
+      console.info(
+        `[GARDE-FOU MISSIONS] Récupération heuristique de ${fallbackMissions.length} missions omises par l'IA.`,
+      );
+      extracted.missions = fallbackMissions;
+    }
+  }
+
+  if (extracted.benefits.length === 0) {
+    const fallbackBenefits = extractBenefitsBlock(cleanedText);
+    if (fallbackBenefits.length > 0) {
+      console.info(
+        `[GARDE-FOU AVANTAGES] Récupération heuristique de ${fallbackBenefits.length} avantages omis par l'IA.`,
+      );
+      extracted.benefits = fallbackBenefits;
+    }
+  }
+
+  if (extracted.companyMetrics.length === 0) {
+    const fallbackMetrics = extractCompanyMetrics(cleanedText);
+    if (fallbackMetrics.length > 0) {
+      extracted.companyMetrics = fallbackMetrics;
+    }
+  }
+
+  if (extracted.requiredSkills.length === 0) {
+    const fallbackTech = extractSkillsAndTools(cleanedText);
+    if (fallbackTech.requiredSkills.length > 0) {
+      extracted.requiredSkills = fallbackTech.requiredSkills;
+    }
+    if (extracted.tools.length === 0 && fallbackTech.tools.length > 0) {
+      extracted.tools = fallbackTech.tools;
+    }
+  }
+
+  if (extracted.qualities.length === 0) {
+    const fallbackQualities = extractQualities(cleanedText);
+    if (fallbackQualities.length > 0) {
+      extracted.qualities = fallbackQualities;
+    }
+  }
+
+  if (!extracted.parentCompany) {
+    const grp = extractParentCompanyAndGroup(cleanedText);
+    if (grp.parentCompany) {
+      extracted.parentCompany = grp.parentCompany;
+      extracted.groupName = grp.groupName;
+    }
+  }
 
   // [AI NORMALIZED] Log structuré après normalisation et validation
   console.info(

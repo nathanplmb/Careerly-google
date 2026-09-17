@@ -85,7 +85,8 @@ export const Route = createFileRoute("/opportunites")({
 });
 
 function OpportunitesPage() {
-  const { user, authLoading, items, patch, save, remove } = useCandidatures();
+  const { user, authLoading, items, patch, save, remove, syncing } =
+    useCandidatures();
   const profil = useProfil(user);
   const [editing, setEditing] = useState<Candidature | null>(null);
   const [open, setOpen] = useState(false);
@@ -215,8 +216,11 @@ function OpportunitesPage() {
         </Button>
       }
       actions={
-        authLoading ? (
-          <Loader2 className="size-5 animate-spin opacity-70" />
+        authLoading || syncing ? (
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Loader2 className="size-4 animate-spin text-primary" />
+            <span className="hidden sm:inline">Synchronisation…</span>
+          </div>
         ) : null
       }
     >

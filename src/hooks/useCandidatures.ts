@@ -343,6 +343,71 @@ async function migrateExistingOpportunities(
   }
 }
 
+// Cache mémoire partagé et ensemble d'écouteurs pour garantir la cohérence instantanée inter-pages
+let hasHydrated = false;
+let memoryCache: Candidature[] | null = null;
+const listeners = new Set<(items: Candidature[]) => void>();
+
+function notifyCandidatureChange(newItems: Candidature[], userId?: string) {
+  memoryCache = newItems;
+  saveCandidatures(newItems, userId);
+  listeners.forEach((listener) => listener(newItems));
+}
+
+/**
+ * Fusionne intelligemment les candidatures cloud et locales sans perte de données.
+ * Si un élément local a été créé/modifié et n'est pas encore dans le cloud (ou plus récent),
+ * il est conservé et ré-envoyé vers le cloud.
+ */
+function mergeCloudAndLocalCandidatures(
+  cloudItems: Candidature[],
+  localItems: Candidature[],
+  userId?: string,
+): Candidature[] {
+  if (localItems.length === 0) return cloudItems;
+  if (cloudItems.length === 0) {
+    if (userId) {
+      localItems.forEach((item) => {
+        void upsertCandidature(item, userId).catch(() => undefined);
+      });
+    }
+    return localItems;
+  }
+
+  const cloudMap = new Map<string, Candidature>();
+  cloudItems.forEach((c) => cloudMap.set(c.id, c));
+
+  const missingInCloud: Candidature[] = [];
+  const merged: Candidature[] = [];
+
+  localItems.forEach((local) => {
+    const cloud = cloudMap.get(local.id);
+    if (!cloud) {
+      missingInCloud.push(local);
+      merged.push(local);
+    } else {
+      const localDate = local.savedAt || local.appliedAt || "";
+      const cloudDate = cloud.savedAt || cloud.appliedAt || "";
+      if (localDate && (!cloudDate || localDate > cloudDate)) {
+        merged.push(local);
+      } else {
+        merged.push(cloud);
+      }
+      cloudMap.delete(local.id);
+    }
+  });
+
+  cloudMap.forEach((c) => merged.push(c));
+
+  if (userId && missingInCloud.length > 0) {
+    missingInCloud.forEach((item) => {
+      void upsertCandidature(item, userId).catch(() => undefined);
+    });
+  }
+
+  return merged;
+}
+
 /**
  * Source unique des candidatures : cloud si connecté, navigateur sinon.
  * Partagé par toutes les pages (dashboard, opportunités, calendrier, entreprises…).
@@ -351,44 +416,87 @@ export function useCandidatures() {
   const { user, loading: authLoading } = useSession();
   const userId = user?.id;
   const isCloudUser = Boolean(userId);
-  const [items, setItems] = useState<Candidature[]>([]);
-  const [ready, setReady] = useState(false);
+
+  // Pour le premier rendu d'hydratation SSR : toujours [] pour correspondre fidèlement au HTML du serveur.
+  // Lors des navigations suivantes côté client (hasHydrated = true) : données instantanées depuis le cache mémoire.
+  const [items, setItems] = useState<Candidature[]>(() => {
+    if (!hasHydrated) return [];
+    if (memoryCache !== null) return memoryCache;
+    return loadCandidatures(userId);
+  });
+  const [ready, setReady] = useState(() => hasHydrated);
   const [syncing, setSyncing] = useState(false);
+
+  // Synchronisation des écouteurs cross-composants
+  useEffect(() => {
+    const handleSync = (updatedItems: Candidature[]) => {
+      setItems(updatedItems);
+    };
+    listeners.add(handleSync);
+    return () => {
+      listeners.delete(handleSync);
+    };
+  }, []);
+
+  // Hydratation client initiale
+  useEffect(() => {
+    if (!hasHydrated) {
+      hasHydrated = true;
+      const initial =
+        memoryCache !== null ? memoryCache : loadCandidatures(userId);
+      memoryCache = initial;
+      setItems(initial);
+      setReady(true);
+    }
+  }, [userId]);
 
   useEffect(() => {
     if (authLoading) return;
     let cancelled = false;
 
     if (!isCloudUser || !userId) {
-      const localItems = loadCandidatures();
+      console.info(
+        "[OPPORTUNITY LOAD LOCAL] Mode hors ligne / non authentifié",
+      );
+      const localItems = memoryCache ?? loadCandidatures();
       void migrateExistingOpportunities(localItems).then((migrated) => {
         if (!cancelled) {
-          setItems(migrated);
-          saveCandidatures(migrated);
+          notifyCandidatureChange(migrated);
           setReady(true);
         }
       });
       return;
     }
 
-    setReady(false);
     setSyncing(true);
     (async () => {
       try {
+        console.info("[OPPORTUNITY LOAD SYNC START]", { userId });
         const cloud = await fetchCandidatures(userId);
         if (!cancelled) {
-          const migrated = await migrateExistingOpportunities(cloud, userId);
-          setItems(migrated);
-        }
-      } catch (err) {
-        console.warn("Firestore/cloud fetch error:", err);
-        if (!cancelled) {
-          const localItems = loadCandidatures();
-          const migrated = await migrateExistingOpportunities(
-            localItems,
+          const currentLocal = memoryCache ?? loadCandidatures(userId);
+          const merged = mergeCloudAndLocalCandidatures(
+            cloud,
+            currentLocal,
             userId,
           );
-          setItems(migrated);
+          const migrated = await migrateExistingOpportunities(merged, userId);
+          console.info("[OPPORTUNITY LOAD SYNC APPLIED]", {
+            count: migrated.length,
+          });
+          notifyCandidatureChange(migrated, userId);
+        }
+      } catch (err) {
+        console.warn("[OPPORTUNITY LOAD SYNC FAILED, USING CACHE]", err);
+        if (!cancelled) {
+          const cachedItems = loadCandidatures(userId);
+          const fallbackItems =
+            cachedItems.length > 0 ? cachedItems : loadCandidatures();
+          const migrated = await migrateExistingOpportunities(
+            fallbackItems,
+            userId,
+          );
+          notifyCandidatureChange(migrated, userId);
         }
       } finally {
         if (!cancelled) {
@@ -409,8 +517,18 @@ export function useCandidatures() {
     const refresh = () => {
       if (document.visibilityState !== "visible") return;
       void fetchCandidatures(userId)
-        .then((cloud) => migrateExistingOpportunities(cloud, userId))
-        .then(setItems)
+        .then((cloud) => {
+          const currentLocal = memoryCache ?? loadCandidatures(userId);
+          const merged = mergeCloudAndLocalCandidatures(
+            cloud,
+            currentLocal,
+            userId,
+          );
+          return migrateExistingOpportunities(merged, userId);
+        })
+        .then((migrated) => {
+          notifyCandidatureChange(migrated, userId);
+        })
         .catch(() => undefined);
     };
     window.addEventListener("focus", refresh);
@@ -422,8 +540,10 @@ export function useCandidatures() {
   }, [isCloudUser, userId]);
 
   useEffect(() => {
-    if (ready && !isCloudUser) saveCandidatures(items);
-  }, [items, ready, isCloudUser]);
+    if (ready) {
+      saveCandidatures(items, userId);
+    }
+  }, [items, ready, userId]);
 
   const pushCloud = useCallback(
     (c: Candidature) => {
@@ -437,34 +557,29 @@ export function useCandidatures() {
 
   const patch = useCallback(
     (id: string, p: Partial<Candidature>) => {
-      setItems((prev) => {
-        const current = prev.find((c) => c.id === id);
-        if (!current) return prev;
-        const next = { ...current, ...p };
-        pushCloud(next);
-        if (!isCloudUser) {
-          saveCandidatures(prev.map((c) => (c.id === id ? next : c)));
-        }
-        return prev.map((c) => (c.id === id ? next : c));
-      });
+      const currentList = memoryCache ?? items;
+      const current = currentList.find((c) => c.id === id);
+      if (!current) return;
+      const next = { ...current, ...p };
+      pushCloud(next);
+      const updated = currentList.map((c) => (c.id === id ? next : c));
+      notifyCandidatureChange(updated, userId);
     },
-    [pushCloud, isCloudUser],
+    [items, pushCloud, userId],
   );
 
   const remove = useCallback(
     (id: string) => {
-      setItems((prev) => {
-        const toDelete = prev.find((p) => p.id === id);
-        const next = prev.filter((p) => p.id !== id);
-        saveCandidatures(next);
+      const currentList = memoryCache ?? items;
+      const toDelete = currentList.find((p) => p.id === id);
+      const next = currentList.filter((p) => p.id !== id);
+      notifyCandidatureChange(next, userId);
 
-        if (toDelete) {
-          void syncOpportunityCompanyOnDelete(toDelete, next, userId);
-          void syncOpportunityContactOnDelete(toDelete, userId);
-        }
+      if (toDelete) {
+        void syncOpportunityCompanyOnDelete(toDelete, next, userId);
+        void syncOpportunityContactOnDelete(toDelete, userId);
+      }
 
-        return next;
-      });
       if (isCloudUser && userId) {
         void deleteCandidature(id, userId).catch(() =>
           toast.error("Suppression en ligne impossible."),
@@ -472,11 +587,16 @@ export function useCandidatures() {
       }
       toast.success("Opportunité supprimée.");
     },
-    [isCloudUser, userId],
+    [isCloudUser, items, userId],
   );
 
   const save = useCallback(
     async (c: Candidature) => {
+      console.info("[OPPORTUNITY HOOK SAVE START]", {
+        id: c.id,
+        poste: c.poste,
+        entreprise: c.entreprise,
+      });
       // 1. Synchronisation automatique avec la fiche Entreprise
       const linkedCompanyId = await syncOpportunityCompanyOnSave(c, userId);
       let toSave = linkedCompanyId ? { ...c, companyId: linkedCompanyId } : c;
@@ -501,21 +621,31 @@ export function useCandidatures() {
       if (isCloudUser && userId) {
         try {
           saved = await upsertCandidature(toSave, userId);
+          console.info("[OPPORTUNITY HOOK SAVE CLOUD SUCCESS]", {
+            id: saved.id,
+          });
         } catch (err) {
-          console.warn("Échec sauvegarde Firestore, repli local:", err);
+          console.error(
+            "[OPPORTUNITY HOOK SAVE CLOUD ERROR] Sauvegarde Firestore échouée, conservation en local:",
+            err,
+          );
+          toast.error(
+            "Sauvegarde locale effectuée (erreur réseau avec la base en ligne).",
+          );
         }
       }
 
-      setItems((prev) => {
-        const next = prev.some((p) => p.id === toSave.id)
-          ? prev.map((p) => (p.id === toSave.id ? saved : p))
-          : [saved, ...prev];
-        saveCandidatures(next);
-        return next;
+      const currentList = memoryCache ?? items;
+      const next = currentList.some((p) => p.id === toSave.id)
+        ? currentList.map((p) => (p.id === toSave.id ? saved : p))
+        : [saved, ...currentList];
+      notifyCandidatureChange(next, userId);
+      console.info("[OPPORTUNITY HOOK STATE UPDATED]", {
+        totalCount: next.length,
       });
       return saved;
     },
-    [isCloudUser, userId],
+    [isCloudUser, items, userId],
   );
 
   return {

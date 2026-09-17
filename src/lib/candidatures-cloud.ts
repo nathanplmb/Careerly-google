@@ -503,6 +503,11 @@ function toRow(c: Candidature, userId: string): Record<string, unknown> {
 export async function fetchCandidatures(
   userId?: string,
 ): Promise<Candidature[]> {
+  console.info("[OPPORTUNITY LOAD START]", {
+    userId,
+    timestamp: new Date().toISOString(),
+  });
+
   if (isFirebaseConfigured() && userId) {
     try {
       const colRef = collection(db, "users", userId, "candidatures");
@@ -516,8 +521,9 @@ export async function fetchCandidatures(
         list.push(cand);
       });
       console.info(
-        `[RELOAD] ${list.length} opportunités chargées depuis Firestore`,
-        list.slice(0, 3).map((c) => ({
+        `[OPPORTUNITY LOAD SUCCESS] ${list.length} opportunités chargées depuis Firestore`,
+        list.map((c) => ({
+          id: c.id,
           poste: c.poste,
           entreprise: c.entreprise,
           contractType: c.contractType,
@@ -527,7 +533,11 @@ export async function fetchCandidatures(
       );
       return list;
     } catch (e) {
-      console.warn("Firestore fetchCandidatures error:", e);
+      console.error(
+        "[OPPORTUNITY LOAD ERROR] Firestore fetchCandidatures error:",
+        e,
+      );
+      throw e;
     }
   }
 
@@ -536,10 +546,20 @@ export async function fetchCandidatures(
       .from("candidatures")
       .select("*")
       .order("created_at", { ascending: false });
-    if (error) throw error;
-    return (data as unknown as Row[]).map(toCandidature);
+    if (error) {
+      console.error("[OPPORTUNITY LOAD ERROR] Supabase fetch error:", error);
+      throw error;
+    }
+    const list = (data as unknown as Row[]).map(toCandidature);
+    console.info(
+      `[OPPORTUNITY LOAD SUCCESS] ${list.length} opportunités chargées depuis Supabase`,
+    );
+    return list;
   }
 
+  console.info(
+    "[OPPORTUNITY LOAD EMPTY] Ni Firestore ni Supabase n'est configuré.",
+  );
   return [];
 }
 
@@ -547,9 +567,14 @@ export async function upsertCandidature(
   c: Candidature,
   userId: string,
 ): Promise<Candidature> {
+  console.info("[OPPORTUNITY SAVE START]", {
+    id: c.id,
+    poste: c.poste,
+    entreprise: c.entreprise,
+    userId,
+  });
   const row = toRow(c, userId);
-
-  console.info("[DATABASE] Candidature sérialisée pour la base de données:", {
+  console.info("[OPPORTUNITY SAVE PAYLOAD]", {
     id: row.id,
     entreprise: row.entreprise,
     poste: row.poste,
@@ -573,16 +598,21 @@ export async function upsertCandidature(
       await setDoc(docRef, row, { merge: true });
       const saved = toCandidature(row as unknown as Row);
       console.info(
-        "[DATABASE] Enregistrement Firestore confirmé sans dégradation:",
+        "[OPPORTUNITY SAVE SUCCESS] Enregistrement Firestore confirmé avec succès:",
         {
           id: saved.id,
           entreprise: saved.entreprise,
+          poste: saved.poste,
           metricsCount: saved.companyMetrics?.length || 0,
         },
       );
       return saved;
     } catch (e) {
-      console.warn("Firestore upsertCandidature error:", e);
+      console.error(
+        "[OPPORTUNITY SAVE ERROR] Échec écriture Firestore setDoc:",
+        e,
+      );
+      throw e;
     }
   }
 
@@ -592,10 +622,21 @@ export async function upsertCandidature(
       .upsert(row as unknown as Record<string, unknown>)
       .select()
       .single();
-    if (error) throw error;
-    return toCandidature(data as unknown as Row);
+    if (error) {
+      console.error("[OPPORTUNITY SAVE ERROR] Supabase upsert error:", error);
+      throw error;
+    }
+    const saved = toCandidature(data as unknown as Row);
+    console.info(
+      "[OPPORTUNITY SAVE SUCCESS] Enregistrement Supabase confirmé:",
+      { id: saved.id },
+    );
+    return saved;
   }
 
+  console.info(
+    "[OPPORTUNITY SAVE LOCAL FALLBACK] Enregistrement sans cloud configuré.",
+  );
   return c;
 }
 

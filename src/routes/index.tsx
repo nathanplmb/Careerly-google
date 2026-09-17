@@ -123,7 +123,10 @@ function Index() {
         }}
       />
 
-      <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+      <div
+        className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4"
+        suppressHydrationWarning
+      >
         <StatCard
           label="Total"
           value={stats.total}

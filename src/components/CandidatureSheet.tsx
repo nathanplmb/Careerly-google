@@ -72,7 +72,7 @@ type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   value: Candidature | null;
-  onSave: (c: Candidature) => void;
+  onSave: (c: Candidature) => void | Promise<unknown>;
   onDelete?: (id: string) => void;
   profil?: unknown;
   existingItems?: Candidature[];
@@ -101,6 +101,7 @@ export function CandidatureSheet({
   const [activeTab, setActiveTab] = useState<
     "offre" | "profil" | "entreprise" | "workflow"
   >("offre");
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (open && value) {
@@ -223,6 +224,10 @@ export function CandidatureSheet({
       const updated = normalizeCandidature({
         ...form,
         ...extracted,
+        contractType: extracted.contractType ?? null,
+        typeContrat: extracted.contractType ?? null,
+        applicationDeadline: extracted.applicationDeadline ?? null,
+        dateLimite: extracted.applicationDeadline || "",
         source: extracted.source || form.source || "Autre",
         missions: missionsStr,
         missionsList:
@@ -1056,6 +1061,27 @@ export function CandidatureSheet({
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="grid gap-1.5">
                     <Label
+                      htmlFor="compParentInput"
+                      className="text-xs font-semibold"
+                    >
+                      Groupe / Maison mère
+                    </Label>
+                    <Input
+                      id="compParentInput"
+                      value={form.parentCompany || form.groupName || ""}
+                      onChange={(e) =>
+                        set({
+                          parentCompany: e.target.value,
+                          groupName: e.target.value,
+                        })
+                      }
+                      placeholder="ex: Groupe BPCE (si filiale)"
+                      className="bg-background text-xs"
+                    />
+                  </div>
+
+                  <div className="grid gap-1.5">
+                    <Label
                       htmlFor="compSectorInput"
                       className="text-xs font-semibold"
                     >
@@ -1242,7 +1268,8 @@ export function CandidatureSheet({
             <div className="flex items-center gap-2">
               <Button
                 size="sm"
-                onClick={() => {
+                disabled={isSaving}
+                onClick={async () => {
                   const safeToSave = validerIntegriteCandidature(form, form);
                   console.info(
                     "[OPPORTUNITY SAVE] Objet envoyé lors de l'enregistrement:",
@@ -1258,13 +1285,26 @@ export function CandidatureSheet({
                       companyMetrics: safeToSave.companyMetrics,
                     },
                   );
-                  onSave(safeToSave);
-                  onOpenChange(false);
+                  setIsSaving(true);
+                  try {
+                    await onSave(safeToSave);
+                    onOpenChange(false);
+                  } catch (saveErr) {
+                    console.error("[OPPORTUNITY SAVE FAILED]", saveErr);
+                  } finally {
+                    setIsSaving(false);
+                  }
                 }}
                 className="gap-2 px-6 text-xs font-semibold"
               >
-                <CheckCircle2 className="size-4" />
-                Enregistrer l'opportunité
+                {isSaving ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="size-4" />
+                )}
+                {isSaving
+                  ? "Enregistrement en cours…"
+                  : "Enregistrer l'opportunité"}
               </Button>
             </div>
           </div>
