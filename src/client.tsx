@@ -1,13 +1,26 @@
 import "./lib/polyfills";
 import { StrictMode, startTransition } from "react";
-import { hydrateRoot } from "react-dom/client";
-import { StartClient } from "@tanstack/react-start/client";
+import { createRoot, hydrateRoot } from "react-dom/client";
+import { RouterProvider } from "@tanstack/react-router";
+import { getRouter } from "./router";
+
+const router = getRouter();
 
 startTransition(() => {
-  hydrateRoot(
-    document,
-    <StrictMode>
-      <StartClient />
-    </StrictMode>,
-  );
+  const rootElement = document.getElementById("root")!;
+  if (!rootElement.innerHTML) {
+    const root = createRoot(rootElement);
+    root.render(
+      <StrictMode>
+        <RouterProvider router={router} />
+      </StrictMode>
+    );
+  } else {
+    hydrateRoot(
+      rootElement,
+      <StrictMode>
+        <RouterProvider router={router} />
+      </StrictMode>
+    );
+  }
 });

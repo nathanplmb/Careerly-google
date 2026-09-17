@@ -18,21 +18,10 @@ import { Route as ContactsRouteImport } from './routes/contacts'
 import { Route as DocumentsRouteImport } from './routes/documents'
 import { Route as EntreprisesRouteImport } from './routes/entreprises'
 import { Route as ImportRouteImport } from './routes/import'
-import { Route as McpRouteImport } from './routes/mcp'
 import { Route as OpportunitesRouteImport } from './routes/opportunites'
 import { Route as ParametresRouteImport } from './routes/parametres'
 import { Route as ProfilRouteImport } from './routes/profil'
-import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
-import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
-import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
-import { Route as ApiAccountDeleteMeRouteImport } from './routes/api.account.delete-me'
-import { Route as ApiAdminDeleteUserRouteImport } from './routes/api.admin.delete-user'
-import { Route as ApiAdminDiagnoseRouteImport } from './routes/api.admin.diagnose'
-import { Route as ApiAdminRevokeTokensRouteImport } from './routes/api.admin.revoke-tokens'
-import { Route as ApiAdminSetRoleRouteImport } from './routes/api.admin.set-role'
-import { Route as ApiAdminToggleStatusRouteImport } from './routes/api.admin.toggle-status'
-import { Route as ApiAdminUsersRouteImport } from './routes/api.admin.users'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -79,11 +68,6 @@ const ImportRoute = ImportRouteImport.update({
   path: '/import',
   getParentRoute: () => rootRouteImport,
 } as any)
-const McpRoute = McpRouteImport.update({
-  id: '/mcp',
-  path: '/mcp',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const OpportunitesRoute = OpportunitesRouteImport.update({
   id: '/opportunites',
   path: '/opportunites',
@@ -99,62 +83,9 @@ const ProfilRoute = ProfilRouteImport.update({
   path: '/profil',
   getParentRoute: () => rootRouteImport,
 } as any)
-const Char91DotmcpChar93ListToolsRoute =
-  Char91DotmcpChar93ListToolsRouteImport.update({
-    id: '/.mcp/list-tools',
-    path: '/.mcp/list-tools',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const Char91DotwellKnownChar93OauthProtectedResourceRoute =
-  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
-    id: '/.well-known/oauth-protected-resource',
-    path: '/.well-known/oauth-protected-resource',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const Char91DotmcpChar93InvokeToolToolRoute =
-  Char91DotmcpChar93InvokeToolToolRouteImport.update({
-    id: '/.mcp/invoke-tool/$tool',
-    path: '/.mcp/invoke-tool/$tool',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiAccountDeleteMeRoute = ApiAccountDeleteMeRouteImport.update({
-  id: '/api/account/delete-me',
-  path: '/api/account/delete-me',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAdminDeleteUserRoute = ApiAdminDeleteUserRouteImport.update({
-  id: '/api/admin/delete-user',
-  path: '/api/admin/delete-user',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAdminDiagnoseRoute = ApiAdminDiagnoseRouteImport.update({
-  id: '/api/admin/diagnose',
-  path: '/api/admin/diagnose',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAdminRevokeTokensRoute = ApiAdminRevokeTokensRouteImport.update({
-  id: '/api/admin/revoke-tokens',
-  path: '/api/admin/revoke-tokens',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAdminSetRoleRoute = ApiAdminSetRoleRouteImport.update({
-  id: '/api/admin/set-role',
-  path: '/api/admin/set-role',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAdminToggleStatusRoute = ApiAdminToggleStatusRouteImport.update({
-  id: '/api/admin/toggle-status',
-  path: '/api/admin/toggle-status',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
-  id: '/api/admin/users',
-  path: '/api/admin/users',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -168,21 +99,10 @@ export interface FileRoutesByFullPath {
   '/documents': typeof DocumentsRoute
   '/entreprises': typeof EntreprisesRoute
   '/import': typeof ImportRoute
-  '/mcp': typeof McpRoute
   '/opportunites': typeof OpportunitesRoute
   '/parametres': typeof ParametresRoute
   '/profil': typeof ProfilRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
-  '/api/account/delete-me': typeof ApiAccountDeleteMeRoute
-  '/api/admin/delete-user': typeof ApiAdminDeleteUserRoute
-  '/api/admin/diagnose': typeof ApiAdminDiagnoseRoute
-  '/api/admin/revoke-tokens': typeof ApiAdminRevokeTokensRoute
-  '/api/admin/set-role': typeof ApiAdminSetRoleRoute
-  '/api/admin/toggle-status': typeof ApiAdminToggleStatusRoute
-  '/api/admin/users': typeof ApiAdminUsersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -194,21 +114,10 @@ export interface FileRoutesByTo {
   '/documents': typeof DocumentsRoute
   '/entreprises': typeof EntreprisesRoute
   '/import': typeof ImportRoute
-  '/mcp': typeof McpRoute
   '/opportunites': typeof OpportunitesRoute
   '/parametres': typeof ParametresRoute
   '/profil': typeof ProfilRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
-  '/api/account/delete-me': typeof ApiAccountDeleteMeRoute
-  '/api/admin/delete-user': typeof ApiAdminDeleteUserRoute
-  '/api/admin/diagnose': typeof ApiAdminDiagnoseRoute
-  '/api/admin/revoke-tokens': typeof ApiAdminRevokeTokensRoute
-  '/api/admin/set-role': typeof ApiAdminSetRoleRoute
-  '/api/admin/toggle-status': typeof ApiAdminToggleStatusRoute
-  '/api/admin/users': typeof ApiAdminUsersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -221,21 +130,10 @@ export interface FileRoutesById {
   '/documents': typeof DocumentsRoute
   '/entreprises': typeof EntreprisesRoute
   '/import': typeof ImportRoute
-  '/mcp': typeof McpRoute
   '/opportunites': typeof OpportunitesRoute
   '/parametres': typeof ParametresRoute
   '/profil': typeof ProfilRoute
-  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
-  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
-  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
-  '/api/account/delete-me': typeof ApiAccountDeleteMeRoute
-  '/api/admin/delete-user': typeof ApiAdminDeleteUserRoute
-  '/api/admin/diagnose': typeof ApiAdminDiagnoseRoute
-  '/api/admin/revoke-tokens': typeof ApiAdminRevokeTokensRoute
-  '/api/admin/set-role': typeof ApiAdminSetRoleRoute
-  '/api/admin/toggle-status': typeof ApiAdminToggleStatusRoute
-  '/api/admin/users': typeof ApiAdminUsersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -249,21 +147,10 @@ export interface FileRouteTypes {
     | '/documents'
     | '/entreprises'
     | '/import'
-    | '/mcp'
     | '/opportunites'
     | '/parametres'
     | '/profil'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
-    | '/api/account/delete-me'
-    | '/api/admin/delete-user'
-    | '/api/admin/diagnose'
-    | '/api/admin/revoke-tokens'
-    | '/api/admin/set-role'
-    | '/api/admin/toggle-status'
-    | '/api/admin/users'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -275,21 +162,10 @@ export interface FileRouteTypes {
     | '/documents'
     | '/entreprises'
     | '/import'
-    | '/mcp'
     | '/opportunites'
     | '/parametres'
     | '/profil'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
-    | '/api/account/delete-me'
-    | '/api/admin/delete-user'
-    | '/api/admin/diagnose'
-    | '/api/admin/revoke-tokens'
-    | '/api/admin/set-role'
-    | '/api/admin/toggle-status'
-    | '/api/admin/users'
   id:
     | '__root__'
     | '/'
@@ -301,21 +177,10 @@ export interface FileRouteTypes {
     | '/documents'
     | '/entreprises'
     | '/import'
-    | '/mcp'
     | '/opportunites'
     | '/parametres'
     | '/profil'
-    | '/.mcp/list-tools'
-    | '/.well-known/oauth-protected-resource'
     | '/.lovable/oauth/consent'
-    | '/.mcp/invoke-tool/$tool'
-    | '/api/account/delete-me'
-    | '/api/admin/delete-user'
-    | '/api/admin/diagnose'
-    | '/api/admin/revoke-tokens'
-    | '/api/admin/set-role'
-    | '/api/admin/toggle-status'
-    | '/api/admin/users'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -328,21 +193,10 @@ export interface RootRouteChildren {
   DocumentsRoute: typeof DocumentsRoute
   EntreprisesRoute: typeof EntreprisesRoute
   ImportRoute: typeof ImportRoute
-  McpRoute: typeof McpRoute
   OpportunitesRoute: typeof OpportunitesRoute
   ParametresRoute: typeof ParametresRoute
   ProfilRoute: typeof ProfilRoute
-  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
-  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
-  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
-  ApiAccountDeleteMeRoute: typeof ApiAccountDeleteMeRoute
-  ApiAdminDeleteUserRoute: typeof ApiAdminDeleteUserRoute
-  ApiAdminDiagnoseRoute: typeof ApiAdminDiagnoseRoute
-  ApiAdminRevokeTokensRoute: typeof ApiAdminRevokeTokensRoute
-  ApiAdminSetRoleRoute: typeof ApiAdminSetRoleRoute
-  ApiAdminToggleStatusRoute: typeof ApiAdminToggleStatusRoute
-  ApiAdminUsersRoute: typeof ApiAdminUsersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -410,13 +264,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ImportRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/mcp': {
-      id: '/mcp'
-      path: '/mcp'
-      fullPath: '/mcp'
-      preLoaderRoute: typeof McpRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/opportunites': {
       id: '/opportunites'
       path: '/opportunites'
@@ -438,81 +285,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfilRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/.mcp/list-tools': {
-      id: '/.mcp/list-tools'
-      path: '/.mcp/list-tools'
-      fullPath: '/.mcp/list-tools'
-      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
       path: '/.lovable/oauth/consent'
       fullPath: '/.lovable/oauth/consent'
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/.mcp/invoke-tool/$tool': {
-      id: '/.mcp/invoke-tool/$tool'
-      path: '/.mcp/invoke-tool/$tool'
-      fullPath: '/.mcp/invoke-tool/$tool'
-      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/account/delete-me': {
-      id: '/api/account/delete-me'
-      path: '/api/account/delete-me'
-      fullPath: '/api/account/delete-me'
-      preLoaderRoute: typeof ApiAccountDeleteMeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/admin/delete-user': {
-      id: '/api/admin/delete-user'
-      path: '/api/admin/delete-user'
-      fullPath: '/api/admin/delete-user'
-      preLoaderRoute: typeof ApiAdminDeleteUserRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/admin/diagnose': {
-      id: '/api/admin/diagnose'
-      path: '/api/admin/diagnose'
-      fullPath: '/api/admin/diagnose'
-      preLoaderRoute: typeof ApiAdminDiagnoseRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/admin/revoke-tokens': {
-      id: '/api/admin/revoke-tokens'
-      path: '/api/admin/revoke-tokens'
-      fullPath: '/api/admin/revoke-tokens'
-      preLoaderRoute: typeof ApiAdminRevokeTokensRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/admin/set-role': {
-      id: '/api/admin/set-role'
-      path: '/api/admin/set-role'
-      fullPath: '/api/admin/set-role'
-      preLoaderRoute: typeof ApiAdminSetRoleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/admin/toggle-status': {
-      id: '/api/admin/toggle-status'
-      path: '/api/admin/toggle-status'
-      fullPath: '/api/admin/toggle-status'
-      preLoaderRoute: typeof ApiAdminToggleStatusRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/admin/users': {
-      id: '/api/admin/users'
-      path: '/api/admin/users'
-      fullPath: '/api/admin/users'
-      preLoaderRoute: typeof ApiAdminUsersRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -528,33 +305,11 @@ const rootRouteChildren: RootRouteChildren = {
   DocumentsRoute: DocumentsRoute,
   EntreprisesRoute: EntreprisesRoute,
   ImportRoute: ImportRoute,
-  McpRoute: McpRoute,
   OpportunitesRoute: OpportunitesRoute,
   ParametresRoute: ParametresRoute,
   ProfilRoute: ProfilRoute,
-  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
-  Char91DotwellKnownChar93OauthProtectedResourceRoute:
-    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
-  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
-  ApiAccountDeleteMeRoute: ApiAccountDeleteMeRoute,
-  ApiAdminDeleteUserRoute: ApiAdminDeleteUserRoute,
-  ApiAdminDiagnoseRoute: ApiAdminDiagnoseRoute,
-  ApiAdminRevokeTokensRoute: ApiAdminRevokeTokensRoute,
-  ApiAdminSetRoleRoute: ApiAdminSetRoleRoute,
-  ApiAdminToggleStatusRoute: ApiAdminToggleStatusRoute,
-  ApiAdminUsersRoute: ApiAdminUsersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
