@@ -1,9 +1,9 @@
 import { a as __toCommonJS, i as __require, n as __esmMin, o as __toESM, r as __exportAll, t as __commonJSMin } from "../../_runtime.mjs";
-import { a as require_ecdsa_sig_formatter, d as require_extend, f as child_process_exports, i as require_jws, l as require_json_bigint, n as require_retry_request, o as require_base64_js, p as init_child_process, r as require_duplexify } from "./firestore+[...].mjs";
+import { a as require_ecdsa_sig_formatter, d as child_process_exports, f as init_child_process, i as require_jws, l as require_json_bigint, n as require_retry_request, o as require_base64_js, r as require_duplexify, u as require_extend } from "./firestore+[...].mjs";
 import { I as globalthis_default, L as init_globalthis } from "../@firebase/app+[...].mjs";
-import { t as require_src$9 } from "../google-cloud__projectify.mjs";
-import { t as require_src$10 } from "../google-cloud__promisify.mjs";
-import { t as require_src$11 } from "../google-cloud__paginator.mjs";
+import { t as require_src$8 } from "../google-cloud__projectify.mjs";
+import { t as require_src$9 } from "../google-cloud__promisify.mjs";
+import { t as require_src$10 } from "../google-cloud__paginator.mjs";
 import processModule from "node:process";
 import { Buffer } from "node:buffer";
 import { setImmediate } from "node:timers";
@@ -120,7 +120,7 @@ var require_retry_operation = /* @__PURE__ */ __commonJSMin(((exports, module) =
 }));
 //#endregion
 //#region node_modules/retry/lib/retry.js
-var require_retry$3 = /* @__PURE__ */ __commonJSMin(((exports) => {
+var require_retry$2 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	var RetryOperation = require_retry_operation();
 	exports.operation = function(options) {
 		return new RetryOperation(exports.timeouts(options), {
@@ -185,8 +185,8 @@ var require_retry$3 = /* @__PURE__ */ __commonJSMin(((exports) => {
 }));
 //#endregion
 //#region node_modules/retry/index.js
-var require_retry$2 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
-	module.exports = require_retry$3();
+var require_retry$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	module.exports = require_retry$2();
 }));
 //#endregion
 //#region node_modules/ms/index.js
@@ -308,7 +308,7 @@ var require_ms = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 }));
 //#endregion
 //#region node_modules/debug/src/common.js
-var require_common$2 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+var require_common$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	/**
 	* This is the common logic for both the Node.js and web browser
 	* implementations of `debug()`.
@@ -692,7 +692,7 @@ var require_browser = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			return localStorage;
 		} catch (error) {}
 	}
-	module.exports = require_common$2()(exports);
+	module.exports = require_common$1()(exports);
 	var { formatters } = module.exports;
 	/**
 	* Map %j to `JSON.stringify()`, since no Web Inspectors do that by default.
@@ -1060,7 +1060,7 @@ var require_node = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 		const keys = Object.keys(exports.inspectOpts);
 		for (let i = 0; i < keys.length; i++) debug.inspectOpts[keys[i]] = exports.inspectOpts[keys[i]];
 	}
-	module.exports = require_common$2()(exports);
+	module.exports = require_common$1()(exports);
 	var { formatters } = module.exports;
 	/**
 	* Map %o to `util.inspect()`, all on a single line.
@@ -1079,7 +1079,7 @@ var require_node = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 }));
 //#endregion
 //#region node_modules/debug/src/index.js
-var require_src$8 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+var require_src$7 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	/**
 	* Detect Electron renderer / nwjs process, which is node, but we should
 	* treat as a browser.
@@ -1295,7 +1295,7 @@ function ucs2decode(string) {
 	}
 	return output;
 }
-var maxInt, base, tMin, tMax, skew, damp, initialBias, initialN, delimiter, regexPunycode, regexNonASCII, regexSeparators, errors, baseMinusTMin, floor, stringFromCharCode, ucs2encode, basicToDigit, digitToBasic, adapt, decode, encode, toUnicode, toASCII, version$5, ucs2, punycode;
+var maxInt, base, tMin, tMax, skew, damp, initialBias, initialN, delimiter, regexPunycode, regexNonASCII, regexSeparators, errors, baseMinusTMin, floor, stringFromCharCode, ucs2encode, basicToDigit, digitToBasic, adapt, decode, encode, toUnicode, toASCII, version$4, ucs2, punycode;
 var init_punycode$1 = __esmMin((() => {
 	maxInt = 2147483647;
 	base = 36;
@@ -1420,13 +1420,13 @@ var init_punycode$1 = __esmMin((() => {
 			return regexNonASCII.test(string) ? "xn--" + encode(string) : string;
 		});
 	};
-	version$5 = "2.3.1";
+	version$4 = "2.3.1";
 	ucs2 = {
 		decode: ucs2decode,
 		encode: ucs2encode
 	};
 	punycode = {
-		version: version$5,
+		version: version$4,
 		ucs2,
 		decode,
 		encode,
@@ -1443,7 +1443,7 @@ var punycode_exports = /* @__PURE__ */ __exportAll({
 	toASCII: () => toASCII,
 	toUnicode: () => toUnicode,
 	ucs2: () => ucs2,
-	version: () => version$5
+	version: () => version$4
 });
 var punycode_default;
 var init_punycode = __esmMin((() => {
@@ -2797,13 +2797,13 @@ var init___vite_optional_peer_dep_encoding_node_fetch = __esmMin((() => {
 }));
 //#endregion
 //#region node_modules/@google-cloud/storage/node_modules/gaxios/node_modules/node-fetch/lib/index.mjs
-var lib_exports$1 = /* @__PURE__ */ __exportAll({
-	AbortError: () => AbortError$1,
-	FetchError: () => FetchError$1,
-	Headers: () => Headers$1,
-	Request: () => Request$1,
-	Response: () => Response$1,
-	default: () => fetch$1
+var lib_exports = /* @__PURE__ */ __exportAll({
+	AbortError: () => AbortError,
+	FetchError: () => FetchError,
+	Headers: () => Headers,
+	Request: () => Request,
+	Response: () => Response,
+	default: () => fetch
 });
 /**
 * fetch-error.js
@@ -2818,7 +2818,7 @@ var lib_exports$1 = /* @__PURE__ */ __exportAll({
 * @param   String      systemError  For Node.js system error
 * @return  FetchError
 */
-function FetchError$1(message, type, systemError) {
+function FetchError(message, type, systemError) {
 	Error.call(this, message);
 	this.message = message;
 	this.type = type;
@@ -2834,21 +2834,21 @@ function FetchError$1(message, type, systemError) {
 * @param   Object  opts  Response options
 * @return  Void
 */
-function Body$1(body) {
+function Body(body) {
 	var _this = this;
 	var _ref = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {}, _ref$size = _ref.size;
 	let size = _ref$size === void 0 ? 0 : _ref$size;
 	var _ref$timeout = _ref.timeout;
 	let timeout = _ref$timeout === void 0 ? 0 : _ref$timeout;
 	if (body == null) body = null;
-	else if (isURLSearchParams$1(body)) body = Buffer.from(body.toString());
-	else if (isBlob$1(body));
+	else if (isURLSearchParams(body)) body = Buffer.from(body.toString());
+	else if (isBlob(body));
 	else if (Buffer.isBuffer(body));
 	else if (Object.prototype.toString.call(body) === "[object ArrayBuffer]") body = Buffer.from(body);
 	else if (ArrayBuffer.isView(body)) body = Buffer.from(body.buffer, body.byteOffset, body.byteLength);
 	else if (body instanceof Stream);
 	else body = Buffer.from(String(body));
-	this[INTERNALS$3] = {
+	this[INTERNALS] = {
 		body,
 		disturbed: false,
 		error: null
@@ -2856,8 +2856,8 @@ function Body$1(body) {
 	this.size = size;
 	this.timeout = timeout;
 	if (body instanceof Stream) body.on("error", function(err) {
-		const error = err.name === "AbortError" ? err : new FetchError$1(`Invalid response body while trying to fetch ${_this.url}: ${err.message}`, "system", err);
-		_this[INTERNALS$3].error = error;
+		const error = err.name === "AbortError" ? err : new FetchError(`Invalid response body while trying to fetch ${_this.url}: ${err.message}`, "system", err);
+		_this[INTERNALS].error = error;
 	});
 }
 /**
@@ -2867,37 +2867,37 @@ function Body$1(body) {
 *
 * @return  Promise
 */
-function consumeBody$1() {
+function consumeBody() {
 	var _this4 = this;
-	if (this[INTERNALS$3].disturbed) return Body$1.Promise.reject(/* @__PURE__ */ new TypeError(`body used already for: ${this.url}`));
-	this[INTERNALS$3].disturbed = true;
-	if (this[INTERNALS$3].error) return Body$1.Promise.reject(this[INTERNALS$3].error);
+	if (this[INTERNALS].disturbed) return Body.Promise.reject(/* @__PURE__ */ new TypeError(`body used already for: ${this.url}`));
+	this[INTERNALS].disturbed = true;
+	if (this[INTERNALS].error) return Body.Promise.reject(this[INTERNALS].error);
 	let body = this.body;
-	if (body === null) return Body$1.Promise.resolve(Buffer.alloc(0));
-	if (isBlob$1(body)) body = body.stream();
-	if (Buffer.isBuffer(body)) return Body$1.Promise.resolve(body);
+	if (body === null) return Body.Promise.resolve(Buffer.alloc(0));
+	if (isBlob(body)) body = body.stream();
+	if (Buffer.isBuffer(body)) return Body.Promise.resolve(body);
 	// istanbul ignore if: should never happen
-	if (!(body instanceof Stream)) return Body$1.Promise.resolve(Buffer.alloc(0));
+	if (!(body instanceof Stream)) return Body.Promise.resolve(Buffer.alloc(0));
 	let accum = [];
 	let accumBytes = 0;
 	let abort = false;
-	return new Body$1.Promise(function(resolve, reject) {
+	return new Body.Promise(function(resolve, reject) {
 		let resTimeout;
 		if (_this4.timeout) resTimeout = setTimeout(function() {
 			abort = true;
-			reject(new FetchError$1(`Response timeout while trying to fetch ${_this4.url} (over ${_this4.timeout}ms)`, "body-timeout"));
+			reject(new FetchError(`Response timeout while trying to fetch ${_this4.url} (over ${_this4.timeout}ms)`, "body-timeout"));
 		}, _this4.timeout);
 		body.on("error", function(err) {
 			if (err.name === "AbortError") {
 				abort = true;
 				reject(err);
-			} else reject(new FetchError$1(`Invalid response body while trying to fetch ${_this4.url}: ${err.message}`, "system", err));
+			} else reject(new FetchError(`Invalid response body while trying to fetch ${_this4.url}: ${err.message}`, "system", err));
 		});
 		body.on("data", function(chunk) {
 			if (abort || chunk === null) return;
 			if (_this4.size && accumBytes + chunk.length > _this4.size) {
 				abort = true;
-				reject(new FetchError$1(`content size at ${_this4.url} over limit: ${_this4.size}`, "max-size"));
+				reject(new FetchError(`content size at ${_this4.url} over limit: ${_this4.size}`, "max-size"));
 				return;
 			}
 			accumBytes += chunk.length;
@@ -2909,7 +2909,7 @@ function consumeBody$1() {
 			try {
 				resolve(Buffer.concat(accum, accumBytes));
 			} catch (err) {
-				reject(new FetchError$1(`Could not create Buffer from response body for ${_this4.url}: ${err.message}`, "system", err));
+				reject(new FetchError(`Could not create Buffer from response body for ${_this4.url}: ${err.message}`, "system", err));
 			}
 		});
 	});
@@ -2922,8 +2922,8 @@ function consumeBody$1() {
 * @param   String  encoding  Target encoding
 * @return  String
 */
-function convertBody$1(buffer, headers) {
-	if (typeof convert$1 !== "function") throw new Error("The package `encoding` must be installed to use the textConverted() function");
+function convertBody(buffer, headers) {
+	if (typeof convert !== "function") throw new Error("The package `encoding` must be installed to use the textConverted() function");
 	const ct = headers.get("content-type");
 	let charset = "utf-8";
 	let res, str;
@@ -2943,7 +2943,7 @@ function convertBody$1(buffer, headers) {
 		charset = res.pop();
 		if (charset === "gb2312" || charset === "gbk") charset = "gb18030";
 	}
-	return convert$1(buffer, "UTF-8", charset).toString();
+	return convert(buffer, "UTF-8", charset).toString();
 }
 /**
 * Detect a URLSearchParams object
@@ -2952,7 +2952,7 @@ function convertBody$1(buffer, headers) {
 * @param   Object  obj     Object to detect by type or brand
 * @return  String
 */
-function isURLSearchParams$1(obj) {
+function isURLSearchParams(obj) {
 	if (typeof obj !== "object" || typeof obj.append !== "function" || typeof obj.delete !== "function" || typeof obj.get !== "function" || typeof obj.getAll !== "function" || typeof obj.has !== "function" || typeof obj.set !== "function") return false;
 	return obj.constructor.name === "URLSearchParams" || Object.prototype.toString.call(obj) === "[object URLSearchParams]" || typeof obj.sort === "function";
 }
@@ -2961,7 +2961,7 @@ function isURLSearchParams$1(obj) {
 * @param  {*} obj
 * @return {boolean}
 */
-function isBlob$1(obj) {
+function isBlob(obj) {
 	return typeof obj === "object" && typeof obj.arrayBuffer === "function" && typeof obj.type === "string" && typeof obj.stream === "function" && typeof obj.constructor === "function" && typeof obj.constructor.name === "string" && /^(Blob|File)$/.test(obj.constructor.name) && /^(Blob|File)$/.test(obj[Symbol.toStringTag]);
 }
 /**
@@ -2970,16 +2970,16 @@ function isBlob$1(obj) {
 * @param   Mixed  instance  Response or Request instance
 * @return  Mixed
 */
-function clone$1(instance) {
+function clone(instance) {
 	let p1, p2;
 	let body = instance.body;
 	if (instance.bodyUsed) throw new Error("cannot clone body after it is used");
 	if (body instanceof Stream && typeof body.getBoundary !== "function") {
-		p1 = new PassThrough$2();
-		p2 = new PassThrough$2();
+		p1 = new PassThrough$1();
+		p2 = new PassThrough$1();
 		body.pipe(p1);
 		body.pipe(p2);
-		instance[INTERNALS$3].body = p1;
+		instance[INTERNALS].body = p1;
 		body = p2;
 	}
 	return body;
@@ -2993,11 +2993,11 @@ function clone$1(instance) {
 *
 * @param   Mixed  instance  Any options.body input
 */
-function extractContentType$1(body) {
+function extractContentType(body) {
 	if (body === null) return null;
 	else if (typeof body === "string") return "text/plain;charset=UTF-8";
-	else if (isURLSearchParams$1(body)) return "application/x-www-form-urlencoded;charset=UTF-8";
-	else if (isBlob$1(body)) return body.type || null;
+	else if (isURLSearchParams(body)) return "application/x-www-form-urlencoded;charset=UTF-8";
+	else if (isBlob(body)) return body.type || null;
 	else if (Buffer.isBuffer(body)) return null;
 	else if (Object.prototype.toString.call(body) === "[object ArrayBuffer]") return null;
 	else if (ArrayBuffer.isView(body)) return null;
@@ -3014,10 +3014,10 @@ function extractContentType$1(body) {
 * @param   Body    instance   Instance of Body
 * @return  Number?            Number of bytes, or null if not possible
 */
-function getTotalBytes$1(instance) {
+function getTotalBytes(instance) {
 	const body = instance.body;
 	if (body === null) return 0;
-	else if (isBlob$1(body)) return body.size;
+	else if (isBlob(body)) return body.size;
 	else if (Buffer.isBuffer(body)) return body.length;
 	else if (body && typeof body.getLengthSync === "function") {
 		if (body._lengthRetrievers && body._lengthRetrievers.length == 0 || body.hasKnownLength && body.hasKnownLength()) return body.getLengthSync();
@@ -3030,22 +3030,22 @@ function getTotalBytes$1(instance) {
 * @param   Body    instance   Instance of Body
 * @return  Void
 */
-function writeToStream$1(dest, instance) {
+function writeToStream(dest, instance) {
 	const body = instance.body;
 	if (body === null) dest.end();
-	else if (isBlob$1(body)) body.stream().pipe(dest);
+	else if (isBlob(body)) body.stream().pipe(dest);
 	else if (Buffer.isBuffer(body)) {
 		dest.write(body);
 		dest.end();
 	} else body.pipe(dest);
 }
-function validateName$1(name) {
+function validateName(name) {
 	name = `${name}`;
-	if (invalidTokenRegex$1.test(name) || name === "") throw new TypeError(`${name} is not a legal HTTP header name`);
+	if (invalidTokenRegex.test(name) || name === "") throw new TypeError(`${name} is not a legal HTTP header name`);
 }
-function validateValue$1(value) {
+function validateValue(value) {
 	value = `${value}`;
-	if (invalidHeaderCharRegex$1.test(value)) throw new TypeError(`${value} is not a legal HTTP header value`);
+	if (invalidHeaderCharRegex.test(value)) throw new TypeError(`${value} is not a legal HTTP header value`);
 }
 /**
 * Find the key in the map object given a header name.
@@ -3055,23 +3055,23 @@ function validateValue$1(value) {
 * @param   String  name  Header name
 * @return  String|Undefined
 */
-function find$1(map, name) {
+function find(map, name) {
 	name = name.toLowerCase();
 	for (const key in map) if (key.toLowerCase() === name) return key;
 }
-function getHeaders$1(headers) {
+function getHeaders(headers) {
 	let kind = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : "key+value";
-	return Object.keys(headers[MAP$1]).sort().map(kind === "key" ? function(k) {
+	return Object.keys(headers[MAP]).sort().map(kind === "key" ? function(k) {
 		return k.toLowerCase();
 	} : kind === "value" ? function(k) {
-		return headers[MAP$1][k].join(", ");
+		return headers[MAP][k].join(", ");
 	} : function(k) {
-		return [k.toLowerCase(), headers[MAP$1][k].join(", ")];
+		return [k.toLowerCase(), headers[MAP][k].join(", ")];
 	});
 }
-function createHeadersIterator$1(target, kind) {
-	const iterator = Object.create(HeadersIteratorPrototype$1);
-	iterator[INTERNAL$1] = {
+function createHeadersIterator(target, kind) {
+	const iterator = Object.create(HeadersIteratorPrototype);
+	iterator[INTERNAL] = {
 		target,
 		kind,
 		index: 0
@@ -3084,9 +3084,9 @@ function createHeadersIterator$1(target, kind) {
 * @param   Headers  headers
 * @return  Object
 */
-function exportNodeCompatibleHeaders$1(headers) {
-	const obj = Object.assign({ __proto__: null }, headers[MAP$1]);
-	const hostHeaderKey = find$1(headers[MAP$1], "Host");
+function exportNodeCompatibleHeaders(headers) {
+	const obj = Object.assign({ __proto__: null }, headers[MAP]);
+	const hostHeaderKey = find(headers[MAP], "Host");
 	if (hostHeaderKey !== void 0) obj[hostHeaderKey] = obj[hostHeaderKey][0];
 	return obj;
 }
@@ -3097,16 +3097,16 @@ function exportNodeCompatibleHeaders$1(headers) {
 * @param   Object  obj  Object of headers
 * @return  Headers
 */
-function createHeadersLenient$1(obj) {
-	const headers = new Headers$1();
+function createHeadersLenient(obj) {
+	const headers = new Headers();
 	for (const name of Object.keys(obj)) {
-		if (invalidTokenRegex$1.test(name)) continue;
+		if (invalidTokenRegex.test(name)) continue;
 		if (Array.isArray(obj[name])) for (const val of obj[name]) {
-			if (invalidHeaderCharRegex$1.test(val)) continue;
-			if (headers[MAP$1][name] === void 0) headers[MAP$1][name] = [val];
-			else headers[MAP$1][name].push(val);
+			if (invalidHeaderCharRegex.test(val)) continue;
+			if (headers[MAP][name] === void 0) headers[MAP][name] = [val];
+			else headers[MAP][name].push(val);
 		}
-		else if (!invalidHeaderCharRegex$1.test(obj[name])) headers[MAP$1][name] = [obj[name]];
+		else if (!invalidHeaderCharRegex.test(obj[name])) headers[MAP][name] = [obj[name]];
 	}
 	return headers;
 }
@@ -3116,9 +3116,9 @@ function createHeadersLenient$1(obj) {
 * @param  {string} urlStr
 * @return {void}
 */
-function parseURL$1(urlStr) {
-	if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/.exec(urlStr)) urlStr = new URL$3(urlStr).toString();
-	return parse_url$1(urlStr);
+function parseURL(urlStr) {
+	if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/.exec(urlStr)) urlStr = new URL$2(urlStr).toString();
+	return parse_url(urlStr);
 }
 /**
 * Check if a value is an instance of Request.
@@ -3126,10 +3126,10 @@ function parseURL$1(urlStr) {
 * @param   Mixed   input
 * @return  Boolean
 */
-function isRequest$1(input) {
-	return typeof input === "object" && typeof input[INTERNALS$2$2] === "object";
+function isRequest(input) {
+	return typeof input === "object" && typeof input[INTERNALS$2] === "object";
 }
-function isAbortSignal$1(signal) {
+function isAbortSignal(signal) {
 	const proto = signal && typeof signal === "object" && Object.getPrototypeOf(signal);
 	return !!(proto && proto.constructor.name === "AbortSignal");
 }
@@ -3139,17 +3139,17 @@ function isAbortSignal$1(signal) {
 * @param   Request  A Request instance
 * @return  Object   The options object to be passed to http.request
 */
-function getNodeRequestOptions$1(request) {
-	const parsedURL = request[INTERNALS$2$2].parsedURL;
-	const headers = new Headers$1(request[INTERNALS$2$2].headers);
+function getNodeRequestOptions(request) {
+	const parsedURL = request[INTERNALS$2].parsedURL;
+	const headers = new Headers(request[INTERNALS$2].headers);
 	if (!headers.has("Accept")) headers.set("Accept", "*/*");
 	if (!parsedURL.protocol || !parsedURL.hostname) throw new TypeError("Only absolute URLs are supported");
 	if (!/^https?:$/.test(parsedURL.protocol)) throw new TypeError("Only HTTP(S) protocols are supported");
-	if (request.signal && request.body instanceof Stream.Readable && !streamDestructionSupported$1) throw new Error("Cancellation of streamed requests with AbortSignal is not supported in node < 8");
+	if (request.signal && request.body instanceof Stream.Readable && !streamDestructionSupported) throw new Error("Cancellation of streamed requests with AbortSignal is not supported in node < 8");
 	let contentLengthValue = null;
 	if (request.body == null && /^(POST|PUT)$/i.test(request.method)) contentLengthValue = "0";
 	if (request.body != null) {
-		const totalBytes = getTotalBytes$1(request);
+		const totalBytes = getTotalBytes(request);
 		if (typeof totalBytes === "number") contentLengthValue = String(totalBytes);
 	}
 	if (contentLengthValue) headers.set("Content-Length", contentLengthValue);
@@ -3159,7 +3159,7 @@ function getNodeRequestOptions$1(request) {
 	if (typeof agent === "function") agent = agent(parsedURL);
 	return Object.assign({}, parsedURL, {
 		method: request.method,
-		headers: exportNodeCompatibleHeaders$1(headers),
+		headers: exportNodeCompatibleHeaders(headers),
 		agent
 	});
 }
@@ -3174,7 +3174,7 @@ function getNodeRequestOptions$1(request) {
 * @param   String      message      Error message for human
 * @return  AbortError
 */
-function AbortError$1(message) {
+function AbortError(message) {
 	Error.call(this, message);
 	this.type = "aborted";
 	this.message = message;
@@ -3187,19 +3187,19 @@ function AbortError$1(message) {
 * @param   Object   opts  Fetch options
 * @return  Promise
 */
-function fetch$1(url, opts) {
-	if (!fetch$1.Promise) throw new Error("native promise missing, set fetch.Promise to your favorite alternative");
-	Body$1.Promise = fetch$1.Promise;
-	return new fetch$1.Promise(function(resolve, reject) {
-		const request = new Request$1(url, opts);
-		const options = getNodeRequestOptions$1(request);
+function fetch(url, opts) {
+	if (!fetch.Promise) throw new Error("native promise missing, set fetch.Promise to your favorite alternative");
+	Body.Promise = fetch.Promise;
+	return new fetch.Promise(function(resolve, reject) {
+		const request = new Request(url, opts);
+		const options = getNodeRequestOptions(request);
 		const send = (options.protocol === "https:" ? nodeHTTPS : nodeHTTP).request;
 		const signal = request.signal;
 		let response = null;
 		const abort = function abort() {
-			let error = new AbortError$1("The user aborted a request.");
+			let error = new AbortError("The user aborted a request.");
 			reject(error);
-			if (request.body && request.body instanceof Stream.Readable) destroyStream$1(request.body, error);
+			if (request.body && request.body instanceof Stream.Readable) destroyStream(request.body, error);
 			if (!response || !response.body) return;
 			response.body.emit("error", error);
 		};
@@ -3221,18 +3221,18 @@ function fetch$1(url, opts) {
 		}
 		if (request.timeout) req.once("socket", function(socket) {
 			reqTimeout = setTimeout(function() {
-				reject(new FetchError$1(`network timeout at: ${request.url}`, "request-timeout"));
+				reject(new FetchError(`network timeout at: ${request.url}`, "request-timeout"));
 				finalize();
 			}, request.timeout);
 		});
 		req.on("error", function(err) {
-			reject(new FetchError$1(`request to ${request.url} failed, reason: ${err.message}`, "system", err));
-			if (response && response.body) destroyStream$1(response.body, err);
+			reject(new FetchError(`request to ${request.url} failed, reason: ${err.message}`, "system", err));
+			if (response && response.body) destroyStream(response.body, err);
 			finalize();
 		});
-		fixResponseChunkedTransferBadEnding$1(req, function(err) {
+		fixResponseChunkedTransferBadEnding(req, function(err) {
 			if (signal && signal.aborted) return;
-			if (response && response.body) destroyStream$1(response.body, err);
+			if (response && response.body) destroyStream(response.body, err);
 		});
 		/* c8 ignore next 18 */
 		if (parseInt(processModule.version.substring(1)) < 14) req.on("socket", function(s) {
@@ -3247,22 +3247,22 @@ function fetch$1(url, opts) {
 		});
 		req.on("response", function(res) {
 			clearTimeout(reqTimeout);
-			const headers = createHeadersLenient$1(res.headers);
-			if (fetch$1.isRedirect(res.statusCode)) {
+			const headers = createHeadersLenient(res.headers);
+			if (fetch.isRedirect(res.statusCode)) {
 				const location = headers.get("Location");
 				let locationURL = null;
 				try {
-					locationURL = location === null ? null : new URL$1$2(location, request.url).toString();
+					locationURL = location === null ? null : new URL$1$1(location, request.url).toString();
 				} catch (err) {
 					if (request.redirect !== "manual") {
-						reject(new FetchError$1(`uri requested responds with an invalid redirect URL: ${location}`, "invalid-redirect"));
+						reject(new FetchError(`uri requested responds with an invalid redirect URL: ${location}`, "invalid-redirect"));
 						finalize();
 						return;
 					}
 				}
 				switch (request.redirect) {
 					case "error":
-						reject(new FetchError$1(`uri requested responds with a redirect, redirect mode is set to error: ${request.url}`, "no-redirect"));
+						reject(new FetchError(`uri requested responds with a redirect, redirect mode is set to error: ${request.url}`, "no-redirect"));
 						finalize();
 						return;
 					case "manual":
@@ -3276,12 +3276,12 @@ function fetch$1(url, opts) {
 					case "follow":
 						if (locationURL === null) break;
 						if (request.counter >= request.follow) {
-							reject(new FetchError$1(`maximum redirect reached at: ${request.url}`, "max-redirect"));
+							reject(new FetchError(`maximum redirect reached at: ${request.url}`, "max-redirect"));
 							finalize();
 							return;
 						}
 						const requestOpts = {
-							headers: new Headers$1(request.headers),
+							headers: new Headers(request.headers),
 							follow: request.follow,
 							counter: request.counter + 1,
 							agent: request.agent,
@@ -3292,14 +3292,14 @@ function fetch$1(url, opts) {
 							timeout: request.timeout,
 							size: request.size
 						};
-						if (!isDomainOrSubdomain$1(request.url, locationURL) || !isSameProtocol$1(request.url, locationURL)) for (const name of [
+						if (!isDomainOrSubdomain(request.url, locationURL) || !isSameProtocol(request.url, locationURL)) for (const name of [
 							"authorization",
 							"www-authenticate",
 							"cookie",
 							"cookie2"
 						]) requestOpts.headers.delete(name);
-						if (res.statusCode !== 303 && request.body && getTotalBytes$1(request) === null) {
-							reject(new FetchError$1("Cannot follow redirect with body being a readable stream", "unsupported-redirect"));
+						if (res.statusCode !== 303 && request.body && getTotalBytes(request) === null) {
+							reject(new FetchError("Cannot follow redirect with body being a readable stream", "unsupported-redirect"));
 							finalize();
 							return;
 						}
@@ -3308,7 +3308,7 @@ function fetch$1(url, opts) {
 							requestOpts.body = void 0;
 							requestOpts.headers.delete("content-length");
 						}
-						resolve(fetch$1(new Request$1(locationURL, requestOpts)));
+						resolve(fetch(new Request(locationURL, requestOpts)));
 						finalize();
 						return;
 				}
@@ -3316,7 +3316,7 @@ function fetch$1(url, opts) {
 			res.once("end", function() {
 				if (signal) signal.removeEventListener("abort", abortAndFinalize);
 			});
-			let body = res.pipe(new PassThrough$1$2());
+			let body = res.pipe(new PassThrough$1$1());
 			const response_options = {
 				url: request.url,
 				status: res.statusCode,
@@ -3328,7 +3328,7 @@ function fetch$1(url, opts) {
 			};
 			const codings = headers.get("Content-Encoding");
 			if (!request.compress || request.method === "HEAD" || codings === null || res.statusCode === 204 || res.statusCode === 304) {
-				response = new Response$1(body, response_options);
+				response = new Response(body, response_options);
 				resolve(response);
 				return;
 			}
@@ -3338,21 +3338,21 @@ function fetch$1(url, opts) {
 			};
 			if (codings == "gzip" || codings == "x-gzip") {
 				body = body.pipe(zlib.createGunzip(zlibOptions));
-				response = new Response$1(body, response_options);
+				response = new Response(body, response_options);
 				resolve(response);
 				return;
 			}
 			if (codings == "deflate" || codings == "x-deflate") {
-				const raw = res.pipe(new PassThrough$1$2());
+				const raw = res.pipe(new PassThrough$1$1());
 				raw.once("data", function(chunk) {
 					if ((chunk[0] & 15) === 8) body = body.pipe(zlib.createInflate());
 					else body = body.pipe(zlib.createInflateRaw());
-					response = new Response$1(body, response_options);
+					response = new Response(body, response_options);
 					resolve(response);
 				});
 				raw.on("end", function() {
 					if (!response) {
-						response = new Response$1(body, response_options);
+						response = new Response(body, response_options);
 						resolve(response);
 					}
 				});
@@ -3360,17 +3360,17 @@ function fetch$1(url, opts) {
 			}
 			if (codings == "br" && typeof zlib.createBrotliDecompress === "function") {
 				body = body.pipe(zlib.createBrotliDecompress());
-				response = new Response$1(body, response_options);
+				response = new Response(body, response_options);
 				resolve(response);
 				return;
 			}
-			response = new Response$1(body, response_options);
+			response = new Response(body, response_options);
 			resolve(response);
 		});
-		writeToStream$1(req, request);
+		writeToStream(req, request);
 	});
 }
-function fixResponseChunkedTransferBadEnding$1(request, errorCallback) {
+function fixResponseChunkedTransferBadEnding(request, errorCallback) {
 	let socket;
 	request.on("socket", function(s) {
 		socket = s;
@@ -3386,23 +3386,23 @@ function fixResponseChunkedTransferBadEnding$1(request, errorCallback) {
 		});
 	});
 }
-function destroyStream$1(stream, err) {
+function destroyStream(stream, err) {
 	if (stream.destroy) stream.destroy(err);
 	else {
 		stream.emit("error", err);
 		stream.end();
 	}
 }
-var import_public_api$1, Readable$2, BUFFER$1, TYPE$1, Blob$1, convert$1, INTERNALS$3, PassThrough$2, invalidTokenRegex$1, invalidHeaderCharRegex$1, MAP$1, Headers$1, INTERNAL$1, HeadersIteratorPrototype$1, INTERNALS$1$4, STATUS_CODES$1, Response$1, INTERNALS$2$2, URL$3, parse_url$1, format_url$1, streamDestructionSupported$1, Request$1, URL$1$2, PassThrough$1$2, isDomainOrSubdomain$1, isSameProtocol$1;
-var init_lib$1 = __esmMin((() => {
+var import_public_api, Readable$1, BUFFER, TYPE, Blob, convert, INTERNALS, PassThrough$1, invalidTokenRegex, invalidHeaderCharRegex, MAP, Headers, INTERNAL, HeadersIteratorPrototype, INTERNALS$1, STATUS_CODES, Response, INTERNALS$2, URL$2, parse_url, format_url, streamDestructionSupported, Request, URL$1$1, PassThrough$1$1, isDomainOrSubdomain, isSameProtocol;
+var init_lib = __esmMin((() => {
 	init_globalthis();
-	import_public_api$1 = /* @__PURE__ */ __toESM(require_public_api(), 1);
-	Readable$2 = Stream.Readable;
-	BUFFER$1 = Symbol("buffer");
-	TYPE$1 = Symbol("type");
-	Blob$1 = class Blob$1 {
+	import_public_api = /* @__PURE__ */ __toESM(require_public_api(), 1);
+	Readable$1 = Stream.Readable;
+	BUFFER = Symbol("buffer");
+	TYPE = Symbol("type");
+	Blob = class Blob {
 		constructor() {
-			this[TYPE$1] = "";
+			this[TYPE] = "";
 			const blobParts = arguments[0];
 			const options = arguments[1];
 			const buffers = [];
@@ -3416,34 +3416,34 @@ var init_lib$1 = __esmMin((() => {
 					if (element instanceof Buffer) buffer = element;
 					else if (ArrayBuffer.isView(element)) buffer = Buffer.from(element.buffer, element.byteOffset, element.byteLength);
 					else if (element instanceof ArrayBuffer) buffer = Buffer.from(element);
-					else if (element instanceof Blob$1) buffer = element[BUFFER$1];
+					else if (element instanceof Blob) buffer = element[BUFFER];
 					else buffer = Buffer.from(typeof element === "string" ? element : String(element));
 					size += buffer.length;
 					buffers.push(buffer);
 				}
 			}
-			this[BUFFER$1] = Buffer.concat(buffers);
+			this[BUFFER] = Buffer.concat(buffers);
 			let type = options && options.type !== void 0 && String(options.type).toLowerCase();
-			if (type && !/[^\u0020-\u007E]/.test(type)) this[TYPE$1] = type;
+			if (type && !/[^\u0020-\u007E]/.test(type)) this[TYPE] = type;
 		}
 		get size() {
-			return this[BUFFER$1].length;
+			return this[BUFFER].length;
 		}
 		get type() {
-			return this[TYPE$1];
+			return this[TYPE];
 		}
 		text() {
-			return Promise.resolve(this[BUFFER$1].toString());
+			return Promise.resolve(this[BUFFER].toString());
 		}
 		arrayBuffer() {
-			const buf = this[BUFFER$1];
+			const buf = this[BUFFER];
 			const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
 			return Promise.resolve(ab);
 		}
 		stream() {
-			const readable = new Readable$2();
+			const readable = new Readable$1();
 			readable._read = function() {};
-			readable.push(this[BUFFER$1]);
+			readable.push(this[BUFFER]);
 			readable.push(null);
 			return readable;
 		}
@@ -3462,37 +3462,37 @@ var init_lib$1 = __esmMin((() => {
 			else if (end < 0) relativeEnd = Math.max(size + end, 0);
 			else relativeEnd = Math.min(end, size);
 			const span = Math.max(relativeEnd - relativeStart, 0);
-			const slicedBuffer = this[BUFFER$1].slice(relativeStart, relativeStart + span);
-			const blob = new Blob$1([], { type: arguments[2] });
-			blob[BUFFER$1] = slicedBuffer;
+			const slicedBuffer = this[BUFFER].slice(relativeStart, relativeStart + span);
+			const blob = new Blob([], { type: arguments[2] });
+			blob[BUFFER] = slicedBuffer;
 			return blob;
 		}
 	};
-	Object.defineProperties(Blob$1.prototype, {
+	Object.defineProperties(Blob.prototype, {
 		size: { enumerable: true },
 		type: { enumerable: true },
 		slice: { enumerable: true }
 	});
-	Object.defineProperty(Blob$1.prototype, Symbol.toStringTag, {
+	Object.defineProperty(Blob.prototype, Symbol.toStringTag, {
 		value: "Blob",
 		writable: false,
 		enumerable: false,
 		configurable: true
 	});
-	FetchError$1.prototype = Object.create(Error.prototype);
-	FetchError$1.prototype.constructor = FetchError$1;
-	FetchError$1.prototype.name = "FetchError";
+	FetchError.prototype = Object.create(Error.prototype);
+	FetchError.prototype.constructor = FetchError;
+	FetchError.prototype.name = "FetchError";
 	try {
-		convert$1 = (init___vite_optional_peer_dep_encoding_node_fetch(), __toCommonJS(__vite_optional_peer_dep_encoding_node_fetch_exports)).convert;
+		convert = (init___vite_optional_peer_dep_encoding_node_fetch(), __toCommonJS(__vite_optional_peer_dep_encoding_node_fetch_exports)).convert;
 	} catch (e) {}
-	INTERNALS$3 = Symbol("Body internals");
-	PassThrough$2 = Stream.PassThrough;
-	Body$1.prototype = {
+	INTERNALS = Symbol("Body internals");
+	PassThrough$1 = Stream.PassThrough;
+	Body.prototype = {
 		get body() {
-			return this[INTERNALS$3].body;
+			return this[INTERNALS].body;
 		},
 		get bodyUsed() {
-			return this[INTERNALS$3].disturbed;
+			return this[INTERNALS].disturbed;
 		},
 		/**
 		* Decode response as ArrayBuffer
@@ -3500,7 +3500,7 @@ var init_lib$1 = __esmMin((() => {
 		* @return  Promise
 		*/
 		arrayBuffer() {
-			return consumeBody$1.call(this).then(function(buf) {
+			return consumeBody.call(this).then(function(buf) {
 				return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
 			});
 		},
@@ -3511,8 +3511,8 @@ var init_lib$1 = __esmMin((() => {
 		*/
 		blob() {
 			let ct = this.headers && this.headers.get("content-type") || "";
-			return consumeBody$1.call(this).then(function(buf) {
-				return Object.assign(new Blob$1([], { type: ct.toLowerCase() }), { [BUFFER$1]: buf });
+			return consumeBody.call(this).then(function(buf) {
+				return Object.assign(new Blob([], { type: ct.toLowerCase() }), { [BUFFER]: buf });
 			});
 		},
 		/**
@@ -3522,11 +3522,11 @@ var init_lib$1 = __esmMin((() => {
 		*/
 		json() {
 			var _this2 = this;
-			return consumeBody$1.call(this).then(function(buffer) {
+			return consumeBody.call(this).then(function(buffer) {
 				try {
 					return JSON.parse(buffer.toString());
 				} catch (err) {
-					return Body$1.Promise.reject(new FetchError$1(`invalid json response body at ${_this2.url} reason: ${err.message}`, "invalid-json"));
+					return Body.Promise.reject(new FetchError(`invalid json response body at ${_this2.url} reason: ${err.message}`, "invalid-json"));
 				}
 			});
 		},
@@ -3536,7 +3536,7 @@ var init_lib$1 = __esmMin((() => {
 		* @return  Promise
 		*/
 		text() {
-			return consumeBody$1.call(this).then(function(buffer) {
+			return consumeBody.call(this).then(function(buffer) {
 				return buffer.toString();
 			});
 		},
@@ -3546,7 +3546,7 @@ var init_lib$1 = __esmMin((() => {
 		* @return  Promise
 		*/
 		buffer() {
-			return consumeBody$1.call(this);
+			return consumeBody.call(this);
 		},
 		/**
 		* Decode response as text, while automatically detecting the encoding and
@@ -3556,12 +3556,12 @@ var init_lib$1 = __esmMin((() => {
 		*/
 		textConverted() {
 			var _this3 = this;
-			return consumeBody$1.call(this).then(function(buffer) {
-				return convertBody$1(buffer, _this3.headers);
+			return consumeBody.call(this).then(function(buffer) {
+				return convertBody(buffer, _this3.headers);
 			});
 		}
 	};
-	Object.defineProperties(Body$1.prototype, {
+	Object.defineProperties(Body.prototype, {
 		body: { enumerable: true },
 		bodyUsed: { enumerable: true },
 		arrayBuffer: { enumerable: true },
@@ -3569,19 +3569,19 @@ var init_lib$1 = __esmMin((() => {
 		json: { enumerable: true },
 		text: { enumerable: true }
 	});
-	Body$1.mixIn = function(proto) {
-		for (const name of Object.getOwnPropertyNames(Body$1.prototype))
+	Body.mixIn = function(proto) {
+		for (const name of Object.getOwnPropertyNames(Body.prototype))
  // istanbul ignore else: future proof
 		if (!(name in proto)) {
-			const desc = Object.getOwnPropertyDescriptor(Body$1.prototype, name);
+			const desc = Object.getOwnPropertyDescriptor(Body.prototype, name);
 			Object.defineProperty(proto, name, desc);
 		}
 	};
-	Body$1.Promise = globalthis_default.Promise;
-	invalidTokenRegex$1 = /[^\^_`a-zA-Z\-0-9!#$%&'*+.|~]/;
-	invalidHeaderCharRegex$1 = /[^\t\x20-\x7e\x80-\xff]/;
-	MAP$1 = Symbol("map");
-	Headers$1 = class Headers$1 {
+	Body.Promise = globalthis_default.Promise;
+	invalidTokenRegex = /[^\^_`a-zA-Z\-0-9!#$%&'*+.|~]/;
+	invalidHeaderCharRegex = /[^\t\x20-\x7e\x80-\xff]/;
+	MAP = Symbol("map");
+	Headers = class Headers {
 		/**
 		* Headers class
 		*
@@ -3590,8 +3590,8 @@ var init_lib$1 = __esmMin((() => {
 		*/
 		constructor() {
 			let init = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : void 0;
-			this[MAP$1] = Object.create(null);
-			if (init instanceof Headers$1) {
+			this[MAP] = Object.create(null);
+			if (init instanceof Headers) {
 				const rawHeaders = init.raw();
 				const headerNames = Object.keys(rawHeaders);
 				for (const headerName of headerNames) for (const value of rawHeaders[headerName]) this.append(headerName, value);
@@ -3625,10 +3625,10 @@ var init_lib$1 = __esmMin((() => {
 		*/
 		get(name) {
 			name = `${name}`;
-			validateName$1(name);
-			const key = find$1(this[MAP$1], name);
+			validateName(name);
+			const key = find(this[MAP], name);
 			if (key === void 0) return null;
-			return this[MAP$1][key].join(", ");
+			return this[MAP][key].join(", ");
 		}
 		/**
 		* Iterate over all headers
@@ -3639,13 +3639,13 @@ var init_lib$1 = __esmMin((() => {
 		*/
 		forEach(callback) {
 			let thisArg = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : void 0;
-			let pairs = getHeaders$1(this);
+			let pairs = getHeaders(this);
 			let i = 0;
 			while (i < pairs.length) {
 				var _pairs$i = pairs[i];
 				const name = _pairs$i[0], value = _pairs$i[1];
 				callback.call(thisArg, value, name, this);
-				pairs = getHeaders$1(this);
+				pairs = getHeaders(this);
 				i++;
 			}
 		}
@@ -3659,10 +3659,10 @@ var init_lib$1 = __esmMin((() => {
 		set(name, value) {
 			name = `${name}`;
 			value = `${value}`;
-			validateName$1(name);
-			validateValue$1(value);
-			const key = find$1(this[MAP$1], name);
-			this[MAP$1][key !== void 0 ? key : name] = [value];
+			validateName(name);
+			validateValue(value);
+			const key = find(this[MAP], name);
+			this[MAP][key !== void 0 ? key : name] = [value];
 		}
 		/**
 		* Append a value onto existing header
@@ -3674,11 +3674,11 @@ var init_lib$1 = __esmMin((() => {
 		append(name, value) {
 			name = `${name}`;
 			value = `${value}`;
-			validateName$1(name);
-			validateValue$1(value);
-			const key = find$1(this[MAP$1], name);
-			if (key !== void 0) this[MAP$1][key].push(value);
-			else this[MAP$1][name] = [value];
+			validateName(name);
+			validateValue(value);
+			const key = find(this[MAP], name);
+			if (key !== void 0) this[MAP][key].push(value);
+			else this[MAP][name] = [value];
 		}
 		/**
 		* Check for header name existence
@@ -3688,8 +3688,8 @@ var init_lib$1 = __esmMin((() => {
 		*/
 		has(name) {
 			name = `${name}`;
-			validateName$1(name);
-			return find$1(this[MAP$1], name) !== void 0;
+			validateName(name);
+			return find(this[MAP], name) !== void 0;
 		}
 		/**
 		* Delete all header values given name
@@ -3699,9 +3699,9 @@ var init_lib$1 = __esmMin((() => {
 		*/
 		delete(name) {
 			name = `${name}`;
-			validateName$1(name);
-			const key = find$1(this[MAP$1], name);
-			if (key !== void 0) delete this[MAP$1][key];
+			validateName(name);
+			const key = find(this[MAP], name);
+			if (key !== void 0) delete this[MAP][key];
 		}
 		/**
 		* Return raw headers (non-spec api)
@@ -3709,7 +3709,7 @@ var init_lib$1 = __esmMin((() => {
 		* @return  Object
 		*/
 		raw() {
-			return this[MAP$1];
+			return this[MAP];
 		}
 		/**
 		* Get an iterator on keys.
@@ -3717,7 +3717,7 @@ var init_lib$1 = __esmMin((() => {
 		* @return  Iterator
 		*/
 		keys() {
-			return createHeadersIterator$1(this, "key");
+			return createHeadersIterator(this, "key");
 		}
 		/**
 		* Get an iterator on values.
@@ -3725,7 +3725,7 @@ var init_lib$1 = __esmMin((() => {
 		* @return  Iterator
 		*/
 		values() {
-			return createHeadersIterator$1(this, "value");
+			return createHeadersIterator(this, "value");
 		}
 		/**
 		* Get an iterator on entries.
@@ -3735,17 +3735,17 @@ var init_lib$1 = __esmMin((() => {
 		* @return  Iterator
 		*/
 		[Symbol.iterator]() {
-			return createHeadersIterator$1(this, "key+value");
+			return createHeadersIterator(this, "key+value");
 		}
 	};
-	Headers$1.prototype.entries = Headers$1.prototype[Symbol.iterator];
-	Object.defineProperty(Headers$1.prototype, Symbol.toStringTag, {
+	Headers.prototype.entries = Headers.prototype[Symbol.iterator];
+	Object.defineProperty(Headers.prototype, Symbol.toStringTag, {
 		value: "Headers",
 		writable: false,
 		enumerable: false,
 		configurable: true
 	});
-	Object.defineProperties(Headers$1.prototype, {
+	Object.defineProperties(Headers.prototype, {
 		get: { enumerable: true },
 		forEach: { enumerable: true },
 		set: { enumerable: true },
@@ -3756,70 +3756,70 @@ var init_lib$1 = __esmMin((() => {
 		values: { enumerable: true },
 		entries: { enumerable: true }
 	});
-	INTERNAL$1 = Symbol("internal");
-	HeadersIteratorPrototype$1 = Object.setPrototypeOf({ next() {
+	INTERNAL = Symbol("internal");
+	HeadersIteratorPrototype = Object.setPrototypeOf({ next() {
 		// istanbul ignore if
-		if (!this || Object.getPrototypeOf(this) !== HeadersIteratorPrototype$1) throw new TypeError("Value of `this` is not a HeadersIterator");
-		var _INTERNAL = this[INTERNAL$1];
+		if (!this || Object.getPrototypeOf(this) !== HeadersIteratorPrototype) throw new TypeError("Value of `this` is not a HeadersIterator");
+		var _INTERNAL = this[INTERNAL];
 		const target = _INTERNAL.target, kind = _INTERNAL.kind, index = _INTERNAL.index;
-		const values = getHeaders$1(target, kind);
+		const values = getHeaders(target, kind);
 		if (index >= values.length) return {
 			value: void 0,
 			done: true
 		};
-		this[INTERNAL$1].index = index + 1;
+		this[INTERNAL].index = index + 1;
 		return {
 			value: values[index],
 			done: false
 		};
 	} }, Object.getPrototypeOf(Object.getPrototypeOf([][Symbol.iterator]())));
-	Object.defineProperty(HeadersIteratorPrototype$1, Symbol.toStringTag, {
+	Object.defineProperty(HeadersIteratorPrototype, Symbol.toStringTag, {
 		value: "HeadersIterator",
 		writable: false,
 		enumerable: false,
 		configurable: true
 	});
-	INTERNALS$1$4 = Symbol("Response internals");
-	STATUS_CODES$1 = nodeHTTP.STATUS_CODES;
-	Response$1 = class Response$1 {
+	INTERNALS$1 = Symbol("Response internals");
+	STATUS_CODES = nodeHTTP.STATUS_CODES;
+	Response = class Response {
 		constructor() {
 			let body = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : null;
 			let opts = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
-			Body$1.call(this, body, opts);
+			Body.call(this, body, opts);
 			const status = opts.status || 200;
-			const headers = new Headers$1(opts.headers);
+			const headers = new Headers(opts.headers);
 			if (body != null && !headers.has("Content-Type")) {
-				const contentType = extractContentType$1(body);
+				const contentType = extractContentType(body);
 				if (contentType) headers.append("Content-Type", contentType);
 			}
-			this[INTERNALS$1$4] = {
+			this[INTERNALS$1] = {
 				url: opts.url,
 				status,
-				statusText: opts.statusText || STATUS_CODES$1[status],
+				statusText: opts.statusText || STATUS_CODES[status],
 				headers,
 				counter: opts.counter
 			};
 		}
 		get url() {
-			return this[INTERNALS$1$4].url || "";
+			return this[INTERNALS$1].url || "";
 		}
 		get status() {
-			return this[INTERNALS$1$4].status;
+			return this[INTERNALS$1].status;
 		}
 		/**
 		* Convenience property representing if the request ended normally
 		*/
 		get ok() {
-			return this[INTERNALS$1$4].status >= 200 && this[INTERNALS$1$4].status < 300;
+			return this[INTERNALS$1].status >= 200 && this[INTERNALS$1].status < 300;
 		}
 		get redirected() {
-			return this[INTERNALS$1$4].counter > 0;
+			return this[INTERNALS$1].counter > 0;
 		}
 		get statusText() {
-			return this[INTERNALS$1$4].statusText;
+			return this[INTERNALS$1].statusText;
 		}
 		get headers() {
-			return this[INTERNALS$1$4].headers;
+			return this[INTERNALS$1].headers;
 		}
 		/**
 		* Clone this response
@@ -3827,7 +3827,7 @@ var init_lib$1 = __esmMin((() => {
 		* @return  Response
 		*/
 		clone() {
-			return new Response$1(clone$1(this), {
+			return new Response(clone(this), {
 				url: this.url,
 				status: this.status,
 				statusText: this.statusText,
@@ -3837,8 +3837,8 @@ var init_lib$1 = __esmMin((() => {
 			});
 		}
 	};
-	Body$1.mixIn(Response$1.prototype);
-	Object.defineProperties(Response$1.prototype, {
+	Body.mixIn(Response.prototype);
+	Object.defineProperties(Response.prototype, {
 		url: { enumerable: true },
 		status: { enumerable: true },
 		ok: { enumerable: true },
@@ -3847,43 +3847,43 @@ var init_lib$1 = __esmMin((() => {
 		headers: { enumerable: true },
 		clone: { enumerable: true }
 	});
-	Object.defineProperty(Response$1.prototype, Symbol.toStringTag, {
+	Object.defineProperty(Response.prototype, Symbol.toStringTag, {
 		value: "Response",
 		writable: false,
 		enumerable: false,
 		configurable: true
 	});
-	INTERNALS$2$2 = Symbol("Request internals");
-	URL$3 = Url.URL || import_public_api$1.URL;
-	parse_url$1 = Url.parse;
-	format_url$1 = Url.format;
-	streamDestructionSupported$1 = "destroy" in Stream.Readable.prototype;
-	Request$1 = class Request$1 {
+	INTERNALS$2 = Symbol("Request internals");
+	URL$2 = Url.URL || import_public_api.URL;
+	parse_url = Url.parse;
+	format_url = Url.format;
+	streamDestructionSupported = "destroy" in Stream.Readable.prototype;
+	Request = class Request {
 		constructor(input) {
 			let init = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
 			let parsedURL;
-			if (!isRequest$1(input)) {
-				if (input && input.href) parsedURL = parseURL$1(input.href);
-				else parsedURL = parseURL$1(`${input}`);
+			if (!isRequest(input)) {
+				if (input && input.href) parsedURL = parseURL(input.href);
+				else parsedURL = parseURL(`${input}`);
 				input = {};
-			} else parsedURL = parseURL$1(input.url);
+			} else parsedURL = parseURL(input.url);
 			let method = init.method || input.method || "GET";
 			method = method.toUpperCase();
-			if ((init.body != null || isRequest$1(input) && input.body !== null) && (method === "GET" || method === "HEAD")) throw new TypeError("Request with GET/HEAD method cannot have body");
-			let inputBody = init.body != null ? init.body : isRequest$1(input) && input.body !== null ? clone$1(input) : null;
-			Body$1.call(this, inputBody, {
+			if ((init.body != null || isRequest(input) && input.body !== null) && (method === "GET" || method === "HEAD")) throw new TypeError("Request with GET/HEAD method cannot have body");
+			let inputBody = init.body != null ? init.body : isRequest(input) && input.body !== null ? clone(input) : null;
+			Body.call(this, inputBody, {
 				timeout: init.timeout || input.timeout || 0,
 				size: init.size || input.size || 0
 			});
-			const headers = new Headers$1(init.headers || input.headers || {});
+			const headers = new Headers(init.headers || input.headers || {});
 			if (inputBody != null && !headers.has("Content-Type")) {
-				const contentType = extractContentType$1(inputBody);
+				const contentType = extractContentType(inputBody);
 				if (contentType) headers.append("Content-Type", contentType);
 			}
-			let signal = isRequest$1(input) ? input.signal : null;
+			let signal = isRequest(input) ? input.signal : null;
 			if ("signal" in init) signal = init.signal;
-			if (signal != null && !isAbortSignal$1(signal)) throw new TypeError("Expected signal to be an instanceof AbortSignal");
-			this[INTERNALS$2$2] = {
+			if (signal != null && !isAbortSignal(signal)) throw new TypeError("Expected signal to be an instanceof AbortSignal");
+			this[INTERNALS$2] = {
 				method,
 				redirect: init.redirect || input.redirect || "follow",
 				headers,
@@ -3896,19 +3896,19 @@ var init_lib$1 = __esmMin((() => {
 			this.agent = init.agent || input.agent;
 		}
 		get method() {
-			return this[INTERNALS$2$2].method;
+			return this[INTERNALS$2].method;
 		}
 		get url() {
-			return format_url$1(this[INTERNALS$2$2].parsedURL);
+			return format_url(this[INTERNALS$2].parsedURL);
 		}
 		get headers() {
-			return this[INTERNALS$2$2].headers;
+			return this[INTERNALS$2].headers;
 		}
 		get redirect() {
-			return this[INTERNALS$2$2].redirect;
+			return this[INTERNALS$2].redirect;
 		}
 		get signal() {
-			return this[INTERNALS$2$2].signal;
+			return this[INTERNALS$2].signal;
 		}
 		/**
 		* Clone this request
@@ -3916,17 +3916,17 @@ var init_lib$1 = __esmMin((() => {
 		* @return  Request
 		*/
 		clone() {
-			return new Request$1(this);
+			return new Request(this);
 		}
 	};
-	Body$1.mixIn(Request$1.prototype);
-	Object.defineProperty(Request$1.prototype, Symbol.toStringTag, {
+	Body.mixIn(Request.prototype);
+	Object.defineProperty(Request.prototype, Symbol.toStringTag, {
 		value: "Request",
 		writable: false,
 		enumerable: false,
 		configurable: true
 	});
-	Object.defineProperties(Request$1.prototype, {
+	Object.defineProperties(Request.prototype, {
 		method: { enumerable: true },
 		url: { enumerable: true },
 		headers: { enumerable: true },
@@ -3934,18 +3934,18 @@ var init_lib$1 = __esmMin((() => {
 		clone: { enumerable: true },
 		signal: { enumerable: true }
 	});
-	AbortError$1.prototype = Object.create(Error.prototype);
-	AbortError$1.prototype.constructor = AbortError$1;
-	AbortError$1.prototype.name = "AbortError";
-	URL$1$2 = Url.URL || import_public_api$1.URL;
-	PassThrough$1$2 = Stream.PassThrough;
-	isDomainOrSubdomain$1 = function isDomainOrSubdomain(destination, original) {
-		const orig = new URL$1$2(original).hostname;
-		const dest = new URL$1$2(destination).hostname;
+	AbortError.prototype = Object.create(Error.prototype);
+	AbortError.prototype.constructor = AbortError;
+	AbortError.prototype.name = "AbortError";
+	URL$1$1 = Url.URL || import_public_api.URL;
+	PassThrough$1$1 = Stream.PassThrough;
+	isDomainOrSubdomain = function isDomainOrSubdomain(destination, original) {
+		const orig = new URL$1$1(original).hostname;
+		const dest = new URL$1$1(destination).hostname;
 		return orig === dest || orig[orig.length - dest.length - 1] === "." && orig.endsWith(dest);
 	};
-	isSameProtocol$1 = function isSameProtocol(destination, original) {
-		return new URL$1$2(original).protocol === new URL$1$2(destination).protocol;
+	isSameProtocol = function isSameProtocol(destination, original) {
+		return new URL$1$1(original).protocol === new URL$1$1(destination).protocol;
 	};
 	/**
 	* Redirect code matching
@@ -3953,10 +3953,10 @@ var init_lib$1 = __esmMin((() => {
 	* @param   Number   code  Status code
 	* @return  Boolean
 	*/
-	fetch$1.isRedirect = function(code) {
+	fetch.isRedirect = function(code) {
 		return code === 301 || code === 302 || code === 303 || code === 307 || code === 308;
 	};
-	fetch$1.Promise = globalthis_default.Promise;
+	fetch.Promise = globalthis_default.Promise;
 }));
 //#endregion
 //#region node_modules/is-stream/index.js
@@ -3970,32 +3970,32 @@ var require_is_stream = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 }));
 //#endregion
 //#region node_modules/@google-cloud/storage/node_modules/gaxios/package.json
-var package_exports$3 = /* @__PURE__ */ __exportAll({
-	author: () => author$3,
-	default: () => package_default$3,
-	dependencies: () => dependencies$3,
-	description: () => description$3,
-	devDependencies: () => devDependencies$3,
-	engines: () => engines$3,
-	files: () => files$3,
-	keywords: () => keywords$3,
-	license: () => license$3,
-	main: () => main$3,
-	name: () => name$3,
-	repository: () => repository$3,
-	scripts: () => scripts$3,
-	types: () => types$3,
-	version: () => version$4
+var package_exports$2 = /* @__PURE__ */ __exportAll({
+	author: () => author$2,
+	default: () => package_default$2,
+	dependencies: () => dependencies$2,
+	description: () => description$2,
+	devDependencies: () => devDependencies$2,
+	engines: () => engines$2,
+	files: () => files$2,
+	keywords: () => keywords$2,
+	license: () => license$2,
+	main: () => main$2,
+	name: () => name$2,
+	repository: () => repository$2,
+	scripts: () => scripts$2,
+	types: () => types$2,
+	version: () => version$3
 });
-var name$3, version$4, description$3, main$3, types$3, files$3, scripts$3, repository$3, keywords$3, engines$3, author$3, license$3, devDependencies$3, dependencies$3, package_default$3;
-var init_package$3 = __esmMin((() => {
-	name$3 = "gaxios";
-	version$4 = "6.7.1";
-	description$3 = "A simple common HTTP client specifically for Google APIs and services.";
-	main$3 = "build/src/index.js";
-	types$3 = "build/src/index.d.ts";
-	files$3 = ["build/src"];
-	scripts$3 = {
+var name$2, version$3, description$2, main$2, types$2, files$2, scripts$2, repository$2, keywords$2, engines$2, author$2, license$2, devDependencies$2, dependencies$2, package_default$2;
+var init_package$2 = __esmMin((() => {
+	name$2 = "gaxios";
+	version$3 = "6.7.1";
+	description$2 = "A simple common HTTP client specifically for Google APIs and services.";
+	main$2 = "build/src/index.js";
+	types$2 = "build/src/index.d.ts";
+	files$2 = ["build/src"];
+	scripts$2 = {
 		"lint": "gts check",
 		"test": "c8 mocha build/test",
 		"presystem-test": "npm run compile",
@@ -4015,12 +4015,12 @@ var init_package$3 = __esmMin((() => {
 		"clean": "gts clean",
 		"precompile": "gts clean"
 	};
-	repository$3 = "googleapis/gaxios";
-	keywords$3 = ["google"];
-	engines$3 = { "node": ">=14" };
-	author$3 = "Google, LLC";
-	license$3 = "Apache-2.0";
-	devDependencies$3 = {
+	repository$2 = "googleapis/gaxios";
+	keywords$2 = ["google"];
+	engines$2 = { "node": ">=14" };
+	author$2 = "Google, LLC";
+	license$2 = "Apache-2.0";
+	devDependencies$2 = {
 		"@babel/plugin-proposal-private-methods": "^7.18.6",
 		"@compodoc/compodoc": "1.1.19",
 		"@types/cors": "^2.8.6",
@@ -4070,40 +4070,40 @@ var init_package$3 = __esmMin((() => {
 		"webpack": "^5.35.0",
 		"webpack-cli": "^4.0.0"
 	};
-	dependencies$3 = {
+	dependencies$2 = {
 		"extend": "^3.0.2",
 		"https-proxy-agent": "^7.0.1",
 		"is-stream": "^2.0.0",
 		"node-fetch": "^2.6.9",
 		"uuid": "^9.0.1"
 	};
-	package_default$3 = {
-		name: name$3,
-		version: version$4,
-		description: description$3,
-		main: main$3,
-		types: types$3,
-		files: files$3,
-		scripts: scripts$3,
-		repository: repository$3,
-		keywords: keywords$3,
-		engines: engines$3,
-		author: author$3,
-		license: license$3,
-		devDependencies: devDependencies$3,
-		dependencies: dependencies$3
+	package_default$2 = {
+		name: name$2,
+		version: version$3,
+		description: description$2,
+		main: main$2,
+		types: types$2,
+		files: files$2,
+		scripts: scripts$2,
+		repository: repository$2,
+		keywords: keywords$2,
+		engines: engines$2,
+		author: author$2,
+		license: license$2,
+		devDependencies: devDependencies$2,
+		dependencies: dependencies$2
 	};
 }));
 //#endregion
 //#region node_modules/@google-cloud/storage/node_modules/gaxios/build/src/util.js
-var require_util$4 = /* @__PURE__ */ __commonJSMin(((exports) => {
+var require_util$3 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.pkg = void 0;
-	exports.pkg = (init_package$3(), __toCommonJS(package_exports$3).default);
+	exports.pkg = (init_package$2(), __toCommonJS(package_exports$2).default);
 }));
 //#endregion
 //#region node_modules/@google-cloud/storage/node_modules/gaxios/build/src/common.js
-var require_common$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
+var require_common = /* @__PURE__ */ __commonJSMin(((exports) => {
 	var __importDefault = exports && exports.__importDefault || function(mod) {
 		return mod && mod.__esModule ? mod : { "default": mod };
 	};
@@ -4111,8 +4111,8 @@ var require_common$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.GaxiosError = exports.GAXIOS_ERROR_SYMBOL = void 0;
 	exports.defaultErrorRedactor = defaultErrorRedactor;
-	var url_1$6 = __require("node:url");
-	var util_1 = require_util$4();
+	var url_1$4 = __require("node:url");
+	var util_1 = require_util$3();
 	var extend_1 = __importDefault(require_extend());
 	/**
 	* Support `instanceof` operator for `GaxiosError`s in different versions of this library.
@@ -4209,7 +4209,7 @@ var require_common$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 			redactString(data.config, "body");
 			redactObject(data.config.body);
 			try {
-				const url = new url_1$6.URL("", data.config.url);
+				const url = new url_1$4.URL("", data.config.url);
 				if (url.searchParams.has("token")) url.searchParams.set("token", REDACT);
 				if (url.searchParams.has("client_secret")) url.searchParams.set("client_secret", REDACT);
 				data.config.url = url.toString();
@@ -4226,7 +4226,7 @@ var require_common$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 }));
 //#endregion
 //#region node_modules/@google-cloud/storage/node_modules/gaxios/build/src/retry.js
-var require_retry$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
+var require_retry = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.getRetryConfig = getRetryConfig;
 	async function getRetryConfig(err) {
@@ -4469,15 +4469,15 @@ function v35(name, version, hashfunc) {
 		generateUUID.name = name;
 	} catch (err) {}
 	generateUUID.DNS = DNS;
-	generateUUID.URL = URL$2;
+	generateUUID.URL = URL$1;
 	return generateUUID;
 }
-var DNS, URL$2;
+var DNS, URL$1;
 var init_v35 = __esmMin((() => {
 	init_stringify();
 	init_parse();
 	DNS = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
-	URL$2 = "6ba7b811-9dad-11d1-80b4-00c04fd430c8";
+	URL$1 = "6ba7b811-9dad-11d1-80b4-00c04fd430c8";
 }));
 //#endregion
 //#region node_modules/uuid/dist/esm-browser/md5.js
@@ -4767,7 +4767,7 @@ var init_nil = __esmMin((() => {
 }));
 //#endregion
 //#region node_modules/uuid/dist/esm-browser/version.js
-function version$3(uuid) {
+function version$2(uuid) {
 	if (!validate(uuid)) throw TypeError("Invalid UUID");
 	return parseInt(uuid.slice(14, 15), 16);
 }
@@ -4785,7 +4785,7 @@ var esm_browser_exports = /* @__PURE__ */ __exportAll({
 	v4: () => v4,
 	v5: () => v5,
 	validate: () => validate,
-	version: () => version$3
+	version: () => version$2
 });
 var init_esm_browser = __esmMin((() => {
 	init_v1();
@@ -4800,7 +4800,7 @@ var init_esm_browser = __esmMin((() => {
 }));
 //#endregion
 //#region node_modules/@google-cloud/storage/node_modules/gaxios/build/src/interceptor.js
-var require_interceptor$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
+var require_interceptor = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.GaxiosInterceptorManager = void 0;
 	/**
@@ -4912,14 +4912,14 @@ var require_dist$2 = /* @__PURE__ */ __commonJSMin(((exports) => {
 		__setModuleDefault(result, mod);
 		return result;
 	};
-	var __exportStar = exports && exports.__exportStar || function(m, exports$7) {
-		for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports$7, p)) __createBinding(exports$7, m, p);
+	var __exportStar = exports && exports.__exportStar || function(m, exports$6) {
+		for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports$6, p)) __createBinding(exports$6, m, p);
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Agent = void 0;
 	var net$2 = __importStar(__require("node:net"));
 	var http = __importStar(__require("node:http"));
-	var https_1$3 = __require("node:https");
+	var https_1$2 = __require("node:https");
 	__exportStar(require_helpers(), exports);
 	var INTERNAL = Symbol("AgentBaseInternalState");
 	var Agent = class extends http.Agent {
@@ -4958,7 +4958,7 @@ var require_dist$2 = /* @__PURE__ */ __commonJSMin(((exports) => {
 			}
 		}
 		getName(options) {
-			if (this.isSecureEndpoint(options)) return https_1$3.Agent.prototype.getName.call(this, options);
+			if (this.isSecureEndpoint(options)) return https_1$2.Agent.prototype.getName.call(this, options);
 			return super.getName(options);
 		}
 		createSocket(req, options, cb) {
@@ -5011,7 +5011,7 @@ var require_parse_proxy_response = /* @__PURE__ */ __commonJSMin(((exports) => {
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.parseProxyResponse = void 0;
-	var debug = (0, __importDefault(require_src$8()).default)("https-proxy-agent:parse-proxy-response");
+	var debug = (0, __importDefault(require_src$7()).default)("https-proxy-agent:parse-proxy-response");
 	function parseProxyResponse(socket) {
 		return new Promise((resolve, reject) => {
 			let buffersLength = 0;
@@ -5130,9 +5130,9 @@ var require_dist$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	var net$1 = __importStar(__require("node:net"));
 	var tls$1 = __importStar(__require("node:tls"));
 	var assert_1 = __importDefault(__require("node:assert"));
-	var debug_1 = __importDefault(require_src$8());
+	var debug_1 = __importDefault(require_src$7());
 	var agent_base_1 = require_dist$2();
-	var url_1$5 = __require("node:url");
+	var url_1$3 = __require("node:url");
 	var parse_proxy_response_1 = require_parse_proxy_response();
 	var debug = (0, debug_1.default)("https-proxy-agent");
 	var setServernameFromNonIpHost = (options) => {
@@ -5158,7 +5158,7 @@ var require_dist$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 		constructor(proxy, opts) {
 			super(opts);
 			this.options = { path: void 0 };
-			this.proxy = typeof proxy === "string" ? new url_1$5.URL(proxy) : proxy;
+			this.proxy = typeof proxy === "string" ? new url_1$3.URL(proxy) : proxy;
 			this.proxyHeaders = opts?.headers ?? {};
 			debug("Creating new HttpsProxyAgent instance: %o", this.proxy.href);
 			const host = (this.proxy.hostname || this.proxy.host).replace(/^\[|\]$/g, "");
@@ -5237,7 +5237,7 @@ var require_dist$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 }));
 //#endregion
 //#region node_modules/@google-cloud/storage/node_modules/gaxios/build/src/gaxios.js
-var require_gaxios$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
+var require_gaxios = /* @__PURE__ */ __commonJSMin(((exports) => {
 	var __createBinding = exports && exports.__createBinding || (Object.create ? (function(o, m, k, k2) {
 		if (k2 === void 0) k2 = k;
 		var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -5294,16 +5294,16 @@ var require_gaxios$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Gaxios = void 0;
 	var extend_1 = __importDefault(require_extend());
-	var https_1$2 = __require("node:https");
-	var node_fetch_1 = __importDefault((init_lib$1(), __toCommonJS(lib_exports$1)));
-	var querystring_1$2 = __importDefault(__require("node:querystring"));
+	var https_1$1 = __require("node:https");
+	var node_fetch_1 = __importDefault((init_lib(), __toCommonJS(lib_exports)));
+	var querystring_1$1 = __importDefault(__require("node:querystring"));
 	var is_stream_1 = __importDefault(require_is_stream());
-	var url_1$4 = __require("node:url");
-	var common_1 = require_common$1();
-	var retry_1 = require_retry$1();
-	var stream_1$9 = __require("node:stream");
+	var url_1$2 = __require("node:url");
+	var common_1 = require_common();
+	var retry_1 = require_retry();
+	var stream_1$8 = __require("node:stream");
 	var uuid_1 = (init_esm_browser(), __toCommonJS(esm_browser_exports));
-	var interceptor_1 = require_interceptor$1();
+	var interceptor_1 = require_interceptor();
 	var fetch = hasFetch() ? window.fetch : node_fetch_1.default;
 	function hasWindow() {
 		return typeof window !== "undefined" && !!window;
@@ -5412,7 +5412,7 @@ var require_gaxios$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 		* @param params key value pars to encode
 		*/
 		paramsSerializer(params) {
-			return querystring_1$2.default.stringify(params);
+			return querystring_1$1.default.stringify(params);
 		}
 		translateResponse(opts, res, data) {
 			const headers = {};
@@ -5468,13 +5468,13 @@ var require_gaxios$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.Gaxios = Gaxios;
 	_a = Gaxios, _Gaxios_instances = /* @__PURE__ */ new WeakSet(), _Gaxios_urlMayUseProxy = function _Gaxios_urlMayUseProxy(url, noProxy = []) {
 		var _b, _c;
-		const candidate = new url_1$4.URL(url);
+		const candidate = new url_1$2.URL(url);
 		const noProxyList = [...noProxy];
 		const noProxyEnvList = ((_c = (_b = processModule.env.NO_PROXY) !== null && _b !== void 0 ? _b : processModule.env.no_proxy) === null || _c === void 0 ? void 0 : _c.split(",")) || [];
 		for (const rule of noProxyEnvList) noProxyList.push(rule.trim());
 		for (const rule of noProxyList) if (rule instanceof RegExp) {
 			if (rule.test(candidate.toString())) return false;
-		} else if (rule instanceof url_1$4.URL) {
+		} else if (rule instanceof url_1$2.URL) {
 			if (rule.origin === candidate.origin) return false;
 		} else if (rule.startsWith("*.") || rule.startsWith(".")) {
 			const cleanedRule = rule.replace(/^\*\./, ".");
@@ -5523,9 +5523,9 @@ var require_gaxios$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 		} else if (opts.multipart && opts.multipart.length > 0) {
 			const boundary = (0, uuid_1.v4)();
 			opts.headers["Content-Type"] = `multipart/related; boundary=${boundary}`;
-			const bodyStream = new stream_1$9.PassThrough();
+			const bodyStream = new stream_1$8.PassThrough();
 			opts.body = bodyStream;
-			(0, stream_1$9.pipeline)(this.getMultipartRequest(opts.multipart, boundary), bodyStream, () => {});
+			(0, stream_1$8.pipeline)(this.getMultipartRequest(opts.multipart, boundary), bodyStream, () => {});
 		}
 		opts.validateStatus = opts.validateStatus || this.validateStatus;
 		opts.responseType = opts.responseType || "unknown";
@@ -5546,7 +5546,7 @@ var require_gaxios$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 		} else if (opts.cert && opts.key) {
 			if (this.agentCache.has(opts.key)) opts.agent = this.agentCache.get(opts.key);
 			else {
-				opts.agent = new https_1$2.Agent({
+				opts.agent = new https_1$1.Agent({
 					cert: opts.cert,
 					key: opts.key
 				});
@@ -5568,7 +5568,7 @@ var require_gaxios$1 = /* @__PURE__ */ __commonJSMin(((exports) => {
 }));
 //#endregion
 //#region node_modules/@google-cloud/storage/node_modules/gaxios/build/src/index.js
-var require_src$7 = /* @__PURE__ */ __commonJSMin(((exports) => {
+var require_src$6 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	var __createBinding = exports && exports.__createBinding || (Object.create ? (function(o, m, k, k2) {
 		if (k2 === void 0) k2 = k;
 		var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -5583,27 +5583,27 @@ var require_src$7 = /* @__PURE__ */ __commonJSMin(((exports) => {
 		if (k2 === void 0) k2 = k;
 		o[k2] = m[k];
 	}));
-	var __exportStar = exports && exports.__exportStar || function(m, exports$6) {
-		for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports$6, p)) __createBinding(exports$6, m, p);
+	var __exportStar = exports && exports.__exportStar || function(m, exports$5) {
+		for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports$5, p)) __createBinding(exports$5, m, p);
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.instance = exports.Gaxios = exports.GaxiosError = void 0;
 	exports.request = request;
-	var gaxios_1 = require_gaxios$1();
+	var gaxios_1 = require_gaxios();
 	Object.defineProperty(exports, "Gaxios", {
 		enumerable: true,
 		get: function() {
 			return gaxios_1.Gaxios;
 		}
 	});
-	var common_1 = require_common$1();
+	var common_1 = require_common();
 	Object.defineProperty(exports, "GaxiosError", {
 		enumerable: true,
 		get: function() {
 			return common_1.GaxiosError;
 		}
 	});
-	__exportStar(require_interceptor$1(), exports);
+	__exportStar(require_interceptor(), exports);
 	/**
 	* The default instance used when the `request` method is directly
 	* invoked.
@@ -6101,7 +6101,7 @@ nodeEnables: "GOOGLE_SDK_NODE_LOGGING" };
 }));
 //#endregion
 //#region node_modules/@google-cloud/storage/node_modules/google-auth-library/node_modules/gcp-metadata/node_modules/google-logging-utils/build/src/index.js
-var require_src$6 = /* @__PURE__ */ __commonJSMin(((exports) => {
+var require_src$5 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	var __createBinding = exports && exports.__createBinding || (Object.create ? (function(o, m, k, k2) {
 		if (k2 === void 0) k2 = k;
 		var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -6116,15 +6116,15 @@ var require_src$6 = /* @__PURE__ */ __commonJSMin(((exports) => {
 		if (k2 === void 0) k2 = k;
 		o[k2] = m[k];
 	}));
-	var __exportStar = exports && exports.__exportStar || function(m, exports$5) {
-		for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports$5, p)) __createBinding(exports$5, m, p);
+	var __exportStar = exports && exports.__exportStar || function(m, exports$4) {
+		for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports$4, p)) __createBinding(exports$4, m, p);
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	__exportStar(require_logging_utils(), exports);
 }));
 //#endregion
 //#region node_modules/@google-cloud/storage/node_modules/google-auth-library/node_modules/gcp-metadata/build/src/index.js
-var require_src$5 = /* @__PURE__ */ __commonJSMin(((exports) => {
+var require_src$4 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	/**
 	* Copyright 2018 Google LLC
 	*
@@ -6154,8 +6154,8 @@ var require_src$5 = /* @__PURE__ */ __commonJSMin(((exports) => {
 		if (k2 === void 0) k2 = k;
 		o[k2] = m[k];
 	}));
-	var __exportStar = exports && exports.__exportStar || function(m, exports$4) {
-		for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports$4, p)) __createBinding(exports$4, m, p);
+	var __exportStar = exports && exports.__exportStar || function(m, exports$3) {
+		for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports$3, p)) __createBinding(exports$3, m, p);
 	};
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.gcpResidencyCache = exports.METADATA_SERVER_DETECTION = exports.HEADERS = exports.HEADER_VALUE = exports.HEADER_NAME = exports.SECONDARY_HOST_ADDRESS = exports.HOST_ADDRESS = exports.BASE_PATH = void 0;
@@ -6168,10 +6168,10 @@ var require_src$5 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.getGCPResidency = getGCPResidency;
 	exports.setGCPResidency = setGCPResidency;
 	exports.requestTimeout = requestTimeout;
-	var gaxios_1 = require_src$7();
+	var gaxios_1 = require_src$6();
 	var jsonBigint = require_json_bigint();
 	var gcp_residency_1 = require_gcp_residency();
-	var logger = require_src$6();
+	var logger = require_src$5();
 	exports.BASE_PATH = "/computeMetadata/v1";
 	exports.HOST_ADDRESS = "http://169.254.169.254";
 	exports.SECONDARY_HOST_ADDRESS = "http://metadata.google.internal.";
@@ -6652,41 +6652,41 @@ var require_options = /* @__PURE__ */ __commonJSMin(((exports) => {
 }));
 //#endregion
 //#region node_modules/@google-cloud/storage/node_modules/google-auth-library/package.json
-var package_exports$2 = /* @__PURE__ */ __exportAll({
-	author: () => author$2,
-	default: () => package_default$2,
-	dependencies: () => dependencies$2,
-	description: () => description$2,
-	devDependencies: () => devDependencies$2,
-	engines: () => engines$2,
-	files: () => files$2,
-	keywords: () => keywords$2,
-	license: () => license$2,
-	main: () => main$2,
-	name: () => name$2,
-	repository: () => repository$2,
-	scripts: () => scripts$2,
-	types: () => types$2,
-	version: () => version$2
+var package_exports$1 = /* @__PURE__ */ __exportAll({
+	author: () => author$1,
+	default: () => package_default$1,
+	dependencies: () => dependencies$1,
+	description: () => description$1,
+	devDependencies: () => devDependencies$1,
+	engines: () => engines$1,
+	files: () => files$1,
+	keywords: () => keywords$1,
+	license: () => license$1,
+	main: () => main$1,
+	name: () => name$1,
+	repository: () => repository$1,
+	scripts: () => scripts$1,
+	types: () => types$1,
+	version: () => version$1
 });
-var name$2, version$2, author$2, description$2, engines$2, main$2, types$2, repository$2, keywords$2, dependencies$2, devDependencies$2, files$2, scripts$2, license$2, package_default$2;
-var init_package$2 = __esmMin((() => {
-	name$2 = "google-auth-library";
-	version$2 = "9.15.1";
-	author$2 = "Google Inc.";
-	description$2 = "Google APIs Authentication Client Library for Node.js";
-	engines$2 = { "node": ">=14" };
-	main$2 = "./build/src/index.js";
-	types$2 = "./build/src/index.d.ts";
-	repository$2 = "googleapis/google-auth-library-nodejs.git";
-	keywords$2 = [
+var name$1, version$1, author$1, description$1, engines$1, main$1, types$1, repository$1, keywords$1, dependencies$1, devDependencies$1, files$1, scripts$1, license$1, package_default$1;
+var init_package$1 = __esmMin((() => {
+	name$1 = "google-auth-library";
+	version$1 = "9.15.1";
+	author$1 = "Google Inc.";
+	description$1 = "Google APIs Authentication Client Library for Node.js";
+	engines$1 = { "node": ">=14" };
+	main$1 = "./build/src/index.js";
+	types$1 = "./build/src/index.d.ts";
+	repository$1 = "googleapis/google-auth-library-nodejs.git";
+	keywords$1 = [
 		"google",
 		"api",
 		"google apis",
 		"client",
 		"client library"
 	];
-	dependencies$2 = {
+	dependencies$1 = {
 		"base64-js": "^1.3.0",
 		"ecdsa-sig-formatter": "^1.0.11",
 		"gaxios": "^6.1.1",
@@ -6694,7 +6694,7 @@ var init_package$2 = __esmMin((() => {
 		"gtoken": "^7.0.0",
 		"jws": "^4.0.0"
 	};
-	devDependencies$2 = {
+	devDependencies$1 = {
 		"@types/base64-js": "^1.2.5",
 		"@types/chai": "^4.1.7",
 		"@types/jws": "^3.1.0",
@@ -6736,8 +6736,8 @@ var init_package$2 = __esmMin((() => {
 		"webpack": "^5.21.2",
 		"webpack-cli": "^4.0.0"
 	};
-	files$2 = ["build/src", "!build/src/**/*.map"];
-	scripts$2 = {
+	files$1 = ["build/src", "!build/src/**/*.map"];
+	scripts$1 = {
 		"test": "c8 mocha build/test",
 		"clean": "gts clean",
 		"prepare": "npm run compile",
@@ -6757,22 +6757,22 @@ var init_package$2 = __esmMin((() => {
 		"prelint": "cd samples; npm link ../; npm install",
 		"precompile": "gts clean"
 	};
-	license$2 = "Apache-2.0";
-	package_default$2 = {
-		name: name$2,
-		version: version$2,
-		author: author$2,
-		description: description$2,
-		engines: engines$2,
-		main: main$2,
-		types: types$2,
-		repository: repository$2,
-		keywords: keywords$2,
-		dependencies: dependencies$2,
-		devDependencies: devDependencies$2,
-		files: files$2,
-		scripts: scripts$2,
-		license: license$2
+	license$1 = "Apache-2.0";
+	package_default$1 = {
+		name: name$1,
+		version: version$1,
+		author: author$1,
+		description: description$1,
+		engines: engines$1,
+		main: main$1,
+		types: types$1,
+		repository: repository$1,
+		keywords: keywords$1,
+		dependencies: dependencies$1,
+		devDependencies: devDependencies$1,
+		files: files$1,
+		scripts: scripts$1,
+		license: license$1
 	};
 }));
 //#endregion
@@ -6780,9 +6780,9 @@ var init_package$2 = __esmMin((() => {
 var require_transporters = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.DefaultTransporter = void 0;
-	var gaxios_1 = require_src$7();
+	var gaxios_1 = require_src$6();
 	var options_1 = require_options();
-	var pkg = (init_package$2(), __toCommonJS(package_exports$2).default);
+	var pkg = (init_package$1(), __toCommonJS(package_exports$1).default);
 	var PRODUCT_NAME = "google-api-nodejs-client";
 	var DefaultTransporter = class DefaultTransporter {
 		constructor() {
@@ -6862,7 +6862,7 @@ var require_transporters = /* @__PURE__ */ __commonJSMin(((exports) => {
 }));
 //#endregion
 //#region node_modules/@google-cloud/storage/node_modules/google-auth-library/build/src/util.js
-var require_util$3 = /* @__PURE__ */ __commonJSMin(((exports) => {
+var require_util$2 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	var __classPrivateFieldGet = exports && exports.__classPrivateFieldGet || function(receiver, state, kind, f) {
 		if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
 		if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
@@ -6980,9 +6980,9 @@ var require_authclient = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.AuthClient = exports.DEFAULT_EAGER_REFRESH_THRESHOLD_MILLIS = exports.DEFAULT_UNIVERSE = void 0;
 	var events_1$2 = __require("node:events");
-	var gaxios_1 = require_src$7();
+	var gaxios_1 = require_src$6();
 	var transporters_1 = require_transporters();
-	var util_1 = require_util$3();
+	var util_1 = require_util$2();
 	/**
 	* The default cloud universe
 	*
@@ -7119,7 +7119,7 @@ var require_loginticket = /* @__PURE__ */ __commonJSMin(((exports) => {
 var require_oauth2client = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.OAuth2Client = exports.ClientAuthentication = exports.CertificateFormat = exports.CodeChallengeMethod = void 0;
-	var gaxios_1 = require_src$7();
+	var gaxios_1 = require_src$6();
 	var querystring$3 = __require("node:querystring");
 	var stream$3 = __require("node:stream");
 	var formatEcdsa = require_ecdsa_sig_formatter();
@@ -7673,8 +7673,8 @@ var require_oauth2client = /* @__PURE__ */ __commonJSMin(((exports) => {
 var require_computeclient = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Compute = void 0;
-	var gaxios_1 = require_src$7();
-	var gcpMetadata = require_src$5();
+	var gaxios_1 = require_src$6();
+	var gcpMetadata = require_src$4();
 	var oauth2client_1 = require_oauth2client();
 	var Compute = class extends oauth2client_1.OAuth2Client {
 		/**
@@ -7790,7 +7790,7 @@ var require_envDetect = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.GCPEnv = void 0;
 	exports.clear = clear;
 	exports.getEnv = getEnv;
-	var gcpMetadata = require_src$5();
+	var gcpMetadata = require_src$4();
 	var GCPEnv;
 	(function(GCPEnv) {
 		GCPEnv["APP_ENGINE"] = "APP_ENGINE";
@@ -7847,1911 +7847,7 @@ var require_envDetect = /* @__PURE__ */ __commonJSMin(((exports) => {
 	}
 }));
 //#endregion
-//#region node_modules/gtoken/node_modules/gaxios/node_modules/node-fetch/lib/index.mjs
-var lib_exports = /* @__PURE__ */ __exportAll({
-	AbortError: () => AbortError,
-	FetchError: () => FetchError,
-	Headers: () => Headers,
-	Request: () => Request,
-	Response: () => Response,
-	default: () => fetch
-});
-/**
-* fetch-error.js
-*
-* FetchError interface for operational errors
-*/
-/**
-* Create FetchError instance
-*
-* @param   String      message      Error message for human
-* @param   String      type         Error type for machine
-* @param   String      systemError  For Node.js system error
-* @return  FetchError
-*/
-function FetchError(message, type, systemError) {
-	Error.call(this, message);
-	this.message = message;
-	this.type = type;
-	if (systemError) this.code = this.errno = systemError.code;
-	Error.captureStackTrace(this, this.constructor);
-}
-/**
-* Body mixin
-*
-* Ref: https://fetch.spec.whatwg.org/#body
-*
-* @param   Stream  body  Readable stream
-* @param   Object  opts  Response options
-* @return  Void
-*/
-function Body(body) {
-	var _this = this;
-	var _ref = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {}, _ref$size = _ref.size;
-	let size = _ref$size === void 0 ? 0 : _ref$size;
-	var _ref$timeout = _ref.timeout;
-	let timeout = _ref$timeout === void 0 ? 0 : _ref$timeout;
-	if (body == null) body = null;
-	else if (isURLSearchParams(body)) body = Buffer.from(body.toString());
-	else if (isBlob(body));
-	else if (Buffer.isBuffer(body));
-	else if (Object.prototype.toString.call(body) === "[object ArrayBuffer]") body = Buffer.from(body);
-	else if (ArrayBuffer.isView(body)) body = Buffer.from(body.buffer, body.byteOffset, body.byteLength);
-	else if (body instanceof Stream);
-	else body = Buffer.from(String(body));
-	this[INTERNALS] = {
-		body,
-		disturbed: false,
-		error: null
-	};
-	this.size = size;
-	this.timeout = timeout;
-	if (body instanceof Stream) body.on("error", function(err) {
-		const error = err.name === "AbortError" ? err : new FetchError(`Invalid response body while trying to fetch ${_this.url}: ${err.message}`, "system", err);
-		_this[INTERNALS].error = error;
-	});
-}
-/**
-* Consume and convert an entire Body to a Buffer.
-*
-* Ref: https://fetch.spec.whatwg.org/#concept-body-consume-body
-*
-* @return  Promise
-*/
-function consumeBody() {
-	var _this4 = this;
-	if (this[INTERNALS].disturbed) return Body.Promise.reject(/* @__PURE__ */ new TypeError(`body used already for: ${this.url}`));
-	this[INTERNALS].disturbed = true;
-	if (this[INTERNALS].error) return Body.Promise.reject(this[INTERNALS].error);
-	let body = this.body;
-	if (body === null) return Body.Promise.resolve(Buffer.alloc(0));
-	if (isBlob(body)) body = body.stream();
-	if (Buffer.isBuffer(body)) return Body.Promise.resolve(body);
-	// istanbul ignore if: should never happen
-	if (!(body instanceof Stream)) return Body.Promise.resolve(Buffer.alloc(0));
-	let accum = [];
-	let accumBytes = 0;
-	let abort = false;
-	return new Body.Promise(function(resolve, reject) {
-		let resTimeout;
-		if (_this4.timeout) resTimeout = setTimeout(function() {
-			abort = true;
-			reject(new FetchError(`Response timeout while trying to fetch ${_this4.url} (over ${_this4.timeout}ms)`, "body-timeout"));
-		}, _this4.timeout);
-		body.on("error", function(err) {
-			if (err.name === "AbortError") {
-				abort = true;
-				reject(err);
-			} else reject(new FetchError(`Invalid response body while trying to fetch ${_this4.url}: ${err.message}`, "system", err));
-		});
-		body.on("data", function(chunk) {
-			if (abort || chunk === null) return;
-			if (_this4.size && accumBytes + chunk.length > _this4.size) {
-				abort = true;
-				reject(new FetchError(`content size at ${_this4.url} over limit: ${_this4.size}`, "max-size"));
-				return;
-			}
-			accumBytes += chunk.length;
-			accum.push(chunk);
-		});
-		body.on("end", function() {
-			if (abort) return;
-			clearTimeout(resTimeout);
-			try {
-				resolve(Buffer.concat(accum, accumBytes));
-			} catch (err) {
-				reject(new FetchError(`Could not create Buffer from response body for ${_this4.url}: ${err.message}`, "system", err));
-			}
-		});
-	});
-}
-/**
-* Detect buffer encoding and convert to target encoding
-* ref: http://www.w3.org/TR/2011/WD-html5-20110113/parsing.html#determining-the-character-encoding
-*
-* @param   Buffer  buffer    Incoming buffer
-* @param   String  encoding  Target encoding
-* @return  String
-*/
-function convertBody(buffer, headers) {
-	if (typeof convert !== "function") throw new Error("The package `encoding` must be installed to use the textConverted() function");
-	const ct = headers.get("content-type");
-	let charset = "utf-8";
-	let res, str;
-	if (ct) res = /charset=([^;]*)/i.exec(ct);
-	str = buffer.slice(0, 1024).toString();
-	if (!res && str) res = /<meta.+?charset=(['"])(.+?)\1/i.exec(str);
-	if (!res && str) {
-		res = /<meta[\s]+?http-equiv=(['"])content-type\1[\s]+?content=(['"])(.+?)\2/i.exec(str);
-		if (!res) {
-			res = /<meta[\s]+?content=(['"])(.+?)\1[\s]+?http-equiv=(['"])content-type\3/i.exec(str);
-			if (res) res.pop();
-		}
-		if (res) res = /charset=(.*)/i.exec(res.pop());
-	}
-	if (!res && str) res = /<\?xml.+?encoding=(['"])(.+?)\1/i.exec(str);
-	if (res) {
-		charset = res.pop();
-		if (charset === "gb2312" || charset === "gbk") charset = "gb18030";
-	}
-	return convert(buffer, "UTF-8", charset).toString();
-}
-/**
-* Detect a URLSearchParams object
-* ref: https://github.com/bitinn/node-fetch/issues/296#issuecomment-307598143
-*
-* @param   Object  obj     Object to detect by type or brand
-* @return  String
-*/
-function isURLSearchParams(obj) {
-	if (typeof obj !== "object" || typeof obj.append !== "function" || typeof obj.delete !== "function" || typeof obj.get !== "function" || typeof obj.getAll !== "function" || typeof obj.has !== "function" || typeof obj.set !== "function") return false;
-	return obj.constructor.name === "URLSearchParams" || Object.prototype.toString.call(obj) === "[object URLSearchParams]" || typeof obj.sort === "function";
-}
-/**
-* Check if `obj` is a W3C `Blob` object (which `File` inherits from)
-* @param  {*} obj
-* @return {boolean}
-*/
-function isBlob(obj) {
-	return typeof obj === "object" && typeof obj.arrayBuffer === "function" && typeof obj.type === "string" && typeof obj.stream === "function" && typeof obj.constructor === "function" && typeof obj.constructor.name === "string" && /^(Blob|File)$/.test(obj.constructor.name) && /^(Blob|File)$/.test(obj[Symbol.toStringTag]);
-}
-/**
-* Clone body given Res/Req instance
-*
-* @param   Mixed  instance  Response or Request instance
-* @return  Mixed
-*/
-function clone(instance) {
-	let p1, p2;
-	let body = instance.body;
-	if (instance.bodyUsed) throw new Error("cannot clone body after it is used");
-	if (body instanceof Stream && typeof body.getBoundary !== "function") {
-		p1 = new PassThrough$1();
-		p2 = new PassThrough$1();
-		body.pipe(p1);
-		body.pipe(p2);
-		instance[INTERNALS].body = p1;
-		body = p2;
-	}
-	return body;
-}
-/**
-* Performs the operation "extract a `Content-Type` value from |object|" as
-* specified in the specification:
-* https://fetch.spec.whatwg.org/#concept-bodyinit-extract
-*
-* This function assumes that instance.body is present.
-*
-* @param   Mixed  instance  Any options.body input
-*/
-function extractContentType(body) {
-	if (body === null) return null;
-	else if (typeof body === "string") return "text/plain;charset=UTF-8";
-	else if (isURLSearchParams(body)) return "application/x-www-form-urlencoded;charset=UTF-8";
-	else if (isBlob(body)) return body.type || null;
-	else if (Buffer.isBuffer(body)) return null;
-	else if (Object.prototype.toString.call(body) === "[object ArrayBuffer]") return null;
-	else if (ArrayBuffer.isView(body)) return null;
-	else if (typeof body.getBoundary === "function") return `multipart/form-data;boundary=${body.getBoundary()}`;
-	else if (body instanceof Stream) return null;
-	else return "text/plain;charset=UTF-8";
-}
-/**
-* The Fetch Standard treats this as if "total bytes" is a property on the body.
-* For us, we have to explicitly get it with a function.
-*
-* ref: https://fetch.spec.whatwg.org/#concept-body-total-bytes
-*
-* @param   Body    instance   Instance of Body
-* @return  Number?            Number of bytes, or null if not possible
-*/
-function getTotalBytes(instance) {
-	const body = instance.body;
-	if (body === null) return 0;
-	else if (isBlob(body)) return body.size;
-	else if (Buffer.isBuffer(body)) return body.length;
-	else if (body && typeof body.getLengthSync === "function") {
-		if (body._lengthRetrievers && body._lengthRetrievers.length == 0 || body.hasKnownLength && body.hasKnownLength()) return body.getLengthSync();
-		return null;
-	} else return null;
-}
-/**
-* Write a Body to a Node.js WritableStream (e.g. http.Request) object.
-*
-* @param   Body    instance   Instance of Body
-* @return  Void
-*/
-function writeToStream(dest, instance) {
-	const body = instance.body;
-	if (body === null) dest.end();
-	else if (isBlob(body)) body.stream().pipe(dest);
-	else if (Buffer.isBuffer(body)) {
-		dest.write(body);
-		dest.end();
-	} else body.pipe(dest);
-}
-function validateName(name) {
-	name = `${name}`;
-	if (invalidTokenRegex.test(name) || name === "") throw new TypeError(`${name} is not a legal HTTP header name`);
-}
-function validateValue(value) {
-	value = `${value}`;
-	if (invalidHeaderCharRegex.test(value)) throw new TypeError(`${value} is not a legal HTTP header value`);
-}
-/**
-* Find the key in the map object given a header name.
-*
-* Returns undefined if not found.
-*
-* @param   String  name  Header name
-* @return  String|Undefined
-*/
-function find(map, name) {
-	name = name.toLowerCase();
-	for (const key in map) if (key.toLowerCase() === name) return key;
-}
-function getHeaders(headers) {
-	let kind = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : "key+value";
-	return Object.keys(headers[MAP]).sort().map(kind === "key" ? function(k) {
-		return k.toLowerCase();
-	} : kind === "value" ? function(k) {
-		return headers[MAP][k].join(", ");
-	} : function(k) {
-		return [k.toLowerCase(), headers[MAP][k].join(", ")];
-	});
-}
-function createHeadersIterator(target, kind) {
-	const iterator = Object.create(HeadersIteratorPrototype);
-	iterator[INTERNAL] = {
-		target,
-		kind,
-		index: 0
-	};
-	return iterator;
-}
-/**
-* Export the Headers object in a form that Node.js can consume.
-*
-* @param   Headers  headers
-* @return  Object
-*/
-function exportNodeCompatibleHeaders(headers) {
-	const obj = Object.assign({ __proto__: null }, headers[MAP]);
-	const hostHeaderKey = find(headers[MAP], "Host");
-	if (hostHeaderKey !== void 0) obj[hostHeaderKey] = obj[hostHeaderKey][0];
-	return obj;
-}
-/**
-* Create a Headers object from an object of headers, ignoring those that do
-* not conform to HTTP grammar productions.
-*
-* @param   Object  obj  Object of headers
-* @return  Headers
-*/
-function createHeadersLenient(obj) {
-	const headers = new Headers();
-	for (const name of Object.keys(obj)) {
-		if (invalidTokenRegex.test(name)) continue;
-		if (Array.isArray(obj[name])) for (const val of obj[name]) {
-			if (invalidHeaderCharRegex.test(val)) continue;
-			if (headers[MAP][name] === void 0) headers[MAP][name] = [val];
-			else headers[MAP][name].push(val);
-		}
-		else if (!invalidHeaderCharRegex.test(obj[name])) headers[MAP][name] = [obj[name]];
-	}
-	return headers;
-}
-/**
-* Wrapper around `new URL` to handle arbitrary URLs
-*
-* @param  {string} urlStr
-* @return {void}
-*/
-function parseURL(urlStr) {
-	if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/.exec(urlStr)) urlStr = new URL$1(urlStr).toString();
-	return parse_url(urlStr);
-}
-/**
-* Check if a value is an instance of Request.
-*
-* @param   Mixed   input
-* @return  Boolean
-*/
-function isRequest(input) {
-	return typeof input === "object" && typeof input[INTERNALS$2] === "object";
-}
-function isAbortSignal(signal) {
-	const proto = signal && typeof signal === "object" && Object.getPrototypeOf(signal);
-	return !!(proto && proto.constructor.name === "AbortSignal");
-}
-/**
-* Convert a Request to Node.js http request options.
-*
-* @param   Request  A Request instance
-* @return  Object   The options object to be passed to http.request
-*/
-function getNodeRequestOptions(request) {
-	const parsedURL = request[INTERNALS$2].parsedURL;
-	const headers = new Headers(request[INTERNALS$2].headers);
-	if (!headers.has("Accept")) headers.set("Accept", "*/*");
-	if (!parsedURL.protocol || !parsedURL.hostname) throw new TypeError("Only absolute URLs are supported");
-	if (!/^https?:$/.test(parsedURL.protocol)) throw new TypeError("Only HTTP(S) protocols are supported");
-	if (request.signal && request.body instanceof Stream.Readable && !streamDestructionSupported) throw new Error("Cancellation of streamed requests with AbortSignal is not supported in node < 8");
-	let contentLengthValue = null;
-	if (request.body == null && /^(POST|PUT)$/i.test(request.method)) contentLengthValue = "0";
-	if (request.body != null) {
-		const totalBytes = getTotalBytes(request);
-		if (typeof totalBytes === "number") contentLengthValue = String(totalBytes);
-	}
-	if (contentLengthValue) headers.set("Content-Length", contentLengthValue);
-	if (!headers.has("User-Agent")) headers.set("User-Agent", "node-fetch/1.0 (+https://github.com/bitinn/node-fetch)");
-	if (request.compress && !headers.has("Accept-Encoding")) headers.set("Accept-Encoding", "gzip,deflate");
-	let agent = request.agent;
-	if (typeof agent === "function") agent = agent(parsedURL);
-	return Object.assign({}, parsedURL, {
-		method: request.method,
-		headers: exportNodeCompatibleHeaders(headers),
-		agent
-	});
-}
-/**
-* abort-error.js
-*
-* AbortError interface for cancelled requests
-*/
-/**
-* Create AbortError instance
-*
-* @param   String      message      Error message for human
-* @return  AbortError
-*/
-function AbortError(message) {
-	Error.call(this, message);
-	this.type = "aborted";
-	this.message = message;
-	Error.captureStackTrace(this, this.constructor);
-}
-/**
-* Fetch function
-*
-* @param   Mixed    url   Absolute url or Request instance
-* @param   Object   opts  Fetch options
-* @return  Promise
-*/
-function fetch(url, opts) {
-	if (!fetch.Promise) throw new Error("native promise missing, set fetch.Promise to your favorite alternative");
-	Body.Promise = fetch.Promise;
-	return new fetch.Promise(function(resolve, reject) {
-		const request = new Request(url, opts);
-		const options = getNodeRequestOptions(request);
-		const send = (options.protocol === "https:" ? nodeHTTPS : nodeHTTP).request;
-		const signal = request.signal;
-		let response = null;
-		const abort = function abort() {
-			let error = new AbortError("The user aborted a request.");
-			reject(error);
-			if (request.body && request.body instanceof Stream.Readable) destroyStream(request.body, error);
-			if (!response || !response.body) return;
-			response.body.emit("error", error);
-		};
-		if (signal && signal.aborted) {
-			abort();
-			return;
-		}
-		const abortAndFinalize = function abortAndFinalize() {
-			abort();
-			finalize();
-		};
-		const req = send(options);
-		let reqTimeout;
-		if (signal) signal.addEventListener("abort", abortAndFinalize);
-		function finalize() {
-			req.abort();
-			if (signal) signal.removeEventListener("abort", abortAndFinalize);
-			clearTimeout(reqTimeout);
-		}
-		if (request.timeout) req.once("socket", function(socket) {
-			reqTimeout = setTimeout(function() {
-				reject(new FetchError(`network timeout at: ${request.url}`, "request-timeout"));
-				finalize();
-			}, request.timeout);
-		});
-		req.on("error", function(err) {
-			reject(new FetchError(`request to ${request.url} failed, reason: ${err.message}`, "system", err));
-			if (response && response.body) destroyStream(response.body, err);
-			finalize();
-		});
-		fixResponseChunkedTransferBadEnding(req, function(err) {
-			if (signal && signal.aborted) return;
-			if (response && response.body) destroyStream(response.body, err);
-		});
-		/* c8 ignore next 18 */
-		if (parseInt(processModule.version.substring(1)) < 14) req.on("socket", function(s) {
-			s.addListener("close", function(hadError) {
-				const hasDataListener = s.listenerCount("data") > 0;
-				if (response && hasDataListener && !hadError && !(signal && signal.aborted)) {
-					const err = /* @__PURE__ */ new Error("Premature close");
-					err.code = "ERR_STREAM_PREMATURE_CLOSE";
-					response.body.emit("error", err);
-				}
-			});
-		});
-		req.on("response", function(res) {
-			clearTimeout(reqTimeout);
-			const headers = createHeadersLenient(res.headers);
-			if (fetch.isRedirect(res.statusCode)) {
-				const location = headers.get("Location");
-				let locationURL = null;
-				try {
-					locationURL = location === null ? null : new URL$1$1(location, request.url).toString();
-				} catch (err) {
-					if (request.redirect !== "manual") {
-						reject(new FetchError(`uri requested responds with an invalid redirect URL: ${location}`, "invalid-redirect"));
-						finalize();
-						return;
-					}
-				}
-				switch (request.redirect) {
-					case "error":
-						reject(new FetchError(`uri requested responds with a redirect, redirect mode is set to error: ${request.url}`, "no-redirect"));
-						finalize();
-						return;
-					case "manual":
-						if (locationURL !== null) try {
-							headers.set("Location", locationURL);
-						} catch (err) {
-							// istanbul ignore next: nodejs server prevent invalid response headers, we can't test this through normal request
-							reject(err);
-						}
-						break;
-					case "follow":
-						if (locationURL === null) break;
-						if (request.counter >= request.follow) {
-							reject(new FetchError(`maximum redirect reached at: ${request.url}`, "max-redirect"));
-							finalize();
-							return;
-						}
-						const requestOpts = {
-							headers: new Headers(request.headers),
-							follow: request.follow,
-							counter: request.counter + 1,
-							agent: request.agent,
-							compress: request.compress,
-							method: request.method,
-							body: request.body,
-							signal: request.signal,
-							timeout: request.timeout,
-							size: request.size
-						};
-						if (!isDomainOrSubdomain(request.url, locationURL) || !isSameProtocol(request.url, locationURL)) for (const name of [
-							"authorization",
-							"www-authenticate",
-							"cookie",
-							"cookie2"
-						]) requestOpts.headers.delete(name);
-						if (res.statusCode !== 303 && request.body && getTotalBytes(request) === null) {
-							reject(new FetchError("Cannot follow redirect with body being a readable stream", "unsupported-redirect"));
-							finalize();
-							return;
-						}
-						if (res.statusCode === 303 || (res.statusCode === 301 || res.statusCode === 302) && request.method === "POST") {
-							requestOpts.method = "GET";
-							requestOpts.body = void 0;
-							requestOpts.headers.delete("content-length");
-						}
-						resolve(fetch(new Request(locationURL, requestOpts)));
-						finalize();
-						return;
-				}
-			}
-			res.once("end", function() {
-				if (signal) signal.removeEventListener("abort", abortAndFinalize);
-			});
-			let body = res.pipe(new PassThrough$1$1());
-			const response_options = {
-				url: request.url,
-				status: res.statusCode,
-				statusText: res.statusMessage,
-				headers,
-				size: request.size,
-				timeout: request.timeout,
-				counter: request.counter
-			};
-			const codings = headers.get("Content-Encoding");
-			if (!request.compress || request.method === "HEAD" || codings === null || res.statusCode === 204 || res.statusCode === 304) {
-				response = new Response(body, response_options);
-				resolve(response);
-				return;
-			}
-			const zlibOptions = {
-				flush: zlib.Z_SYNC_FLUSH,
-				finishFlush: zlib.Z_SYNC_FLUSH
-			};
-			if (codings == "gzip" || codings == "x-gzip") {
-				body = body.pipe(zlib.createGunzip(zlibOptions));
-				response = new Response(body, response_options);
-				resolve(response);
-				return;
-			}
-			if (codings == "deflate" || codings == "x-deflate") {
-				const raw = res.pipe(new PassThrough$1$1());
-				raw.once("data", function(chunk) {
-					if ((chunk[0] & 15) === 8) body = body.pipe(zlib.createInflate());
-					else body = body.pipe(zlib.createInflateRaw());
-					response = new Response(body, response_options);
-					resolve(response);
-				});
-				raw.on("end", function() {
-					if (!response) {
-						response = new Response(body, response_options);
-						resolve(response);
-					}
-				});
-				return;
-			}
-			if (codings == "br" && typeof zlib.createBrotliDecompress === "function") {
-				body = body.pipe(zlib.createBrotliDecompress());
-				response = new Response(body, response_options);
-				resolve(response);
-				return;
-			}
-			response = new Response(body, response_options);
-			resolve(response);
-		});
-		writeToStream(req, request);
-	});
-}
-function fixResponseChunkedTransferBadEnding(request, errorCallback) {
-	let socket;
-	request.on("socket", function(s) {
-		socket = s;
-	});
-	request.on("response", function(response) {
-		const headers = response.headers;
-		if (headers["transfer-encoding"] === "chunked" && !headers["content-length"]) response.once("close", function(hadError) {
-			if (socket && socket.listenerCount("data") > 0 && !hadError) {
-				const err = /* @__PURE__ */ new Error("Premature close");
-				err.code = "ERR_STREAM_PREMATURE_CLOSE";
-				errorCallback(err);
-			}
-		});
-	});
-}
-function destroyStream(stream, err) {
-	if (stream.destroy) stream.destroy(err);
-	else {
-		stream.emit("error", err);
-		stream.end();
-	}
-}
-var import_public_api, Readable$1, BUFFER, TYPE, Blob, convert, INTERNALS, PassThrough$1, invalidTokenRegex, invalidHeaderCharRegex, MAP, Headers, INTERNAL, HeadersIteratorPrototype, INTERNALS$1, STATUS_CODES, Response, INTERNALS$2, URL$1, parse_url, format_url, streamDestructionSupported, Request, URL$1$1, PassThrough$1$1, isDomainOrSubdomain, isSameProtocol;
-var init_lib = __esmMin((() => {
-	init_globalthis();
-	import_public_api = /* @__PURE__ */ __toESM(require_public_api(), 1);
-	Readable$1 = Stream.Readable;
-	BUFFER = Symbol("buffer");
-	TYPE = Symbol("type");
-	Blob = class Blob {
-		constructor() {
-			this[TYPE] = "";
-			const blobParts = arguments[0];
-			const options = arguments[1];
-			const buffers = [];
-			let size = 0;
-			if (blobParts) {
-				const a = blobParts;
-				const length = Number(a.length);
-				for (let i = 0; i < length; i++) {
-					const element = a[i];
-					let buffer;
-					if (element instanceof Buffer) buffer = element;
-					else if (ArrayBuffer.isView(element)) buffer = Buffer.from(element.buffer, element.byteOffset, element.byteLength);
-					else if (element instanceof ArrayBuffer) buffer = Buffer.from(element);
-					else if (element instanceof Blob) buffer = element[BUFFER];
-					else buffer = Buffer.from(typeof element === "string" ? element : String(element));
-					size += buffer.length;
-					buffers.push(buffer);
-				}
-			}
-			this[BUFFER] = Buffer.concat(buffers);
-			let type = options && options.type !== void 0 && String(options.type).toLowerCase();
-			if (type && !/[^\u0020-\u007E]/.test(type)) this[TYPE] = type;
-		}
-		get size() {
-			return this[BUFFER].length;
-		}
-		get type() {
-			return this[TYPE];
-		}
-		text() {
-			return Promise.resolve(this[BUFFER].toString());
-		}
-		arrayBuffer() {
-			const buf = this[BUFFER];
-			const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
-			return Promise.resolve(ab);
-		}
-		stream() {
-			const readable = new Readable$1();
-			readable._read = function() {};
-			readable.push(this[BUFFER]);
-			readable.push(null);
-			return readable;
-		}
-		toString() {
-			return "[object Blob]";
-		}
-		slice() {
-			const size = this.size;
-			const start = arguments[0];
-			const end = arguments[1];
-			let relativeStart, relativeEnd;
-			if (start === void 0) relativeStart = 0;
-			else if (start < 0) relativeStart = Math.max(size + start, 0);
-			else relativeStart = Math.min(start, size);
-			if (end === void 0) relativeEnd = size;
-			else if (end < 0) relativeEnd = Math.max(size + end, 0);
-			else relativeEnd = Math.min(end, size);
-			const span = Math.max(relativeEnd - relativeStart, 0);
-			const slicedBuffer = this[BUFFER].slice(relativeStart, relativeStart + span);
-			const blob = new Blob([], { type: arguments[2] });
-			blob[BUFFER] = slicedBuffer;
-			return blob;
-		}
-	};
-	Object.defineProperties(Blob.prototype, {
-		size: { enumerable: true },
-		type: { enumerable: true },
-		slice: { enumerable: true }
-	});
-	Object.defineProperty(Blob.prototype, Symbol.toStringTag, {
-		value: "Blob",
-		writable: false,
-		enumerable: false,
-		configurable: true
-	});
-	FetchError.prototype = Object.create(Error.prototype);
-	FetchError.prototype.constructor = FetchError;
-	FetchError.prototype.name = "FetchError";
-	try {
-		convert = (init___vite_optional_peer_dep_encoding_node_fetch(), __toCommonJS(__vite_optional_peer_dep_encoding_node_fetch_exports)).convert;
-	} catch (e) {}
-	INTERNALS = Symbol("Body internals");
-	PassThrough$1 = Stream.PassThrough;
-	Body.prototype = {
-		get body() {
-			return this[INTERNALS].body;
-		},
-		get bodyUsed() {
-			return this[INTERNALS].disturbed;
-		},
-		/**
-		* Decode response as ArrayBuffer
-		*
-		* @return  Promise
-		*/
-		arrayBuffer() {
-			return consumeBody.call(this).then(function(buf) {
-				return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
-			});
-		},
-		/**
-		* Return raw response as Blob
-		*
-		* @return Promise
-		*/
-		blob() {
-			let ct = this.headers && this.headers.get("content-type") || "";
-			return consumeBody.call(this).then(function(buf) {
-				return Object.assign(new Blob([], { type: ct.toLowerCase() }), { [BUFFER]: buf });
-			});
-		},
-		/**
-		* Decode response as json
-		*
-		* @return  Promise
-		*/
-		json() {
-			var _this2 = this;
-			return consumeBody.call(this).then(function(buffer) {
-				try {
-					return JSON.parse(buffer.toString());
-				} catch (err) {
-					return Body.Promise.reject(new FetchError(`invalid json response body at ${_this2.url} reason: ${err.message}`, "invalid-json"));
-				}
-			});
-		},
-		/**
-		* Decode response as text
-		*
-		* @return  Promise
-		*/
-		text() {
-			return consumeBody.call(this).then(function(buffer) {
-				return buffer.toString();
-			});
-		},
-		/**
-		* Decode response as buffer (non-spec api)
-		*
-		* @return  Promise
-		*/
-		buffer() {
-			return consumeBody.call(this);
-		},
-		/**
-		* Decode response as text, while automatically detecting the encoding and
-		* trying to decode to UTF-8 (non-spec api)
-		*
-		* @return  Promise
-		*/
-		textConverted() {
-			var _this3 = this;
-			return consumeBody.call(this).then(function(buffer) {
-				return convertBody(buffer, _this3.headers);
-			});
-		}
-	};
-	Object.defineProperties(Body.prototype, {
-		body: { enumerable: true },
-		bodyUsed: { enumerable: true },
-		arrayBuffer: { enumerable: true },
-		blob: { enumerable: true },
-		json: { enumerable: true },
-		text: { enumerable: true }
-	});
-	Body.mixIn = function(proto) {
-		for (const name of Object.getOwnPropertyNames(Body.prototype))
- // istanbul ignore else: future proof
-		if (!(name in proto)) {
-			const desc = Object.getOwnPropertyDescriptor(Body.prototype, name);
-			Object.defineProperty(proto, name, desc);
-		}
-	};
-	Body.Promise = globalthis_default.Promise;
-	invalidTokenRegex = /[^\^_`a-zA-Z\-0-9!#$%&'*+.|~]/;
-	invalidHeaderCharRegex = /[^\t\x20-\x7e\x80-\xff]/;
-	MAP = Symbol("map");
-	Headers = class Headers {
-		/**
-		* Headers class
-		*
-		* @param   Object  headers  Response headers
-		* @return  Void
-		*/
-		constructor() {
-			let init = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : void 0;
-			this[MAP] = Object.create(null);
-			if (init instanceof Headers) {
-				const rawHeaders = init.raw();
-				const headerNames = Object.keys(rawHeaders);
-				for (const headerName of headerNames) for (const value of rawHeaders[headerName]) this.append(headerName, value);
-				return;
-			}
-			if (init == null);
-			else if (typeof init === "object") {
-				const method = init[Symbol.iterator];
-				if (method != null) {
-					if (typeof method !== "function") throw new TypeError("Header pairs must be iterable");
-					const pairs = [];
-					for (const pair of init) {
-						if (typeof pair !== "object" || typeof pair[Symbol.iterator] !== "function") throw new TypeError("Each header pair must be iterable");
-						pairs.push(Array.from(pair));
-					}
-					for (const pair of pairs) {
-						if (pair.length !== 2) throw new TypeError("Each header pair must be a name/value tuple");
-						this.append(pair[0], pair[1]);
-					}
-				} else for (const key of Object.keys(init)) {
-					const value = init[key];
-					this.append(key, value);
-				}
-			} else throw new TypeError("Provided initializer must be an object");
-		}
-		/**
-		* Return combined header value given name
-		*
-		* @param   String  name  Header name
-		* @return  Mixed
-		*/
-		get(name) {
-			name = `${name}`;
-			validateName(name);
-			const key = find(this[MAP], name);
-			if (key === void 0) return null;
-			return this[MAP][key].join(", ");
-		}
-		/**
-		* Iterate over all headers
-		*
-		* @param   Function  callback  Executed for each item with parameters (value, name, thisArg)
-		* @param   Boolean   thisArg   `this` context for callback function
-		* @return  Void
-		*/
-		forEach(callback) {
-			let thisArg = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : void 0;
-			let pairs = getHeaders(this);
-			let i = 0;
-			while (i < pairs.length) {
-				var _pairs$i = pairs[i];
-				const name = _pairs$i[0], value = _pairs$i[1];
-				callback.call(thisArg, value, name, this);
-				pairs = getHeaders(this);
-				i++;
-			}
-		}
-		/**
-		* Overwrite header values given name
-		*
-		* @param   String  name   Header name
-		* @param   String  value  Header value
-		* @return  Void
-		*/
-		set(name, value) {
-			name = `${name}`;
-			value = `${value}`;
-			validateName(name);
-			validateValue(value);
-			const key = find(this[MAP], name);
-			this[MAP][key !== void 0 ? key : name] = [value];
-		}
-		/**
-		* Append a value onto existing header
-		*
-		* @param   String  name   Header name
-		* @param   String  value  Header value
-		* @return  Void
-		*/
-		append(name, value) {
-			name = `${name}`;
-			value = `${value}`;
-			validateName(name);
-			validateValue(value);
-			const key = find(this[MAP], name);
-			if (key !== void 0) this[MAP][key].push(value);
-			else this[MAP][name] = [value];
-		}
-		/**
-		* Check for header name existence
-		*
-		* @param   String   name  Header name
-		* @return  Boolean
-		*/
-		has(name) {
-			name = `${name}`;
-			validateName(name);
-			return find(this[MAP], name) !== void 0;
-		}
-		/**
-		* Delete all header values given name
-		*
-		* @param   String  name  Header name
-		* @return  Void
-		*/
-		delete(name) {
-			name = `${name}`;
-			validateName(name);
-			const key = find(this[MAP], name);
-			if (key !== void 0) delete this[MAP][key];
-		}
-		/**
-		* Return raw headers (non-spec api)
-		*
-		* @return  Object
-		*/
-		raw() {
-			return this[MAP];
-		}
-		/**
-		* Get an iterator on keys.
-		*
-		* @return  Iterator
-		*/
-		keys() {
-			return createHeadersIterator(this, "key");
-		}
-		/**
-		* Get an iterator on values.
-		*
-		* @return  Iterator
-		*/
-		values() {
-			return createHeadersIterator(this, "value");
-		}
-		/**
-		* Get an iterator on entries.
-		*
-		* This is the default iterator of the Headers object.
-		*
-		* @return  Iterator
-		*/
-		[Symbol.iterator]() {
-			return createHeadersIterator(this, "key+value");
-		}
-	};
-	Headers.prototype.entries = Headers.prototype[Symbol.iterator];
-	Object.defineProperty(Headers.prototype, Symbol.toStringTag, {
-		value: "Headers",
-		writable: false,
-		enumerable: false,
-		configurable: true
-	});
-	Object.defineProperties(Headers.prototype, {
-		get: { enumerable: true },
-		forEach: { enumerable: true },
-		set: { enumerable: true },
-		append: { enumerable: true },
-		has: { enumerable: true },
-		delete: { enumerable: true },
-		keys: { enumerable: true },
-		values: { enumerable: true },
-		entries: { enumerable: true }
-	});
-	INTERNAL = Symbol("internal");
-	HeadersIteratorPrototype = Object.setPrototypeOf({ next() {
-		// istanbul ignore if
-		if (!this || Object.getPrototypeOf(this) !== HeadersIteratorPrototype) throw new TypeError("Value of `this` is not a HeadersIterator");
-		var _INTERNAL = this[INTERNAL];
-		const target = _INTERNAL.target, kind = _INTERNAL.kind, index = _INTERNAL.index;
-		const values = getHeaders(target, kind);
-		if (index >= values.length) return {
-			value: void 0,
-			done: true
-		};
-		this[INTERNAL].index = index + 1;
-		return {
-			value: values[index],
-			done: false
-		};
-	} }, Object.getPrototypeOf(Object.getPrototypeOf([][Symbol.iterator]())));
-	Object.defineProperty(HeadersIteratorPrototype, Symbol.toStringTag, {
-		value: "HeadersIterator",
-		writable: false,
-		enumerable: false,
-		configurable: true
-	});
-	INTERNALS$1 = Symbol("Response internals");
-	STATUS_CODES = nodeHTTP.STATUS_CODES;
-	Response = class Response {
-		constructor() {
-			let body = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : null;
-			let opts = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
-			Body.call(this, body, opts);
-			const status = opts.status || 200;
-			const headers = new Headers(opts.headers);
-			if (body != null && !headers.has("Content-Type")) {
-				const contentType = extractContentType(body);
-				if (contentType) headers.append("Content-Type", contentType);
-			}
-			this[INTERNALS$1] = {
-				url: opts.url,
-				status,
-				statusText: opts.statusText || STATUS_CODES[status],
-				headers,
-				counter: opts.counter
-			};
-		}
-		get url() {
-			return this[INTERNALS$1].url || "";
-		}
-		get status() {
-			return this[INTERNALS$1].status;
-		}
-		/**
-		* Convenience property representing if the request ended normally
-		*/
-		get ok() {
-			return this[INTERNALS$1].status >= 200 && this[INTERNALS$1].status < 300;
-		}
-		get redirected() {
-			return this[INTERNALS$1].counter > 0;
-		}
-		get statusText() {
-			return this[INTERNALS$1].statusText;
-		}
-		get headers() {
-			return this[INTERNALS$1].headers;
-		}
-		/**
-		* Clone this response
-		*
-		* @return  Response
-		*/
-		clone() {
-			return new Response(clone(this), {
-				url: this.url,
-				status: this.status,
-				statusText: this.statusText,
-				headers: this.headers,
-				ok: this.ok,
-				redirected: this.redirected
-			});
-		}
-	};
-	Body.mixIn(Response.prototype);
-	Object.defineProperties(Response.prototype, {
-		url: { enumerable: true },
-		status: { enumerable: true },
-		ok: { enumerable: true },
-		redirected: { enumerable: true },
-		statusText: { enumerable: true },
-		headers: { enumerable: true },
-		clone: { enumerable: true }
-	});
-	Object.defineProperty(Response.prototype, Symbol.toStringTag, {
-		value: "Response",
-		writable: false,
-		enumerable: false,
-		configurable: true
-	});
-	INTERNALS$2 = Symbol("Request internals");
-	URL$1 = Url.URL || import_public_api.URL;
-	parse_url = Url.parse;
-	format_url = Url.format;
-	streamDestructionSupported = "destroy" in Stream.Readable.prototype;
-	Request = class Request {
-		constructor(input) {
-			let init = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
-			let parsedURL;
-			if (!isRequest(input)) {
-				if (input && input.href) parsedURL = parseURL(input.href);
-				else parsedURL = parseURL(`${input}`);
-				input = {};
-			} else parsedURL = parseURL(input.url);
-			let method = init.method || input.method || "GET";
-			method = method.toUpperCase();
-			if ((init.body != null || isRequest(input) && input.body !== null) && (method === "GET" || method === "HEAD")) throw new TypeError("Request with GET/HEAD method cannot have body");
-			let inputBody = init.body != null ? init.body : isRequest(input) && input.body !== null ? clone(input) : null;
-			Body.call(this, inputBody, {
-				timeout: init.timeout || input.timeout || 0,
-				size: init.size || input.size || 0
-			});
-			const headers = new Headers(init.headers || input.headers || {});
-			if (inputBody != null && !headers.has("Content-Type")) {
-				const contentType = extractContentType(inputBody);
-				if (contentType) headers.append("Content-Type", contentType);
-			}
-			let signal = isRequest(input) ? input.signal : null;
-			if ("signal" in init) signal = init.signal;
-			if (signal != null && !isAbortSignal(signal)) throw new TypeError("Expected signal to be an instanceof AbortSignal");
-			this[INTERNALS$2] = {
-				method,
-				redirect: init.redirect || input.redirect || "follow",
-				headers,
-				parsedURL,
-				signal
-			};
-			this.follow = init.follow !== void 0 ? init.follow : input.follow !== void 0 ? input.follow : 20;
-			this.compress = init.compress !== void 0 ? init.compress : input.compress !== void 0 ? input.compress : true;
-			this.counter = init.counter || input.counter || 0;
-			this.agent = init.agent || input.agent;
-		}
-		get method() {
-			return this[INTERNALS$2].method;
-		}
-		get url() {
-			return format_url(this[INTERNALS$2].parsedURL);
-		}
-		get headers() {
-			return this[INTERNALS$2].headers;
-		}
-		get redirect() {
-			return this[INTERNALS$2].redirect;
-		}
-		get signal() {
-			return this[INTERNALS$2].signal;
-		}
-		/**
-		* Clone this request
-		*
-		* @return  Request
-		*/
-		clone() {
-			return new Request(this);
-		}
-	};
-	Body.mixIn(Request.prototype);
-	Object.defineProperty(Request.prototype, Symbol.toStringTag, {
-		value: "Request",
-		writable: false,
-		enumerable: false,
-		configurable: true
-	});
-	Object.defineProperties(Request.prototype, {
-		method: { enumerable: true },
-		url: { enumerable: true },
-		headers: { enumerable: true },
-		redirect: { enumerable: true },
-		clone: { enumerable: true },
-		signal: { enumerable: true }
-	});
-	AbortError.prototype = Object.create(Error.prototype);
-	AbortError.prototype.constructor = AbortError;
-	AbortError.prototype.name = "AbortError";
-	URL$1$1 = Url.URL || import_public_api.URL;
-	PassThrough$1$1 = Stream.PassThrough;
-	isDomainOrSubdomain = function isDomainOrSubdomain(destination, original) {
-		const orig = new URL$1$1(original).hostname;
-		const dest = new URL$1$1(destination).hostname;
-		return orig === dest || orig[orig.length - dest.length - 1] === "." && orig.endsWith(dest);
-	};
-	isSameProtocol = function isSameProtocol(destination, original) {
-		return new URL$1$1(original).protocol === new URL$1$1(destination).protocol;
-	};
-	/**
-	* Redirect code matching
-	*
-	* @param   Number   code  Status code
-	* @return  Boolean
-	*/
-	fetch.isRedirect = function(code) {
-		return code === 301 || code === 302 || code === 303 || code === 307 || code === 308;
-	};
-	fetch.Promise = globalthis_default.Promise;
-}));
-//#endregion
-//#region node_modules/gtoken/node_modules/gaxios/package.json
-var package_exports$1 = /* @__PURE__ */ __exportAll({
-	author: () => author$1,
-	default: () => package_default$1,
-	dependencies: () => dependencies$1,
-	description: () => description$1,
-	devDependencies: () => devDependencies$1,
-	engines: () => engines$1,
-	files: () => files$1,
-	keywords: () => keywords$1,
-	license: () => license$1,
-	main: () => main$1,
-	name: () => name$1,
-	repository: () => repository$1,
-	scripts: () => scripts$1,
-	types: () => types$1,
-	version: () => version$1
-});
-var name$1, version$1, description$1, main$1, types$1, files$1, scripts$1, repository$1, keywords$1, engines$1, author$1, license$1, devDependencies$1, dependencies$1, package_default$1;
-var init_package$1 = __esmMin((() => {
-	name$1 = "gaxios";
-	version$1 = "6.7.1";
-	description$1 = "A simple common HTTP client specifically for Google APIs and services.";
-	main$1 = "build/src/index.js";
-	types$1 = "build/src/index.d.ts";
-	files$1 = ["build/src"];
-	scripts$1 = {
-		"lint": "gts check",
-		"test": "c8 mocha build/test",
-		"presystem-test": "npm run compile",
-		"system-test": "mocha build/system-test --timeout 80000",
-		"compile": "tsc -p .",
-		"fix": "gts fix",
-		"prepare": "npm run compile",
-		"pretest": "npm run compile",
-		"webpack": "webpack",
-		"prebrowser-test": "npm run compile",
-		"browser-test": "node build/browser-test/browser-test-runner.js",
-		"docs": "compodoc src/",
-		"docs-test": "linkinator docs",
-		"predocs-test": "npm run docs",
-		"samples-test": "cd samples/ && npm link ../ && npm test && cd ../",
-		"prelint": "cd samples; npm link ../; npm install",
-		"clean": "gts clean",
-		"precompile": "gts clean"
-	};
-	repository$1 = "googleapis/gaxios";
-	keywords$1 = ["google"];
-	engines$1 = { "node": ">=14" };
-	author$1 = "Google, LLC";
-	license$1 = "Apache-2.0";
-	devDependencies$1 = {
-		"@babel/plugin-proposal-private-methods": "^7.18.6",
-		"@compodoc/compodoc": "1.1.19",
-		"@types/cors": "^2.8.6",
-		"@types/express": "^4.16.1",
-		"@types/extend": "^3.0.1",
-		"@types/mocha": "^9.0.0",
-		"@types/multiparty": "0.0.36",
-		"@types/mv": "^2.1.0",
-		"@types/ncp": "^2.0.1",
-		"@types/node": "^20.0.0",
-		"@types/node-fetch": "^2.5.7",
-		"@types/sinon": "^17.0.0",
-		"@types/tmp": "0.2.6",
-		"@types/uuid": "^10.0.0",
-		"abort-controller": "^3.0.0",
-		"assert": "^2.0.0",
-		"browserify": "^17.0.0",
-		"c8": "^8.0.0",
-		"cheerio": "1.0.0-rc.10",
-		"cors": "^2.8.5",
-		"execa": "^5.0.0",
-		"express": "^4.16.4",
-		"form-data": "^4.0.0",
-		"gts": "^5.0.0",
-		"is-docker": "^2.0.0",
-		"karma": "^6.0.0",
-		"karma-chrome-launcher": "^3.0.0",
-		"karma-coverage": "^2.0.0",
-		"karma-firefox-launcher": "^2.0.0",
-		"karma-mocha": "^2.0.0",
-		"karma-remap-coverage": "^0.1.5",
-		"karma-sourcemap-loader": "^0.4.0",
-		"karma-webpack": "5.0.0",
-		"linkinator": "^3.0.0",
-		"mocha": "^8.0.0",
-		"multiparty": "^4.2.1",
-		"mv": "^2.1.1",
-		"ncp": "^2.0.0",
-		"nock": "^13.0.0",
-		"null-loader": "^4.0.0",
-		"puppeteer": "^19.0.0",
-		"sinon": "^18.0.0",
-		"stream-browserify": "^3.0.0",
-		"tmp": "0.2.3",
-		"ts-loader": "^8.0.0",
-		"typescript": "^5.1.6",
-		"webpack": "^5.35.0",
-		"webpack-cli": "^4.0.0"
-	};
-	dependencies$1 = {
-		"extend": "^3.0.2",
-		"https-proxy-agent": "^7.0.1",
-		"is-stream": "^2.0.0",
-		"node-fetch": "^2.6.9",
-		"uuid": "^9.0.1"
-	};
-	package_default$1 = {
-		name: name$1,
-		version: version$1,
-		description: description$1,
-		main: main$1,
-		types: types$1,
-		files: files$1,
-		scripts: scripts$1,
-		repository: repository$1,
-		keywords: keywords$1,
-		engines: engines$1,
-		author: author$1,
-		license: license$1,
-		devDependencies: devDependencies$1,
-		dependencies: dependencies$1
-	};
-}));
-//#endregion
-//#region node_modules/gtoken/node_modules/gaxios/build/src/util.js
-var require_util$2 = /* @__PURE__ */ __commonJSMin(((exports) => {
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.pkg = void 0;
-	exports.pkg = (init_package$1(), __toCommonJS(package_exports$1).default);
-}));
-//#endregion
-//#region node_modules/gtoken/node_modules/gaxios/build/src/common.js
-var require_common = /* @__PURE__ */ __commonJSMin(((exports) => {
-	var __importDefault = exports && exports.__importDefault || function(mod) {
-		return mod && mod.__esModule ? mod : { "default": mod };
-	};
-	var _a;
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.GaxiosError = exports.GAXIOS_ERROR_SYMBOL = void 0;
-	exports.defaultErrorRedactor = defaultErrorRedactor;
-	var url_1$3 = __require("node:url");
-	var util_1 = require_util$2();
-	var extend_1 = __importDefault(require_extend());
-	/**
-	* Support `instanceof` operator for `GaxiosError`s in different versions of this library.
-	*
-	* @see {@link GaxiosError[Symbol.hasInstance]}
-	*/
-	exports.GAXIOS_ERROR_SYMBOL = Symbol.for(`${util_1.pkg.name}-gaxios-error`);
-	exports.GaxiosError = class GaxiosError extends Error {
-		/**
-		* Support `instanceof` operator for `GaxiosError` across builds/duplicated files.
-		*
-		* @see {@link GAXIOS_ERROR_SYMBOL}
-		* @see {@link GaxiosError[GAXIOS_ERROR_SYMBOL]}
-		*/
-		static [(_a = exports.GAXIOS_ERROR_SYMBOL, Symbol.hasInstance)](instance) {
-			if (instance && typeof instance === "object" && exports.GAXIOS_ERROR_SYMBOL in instance && instance[exports.GAXIOS_ERROR_SYMBOL] === util_1.pkg.version) return true;
-			return Function.prototype[Symbol.hasInstance].call(GaxiosError, instance);
-		}
-		constructor(message, config, response, error) {
-			var _b;
-			super(message);
-			this.config = config;
-			this.response = response;
-			this.error = error;
-			/**
-			* Support `instanceof` operator for `GaxiosError` across builds/duplicated files.
-			*
-			* @see {@link GAXIOS_ERROR_SYMBOL}
-			* @see {@link GaxiosError[Symbol.hasInstance]}
-			* @see {@link https://github.com/microsoft/TypeScript/issues/13965#issuecomment-278570200}
-			* @see {@link https://stackoverflow.com/questions/46618852/require-and-instanceof}
-			* @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/@@hasInstance#reverting_to_default_instanceof_behavior}
-			*/
-			this[_a] = util_1.pkg.version;
-			this.config = (0, extend_1.default)(true, {}, config);
-			if (this.response) this.response.config = (0, extend_1.default)(true, {}, this.response.config);
-			if (this.response) {
-				try {
-					this.response.data = translateData(this.config.responseType, (_b = this.response) === null || _b === void 0 ? void 0 : _b.data);
-				} catch (_c) {}
-				this.status = this.response.status;
-			}
-			if (error && "code" in error && error.code) this.code = error.code;
-			if (config.errorRedactor) config.errorRedactor({
-				config: this.config,
-				response: this.response
-			});
-		}
-	};
-	function translateData(responseType, data) {
-		switch (responseType) {
-			case "stream": return data;
-			case "json": return JSON.parse(JSON.stringify(data));
-			case "arraybuffer": return JSON.parse(Buffer.from(data).toString("utf8"));
-			case "blob": return JSON.parse(data.text());
-			default: return data;
-		}
-	}
-	/**
-	* An experimental error redactor.
-	*
-	* @param config Config to potentially redact properties of
-	* @param response Config to potentially redact properties of
-	*
-	* @experimental
-	*/
-	function defaultErrorRedactor(data) {
-		const REDACT = "<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.";
-		function redactHeaders(headers) {
-			if (!headers) return;
-			for (const key of Object.keys(headers)) {
-				if (/^authentication$/i.test(key)) headers[key] = REDACT;
-				if (/^authorization$/i.test(key)) headers[key] = REDACT;
-				if (/secret/i.test(key)) headers[key] = REDACT;
-			}
-		}
-		function redactString(obj, key) {
-			if (typeof obj === "object" && obj !== null && typeof obj[key] === "string") {
-				const text = obj[key];
-				if (/grant_type=/i.test(text) || /assertion=/i.test(text) || /secret/i.test(text)) obj[key] = REDACT;
-			}
-		}
-		function redactObject(obj) {
-			if (typeof obj === "object" && obj !== null) {
-				if ("grant_type" in obj) obj["grant_type"] = REDACT;
-				if ("assertion" in obj) obj["assertion"] = REDACT;
-				if ("client_secret" in obj) obj["client_secret"] = REDACT;
-			}
-		}
-		if (data.config) {
-			redactHeaders(data.config.headers);
-			redactString(data.config, "data");
-			redactObject(data.config.data);
-			redactString(data.config, "body");
-			redactObject(data.config.body);
-			try {
-				const url = new url_1$3.URL("", data.config.url);
-				if (url.searchParams.has("token")) url.searchParams.set("token", REDACT);
-				if (url.searchParams.has("client_secret")) url.searchParams.set("client_secret", REDACT);
-				data.config.url = url.toString();
-			} catch (_b) {}
-		}
-		if (data.response) {
-			defaultErrorRedactor({ config: data.response.config });
-			redactHeaders(data.response.headers);
-			redactString(data.response, "data");
-			redactObject(data.response.data);
-		}
-		return data;
-	}
-}));
-//#endregion
-//#region node_modules/gtoken/node_modules/gaxios/build/src/retry.js
-var require_retry = /* @__PURE__ */ __commonJSMin(((exports) => {
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.getRetryConfig = getRetryConfig;
-	async function getRetryConfig(err) {
-		let config = getConfig(err);
-		if (!err || !err.config || !config && !err.config.retry) return { shouldRetry: false };
-		config = config || {};
-		config.currentRetryAttempt = config.currentRetryAttempt || 0;
-		config.retry = config.retry === void 0 || config.retry === null ? 3 : config.retry;
-		config.httpMethodsToRetry = config.httpMethodsToRetry || [
-			"GET",
-			"HEAD",
-			"PUT",
-			"OPTIONS",
-			"DELETE"
-		];
-		config.noResponseRetries = config.noResponseRetries === void 0 || config.noResponseRetries === null ? 2 : config.noResponseRetries;
-		config.retryDelayMultiplier = config.retryDelayMultiplier ? config.retryDelayMultiplier : 2;
-		config.timeOfFirstRequest = config.timeOfFirstRequest ? config.timeOfFirstRequest : Date.now();
-		config.totalTimeout = config.totalTimeout ? config.totalTimeout : Number.MAX_SAFE_INTEGER;
-		config.maxRetryDelay = config.maxRetryDelay ? config.maxRetryDelay : Number.MAX_SAFE_INTEGER;
-		config.statusCodesToRetry = config.statusCodesToRetry || [
-			[100, 199],
-			[408, 408],
-			[429, 429],
-			[500, 599]
-		];
-		err.config.retryConfig = config;
-		if (!await (config.shouldRetry || shouldRetryRequest)(err)) return {
-			shouldRetry: false,
-			config: err.config
-		};
-		const delay = getNextRetryDelay(config);
-		err.config.retryConfig.currentRetryAttempt += 1;
-		const backoff = config.retryBackoff ? config.retryBackoff(err, delay) : new Promise((resolve) => {
-			setTimeout(resolve, delay);
-		});
-		if (config.onRetryAttempt) config.onRetryAttempt(err);
-		await backoff;
-		return {
-			shouldRetry: true,
-			config: err.config
-		};
-	}
-	/**
-	* Determine based on config if we should retry the request.
-	* @param err The GaxiosError passed to the interceptor.
-	*/
-	function shouldRetryRequest(err) {
-		var _a;
-		const config = getConfig(err);
-		if (err.name === "AbortError" || ((_a = err.error) === null || _a === void 0 ? void 0 : _a.name) === "AbortError") return false;
-		if (!config || config.retry === 0) return false;
-		if (!err.response && (config.currentRetryAttempt || 0) >= config.noResponseRetries) return false;
-		if (!err.config.method || config.httpMethodsToRetry.indexOf(err.config.method.toUpperCase()) < 0) return false;
-		if (err.response && err.response.status) {
-			let isInRange = false;
-			for (const [min, max] of config.statusCodesToRetry) {
-				const status = err.response.status;
-				if (status >= min && status <= max) {
-					isInRange = true;
-					break;
-				}
-			}
-			if (!isInRange) return false;
-		}
-		config.currentRetryAttempt = config.currentRetryAttempt || 0;
-		if (config.currentRetryAttempt >= config.retry) return false;
-		return true;
-	}
-	/**
-	* Acquire the raxConfig object from an GaxiosError if available.
-	* @param err The Gaxios error with a config object.
-	*/
-	function getConfig(err) {
-		if (err && err.config && err.config.retryConfig) return err.config.retryConfig;
-	}
-	/**
-	* Gets the delay to wait before the next retry.
-	*
-	* @param {RetryConfig} config The current set of retry options
-	* @returns {number} the amount of ms to wait before the next retry attempt.
-	*/
-	function getNextRetryDelay(config) {
-		var _a;
-		const calculatedDelay = (config.currentRetryAttempt ? 0 : (_a = config.retryDelay) !== null && _a !== void 0 ? _a : 100) + (Math.pow(config.retryDelayMultiplier, config.currentRetryAttempt) - 1) / 2 * 1e3;
-		const maxAllowableDelay = config.totalTimeout - (Date.now() - config.timeOfFirstRequest);
-		return Math.min(calculatedDelay, maxAllowableDelay, config.maxRetryDelay);
-	}
-}));
-//#endregion
-//#region node_modules/gtoken/node_modules/gaxios/build/src/interceptor.js
-var require_interceptor = /* @__PURE__ */ __commonJSMin(((exports) => {
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.GaxiosInterceptorManager = void 0;
-	/**
-	* Class to manage collections of GaxiosInterceptors for both requests and responses.
-	*/
-	var GaxiosInterceptorManager = class extends Set {};
-	exports.GaxiosInterceptorManager = GaxiosInterceptorManager;
-}));
-//#endregion
-//#region node_modules/gtoken/node_modules/gaxios/build/src/gaxios.js
-var require_gaxios = /* @__PURE__ */ __commonJSMin(((exports) => {
-	var __createBinding = exports && exports.__createBinding || (Object.create ? (function(o, m, k, k2) {
-		if (k2 === void 0) k2 = k;
-		var desc = Object.getOwnPropertyDescriptor(m, k);
-		if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) desc = {
-			enumerable: true,
-			get: function() {
-				return m[k];
-			}
-		};
-		Object.defineProperty(o, k2, desc);
-	}) : (function(o, m, k, k2) {
-		if (k2 === void 0) k2 = k;
-		o[k2] = m[k];
-	}));
-	var __setModuleDefault = exports && exports.__setModuleDefault || (Object.create ? (function(o, v) {
-		Object.defineProperty(o, "default", {
-			enumerable: true,
-			value: v
-		});
-	}) : function(o, v) {
-		o["default"] = v;
-	});
-	var __importStar = exports && exports.__importStar || function(mod) {
-		if (mod && mod.__esModule) return mod;
-		var result = {};
-		if (mod != null) {
-			for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-		}
-		__setModuleDefault(result, mod);
-		return result;
-	};
-	var __classPrivateFieldGet = exports && exports.__classPrivateFieldGet || function(receiver, state, kind, f) {
-		if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-		if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-		return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-	};
-	var __classPrivateFieldSet = exports && exports.__classPrivateFieldSet || function(receiver, state, value, kind, f) {
-		if (kind === "m") throw new TypeError("Private method is not writable");
-		if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-		if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-		return kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value), value;
-	};
-	var __importDefault = exports && exports.__importDefault || function(mod) {
-		return mod && mod.__esModule ? mod : { "default": mod };
-	};
-	var _Gaxios_instances;
-	var _a;
-	var _Gaxios_urlMayUseProxy;
-	var _Gaxios_applyRequestInterceptors;
-	var _Gaxios_applyResponseInterceptors;
-	var _Gaxios_prepareRequest;
-	var _Gaxios_proxyAgent;
-	var _Gaxios_getProxyAgent;
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.Gaxios = void 0;
-	var extend_1 = __importDefault(require_extend());
-	var https_1$1 = __require("node:https");
-	var node_fetch_1 = __importDefault((init_lib(), __toCommonJS(lib_exports)));
-	var querystring_1$1 = __importDefault(__require("node:querystring"));
-	var is_stream_1 = __importDefault(require_is_stream());
-	var url_1$2 = __require("node:url");
-	var common_1 = require_common();
-	var retry_1 = require_retry();
-	var stream_1$8 = __require("node:stream");
-	var uuid_1 = (init_esm_browser(), __toCommonJS(esm_browser_exports));
-	var interceptor_1 = require_interceptor();
-	var fetch = hasFetch() ? window.fetch : node_fetch_1.default;
-	function hasWindow() {
-		return typeof window !== "undefined" && !!window;
-	}
-	function hasFetch() {
-		return hasWindow() && !!window.fetch;
-	}
-	function hasBuffer() {
-		return typeof Buffer !== "undefined";
-	}
-	function hasHeader(options, header) {
-		return !!getHeader(options, header);
-	}
-	function getHeader(options, header) {
-		header = header.toLowerCase();
-		for (const key of Object.keys((options === null || options === void 0 ? void 0 : options.headers) || {})) if (header === key.toLowerCase()) return options.headers[key];
-	}
-	var Gaxios = class {
-		/**
-		* The Gaxios class is responsible for making HTTP requests.
-		* @param defaults The default set of options to be used for this instance.
-		*/
-		constructor(defaults) {
-			_Gaxios_instances.add(this);
-			this.agentCache = /* @__PURE__ */ new Map();
-			this.defaults = defaults || {};
-			this.interceptors = {
-				request: new interceptor_1.GaxiosInterceptorManager(),
-				response: new interceptor_1.GaxiosInterceptorManager()
-			};
-		}
-		/**
-		* Perform an HTTP request with the given options.
-		* @param opts Set of HTTP options that will be used for this HTTP request.
-		*/
-		async request(opts = {}) {
-			opts = await __classPrivateFieldGet(this, _Gaxios_instances, "m", _Gaxios_prepareRequest).call(this, opts);
-			opts = await __classPrivateFieldGet(this, _Gaxios_instances, "m", _Gaxios_applyRequestInterceptors).call(this, opts);
-			return __classPrivateFieldGet(this, _Gaxios_instances, "m", _Gaxios_applyResponseInterceptors).call(this, this._request(opts));
-		}
-		async _defaultAdapter(opts) {
-			const res = await (opts.fetchImplementation || fetch)(opts.url, opts);
-			const data = await this.getResponseData(opts, res);
-			return this.translateResponse(opts, res, data);
-		}
-		/**
-		* Internal, retryable version of the `request` method.
-		* @param opts Set of HTTP options that will be used for this HTTP request.
-		*/
-		async _request(opts = {}) {
-			var _b;
-			try {
-				let translatedResponse;
-				if (opts.adapter) translatedResponse = await opts.adapter(opts, this._defaultAdapter.bind(this));
-				else translatedResponse = await this._defaultAdapter(opts);
-				if (!opts.validateStatus(translatedResponse.status)) {
-					if (opts.responseType === "stream") {
-						let response = "";
-						await new Promise((resolve) => {
-							(translatedResponse === null || translatedResponse === void 0 ? void 0 : translatedResponse.data).on("data", (chunk) => {
-								response += chunk;
-							});
-							(translatedResponse === null || translatedResponse === void 0 ? void 0 : translatedResponse.data).on("end", resolve);
-						});
-						translatedResponse.data = response;
-					}
-					throw new common_1.GaxiosError(`Request failed with status code ${translatedResponse.status}`, opts, translatedResponse);
-				}
-				return translatedResponse;
-			} catch (e) {
-				const err = e instanceof common_1.GaxiosError ? e : new common_1.GaxiosError(e.message, opts, void 0, e);
-				const { shouldRetry, config } = await (0, retry_1.getRetryConfig)(err);
-				if (shouldRetry && config) {
-					err.config.retryConfig.currentRetryAttempt = config.retryConfig.currentRetryAttempt;
-					opts.retryConfig = (_b = err.config) === null || _b === void 0 ? void 0 : _b.retryConfig;
-					return this._request(opts);
-				}
-				throw err;
-			}
-		}
-		async getResponseData(opts, res) {
-			switch (opts.responseType) {
-				case "stream": return res.body;
-				case "json": {
-					let data = await res.text();
-					try {
-						data = JSON.parse(data);
-					} catch (_b) {}
-					return data;
-				}
-				case "arraybuffer": return res.arrayBuffer();
-				case "blob": return res.blob();
-				case "text": return res.text();
-				default: return this.getResponseDataFromContentType(res);
-			}
-		}
-		/**
-		* By default, throw for any non-2xx status code
-		* @param status status code from the HTTP response
-		*/
-		validateStatus(status) {
-			return status >= 200 && status < 300;
-		}
-		/**
-		* Encode a set of key/value pars into a querystring format (?foo=bar&baz=boo)
-		* @param params key value pars to encode
-		*/
-		paramsSerializer(params) {
-			return querystring_1$1.default.stringify(params);
-		}
-		translateResponse(opts, res, data) {
-			const headers = {};
-			res.headers.forEach((value, key) => {
-				headers[key] = value;
-			});
-			return {
-				config: opts,
-				data,
-				headers,
-				status: res.status,
-				statusText: res.statusText,
-				request: { responseURL: res.url }
-			};
-		}
-		/**
-		* Attempts to parse a response by looking at the Content-Type header.
-		* @param {FetchResponse} response the HTTP response.
-		* @returns {Promise<any>} a promise that resolves to the response data.
-		*/
-		async getResponseDataFromContentType(response) {
-			let contentType = response.headers.get("Content-Type");
-			if (contentType === null) return response.text();
-			contentType = contentType.toLowerCase();
-			if (contentType.includes("application/json")) {
-				let data = await response.text();
-				try {
-					data = JSON.parse(data);
-				} catch (_b) {}
-				return data;
-			} else if (contentType.match(/^text\//)) return response.text();
-			else return response.blob();
-		}
-		/**
-		* Creates an async generator that yields the pieces of a multipart/related request body.
-		* This implementation follows the spec: https://www.ietf.org/rfc/rfc2387.txt. However, recursive
-		* multipart/related requests are not currently supported.
-		*
-		* @param {GaxioMultipartOptions[]} multipartOptions the pieces to turn into a multipart/related body.
-		* @param {string} boundary the boundary string to be placed between each part.
-		*/
-		async *getMultipartRequest(multipartOptions, boundary) {
-			const finale = `--${boundary}--`;
-			for (const currentPart of multipartOptions) {
-				yield `--${boundary}\r\nContent-Type: ${currentPart.headers["Content-Type"] || "application/octet-stream"}\r\n\r\n`;
-				if (typeof currentPart.content === "string") yield currentPart.content;
-				else yield* currentPart.content;
-				yield "\r\n";
-			}
-			yield finale;
-		}
-	};
-	exports.Gaxios = Gaxios;
-	_a = Gaxios, _Gaxios_instances = /* @__PURE__ */ new WeakSet(), _Gaxios_urlMayUseProxy = function _Gaxios_urlMayUseProxy(url, noProxy = []) {
-		var _b, _c;
-		const candidate = new url_1$2.URL(url);
-		const noProxyList = [...noProxy];
-		const noProxyEnvList = ((_c = (_b = processModule.env.NO_PROXY) !== null && _b !== void 0 ? _b : processModule.env.no_proxy) === null || _c === void 0 ? void 0 : _c.split(",")) || [];
-		for (const rule of noProxyEnvList) noProxyList.push(rule.trim());
-		for (const rule of noProxyList) if (rule instanceof RegExp) {
-			if (rule.test(candidate.toString())) return false;
-		} else if (rule instanceof url_1$2.URL) {
-			if (rule.origin === candidate.origin) return false;
-		} else if (rule.startsWith("*.") || rule.startsWith(".")) {
-			const cleanedRule = rule.replace(/^\*\./, ".");
-			if (candidate.hostname.endsWith(cleanedRule)) return false;
-		} else if (rule === candidate.origin || rule === candidate.hostname || rule === candidate.href) return false;
-		return true;
-	}, _Gaxios_applyRequestInterceptors = async function _Gaxios_applyRequestInterceptors(options) {
-		let promiseChain = Promise.resolve(options);
-		for (const interceptor of this.interceptors.request.values()) if (interceptor) promiseChain = promiseChain.then(interceptor.resolved, interceptor.rejected);
-		return promiseChain;
-	}, _Gaxios_applyResponseInterceptors = async function _Gaxios_applyResponseInterceptors(response) {
-		let promiseChain = Promise.resolve(response);
-		for (const interceptor of this.interceptors.response.values()) if (interceptor) promiseChain = promiseChain.then(interceptor.resolved, interceptor.rejected);
-		return promiseChain;
-	}, _Gaxios_prepareRequest = async function _Gaxios_prepareRequest(options) {
-		var _b, _c, _d, _e;
-		const opts = (0, extend_1.default)(true, {}, this.defaults, options);
-		if (!opts.url) throw new Error("URL is required.");
-		const baseUrl = opts.baseUrl || opts.baseURL;
-		if (baseUrl) opts.url = baseUrl.toString() + opts.url;
-		opts.paramsSerializer = opts.paramsSerializer || this.paramsSerializer;
-		if (opts.params && Object.keys(opts.params).length > 0) {
-			let additionalQueryParams = opts.paramsSerializer(opts.params);
-			if (additionalQueryParams.startsWith("?")) additionalQueryParams = additionalQueryParams.slice(1);
-			const prefix = opts.url.toString().includes("?") ? "&" : "?";
-			opts.url = opts.url + prefix + additionalQueryParams;
-		}
-		if (typeof options.maxContentLength === "number") opts.size = options.maxContentLength;
-		if (typeof options.maxRedirects === "number") opts.follow = options.maxRedirects;
-		opts.headers = opts.headers || {};
-		if (opts.multipart === void 0 && opts.data) {
-			const isFormData = typeof FormData === "undefined" ? false : (opts === null || opts === void 0 ? void 0 : opts.data) instanceof FormData;
-			if (is_stream_1.default.readable(opts.data)) opts.body = opts.data;
-			else if (hasBuffer() && Buffer.isBuffer(opts.data)) {
-				opts.body = opts.data;
-				if (!hasHeader(opts, "Content-Type")) opts.headers["Content-Type"] = "application/json";
-			} else if (typeof opts.data === "object") {
-				if (!isFormData) {
-					if (getHeader(opts, "content-type") === "application/x-www-form-urlencoded") opts.body = opts.paramsSerializer(opts.data);
-					else {
-						if (!hasHeader(opts, "Content-Type")) opts.headers["Content-Type"] = "application/json";
-						opts.body = JSON.stringify(opts.data);
-					}
-				}
-			} else opts.body = opts.data;
-		} else if (opts.multipart && opts.multipart.length > 0) {
-			const boundary = (0, uuid_1.v4)();
-			opts.headers["Content-Type"] = `multipart/related; boundary=${boundary}`;
-			const bodyStream = new stream_1$8.PassThrough();
-			opts.body = bodyStream;
-			(0, stream_1$8.pipeline)(this.getMultipartRequest(opts.multipart, boundary), bodyStream, () => {});
-		}
-		opts.validateStatus = opts.validateStatus || this.validateStatus;
-		opts.responseType = opts.responseType || "unknown";
-		if (!opts.headers["Accept"] && opts.responseType === "json") opts.headers["Accept"] = "application/json";
-		opts.method = opts.method || "GET";
-		const proxy = opts.proxy || ((_b = processModule === null || processModule === void 0 ? void 0 : processModule.env) === null || _b === void 0 ? void 0 : _b.HTTPS_PROXY) || ((_c = processModule === null || processModule === void 0 ? void 0 : processModule.env) === null || _c === void 0 ? void 0 : _c.https_proxy) || ((_d = processModule === null || processModule === void 0 ? void 0 : processModule.env) === null || _d === void 0 ? void 0 : _d.HTTP_PROXY) || ((_e = processModule === null || processModule === void 0 ? void 0 : processModule.env) === null || _e === void 0 ? void 0 : _e.http_proxy);
-		const urlMayUseProxy = __classPrivateFieldGet(this, _Gaxios_instances, "m", _Gaxios_urlMayUseProxy).call(this, opts.url, opts.noProxy);
-		if (opts.agent) {} else if (proxy && urlMayUseProxy) {
-			const HttpsProxyAgent = await __classPrivateFieldGet(_a, _a, "m", _Gaxios_getProxyAgent).call(_a);
-			if (this.agentCache.has(proxy)) opts.agent = this.agentCache.get(proxy);
-			else {
-				opts.agent = new HttpsProxyAgent(proxy, {
-					cert: opts.cert,
-					key: opts.key
-				});
-				this.agentCache.set(proxy, opts.agent);
-			}
-		} else if (opts.cert && opts.key) {
-			if (this.agentCache.has(opts.key)) opts.agent = this.agentCache.get(opts.key);
-			else {
-				opts.agent = new https_1$1.Agent({
-					cert: opts.cert,
-					key: opts.key
-				});
-				this.agentCache.set(opts.key, opts.agent);
-			}
-		}
-		if (typeof opts.errorRedactor !== "function" && opts.errorRedactor !== false) opts.errorRedactor = common_1.defaultErrorRedactor;
-		return opts;
-	}, _Gaxios_getProxyAgent = async function _Gaxios_getProxyAgent() {
-		__classPrivateFieldSet(this, _a, __classPrivateFieldGet(this, _a, "f", _Gaxios_proxyAgent) || (await Promise.resolve().then(() => __importStar(require_dist$1()))).HttpsProxyAgent, "f", _Gaxios_proxyAgent);
-		return __classPrivateFieldGet(this, _a, "f", _Gaxios_proxyAgent);
-	};
-	/**
-	* A cache for the lazily-loaded proxy agent.
-	*
-	* Should use {@link Gaxios[#getProxyAgent]} to retrieve.
-	*/
-	_Gaxios_proxyAgent = { value: void 0 };
-}));
-//#endregion
-//#region node_modules/gtoken/node_modules/gaxios/build/src/index.js
-var require_src$4 = /* @__PURE__ */ __commonJSMin(((exports) => {
-	var __createBinding = exports && exports.__createBinding || (Object.create ? (function(o, m, k, k2) {
-		if (k2 === void 0) k2 = k;
-		var desc = Object.getOwnPropertyDescriptor(m, k);
-		if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) desc = {
-			enumerable: true,
-			get: function() {
-				return m[k];
-			}
-		};
-		Object.defineProperty(o, k2, desc);
-	}) : (function(o, m, k, k2) {
-		if (k2 === void 0) k2 = k;
-		o[k2] = m[k];
-	}));
-	var __exportStar = exports && exports.__exportStar || function(m, exports$3) {
-		for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports$3, p)) __createBinding(exports$3, m, p);
-	};
-	Object.defineProperty(exports, "__esModule", { value: true });
-	exports.instance = exports.Gaxios = exports.GaxiosError = void 0;
-	exports.request = request;
-	var gaxios_1 = require_gaxios();
-	Object.defineProperty(exports, "Gaxios", {
-		enumerable: true,
-		get: function() {
-			return gaxios_1.Gaxios;
-		}
-	});
-	var common_1 = require_common();
-	Object.defineProperty(exports, "GaxiosError", {
-		enumerable: true,
-		get: function() {
-			return common_1.GaxiosError;
-		}
-	});
-	__exportStar(require_interceptor(), exports);
-	/**
-	* The default instance used when the `request` method is directly
-	* invoked.
-	*/
-	exports.instance = new gaxios_1.Gaxios();
-	/**
-	* Make an HTTP request using the given options.
-	* @param opts Options for the request
-	*/
-	async function request(opts) {
-		return exports.instance.request(opts);
-	}
-}));
-//#endregion
-//#region node_modules/gtoken/build/src/index.js
+//#region node_modules/@google-cloud/storage/node_modules/gtoken/build/src/index.js
 var require_src$3 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	/**
 	* Copyright 2018 Google LLC
@@ -9781,7 +7877,7 @@ var require_src$3 = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.GoogleToken = void 0;
 	var fs$5 = __require("node:fs");
-	var gaxios_1 = require_src$4();
+	var gaxios_1 = require_src$6();
 	var jws = require_jws();
 	var path$3 = __require("node:path");
 	var util_1$2 = __require("node:util");
@@ -9985,7 +8081,7 @@ var require_jwtaccess = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.JWTAccess = void 0;
 	var jws = require_jws();
-	var util_1 = require_util$3();
+	var util_1 = require_util$2();
 	var DEFAULT_HEADER = {
 		alg: "RS256",
 		typ: "JWT"
@@ -10445,8 +8541,8 @@ var require_impersonated = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Impersonated = exports.IMPERSONATED_ACCOUNT_TYPE = void 0;
 	var oauth2client_1 = require_oauth2client();
-	var gaxios_1 = require_src$7();
-	var util_1 = require_util$3();
+	var gaxios_1 = require_src$6();
+	var util_1 = require_util$2();
 	exports.IMPERSONATED_ACCOUNT_TYPE = "impersonated_service_account";
 	exports.Impersonated = class Impersonated extends oauth2client_1.OAuth2Client {
 		/**
@@ -10755,7 +8851,7 @@ var require_oauth2common = /* @__PURE__ */ __commonJSMin(((exports) => {
 var require_stscredentials = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.StsCredentials = void 0;
-	var gaxios_1 = require_src$7();
+	var gaxios_1 = require_src$6();
 	var querystring$1 = __require("node:querystring");
 	var transporters_1 = require_transporters();
 	var oauth2common_1 = require_oauth2common();
@@ -10846,7 +8942,7 @@ var require_baseexternalclient = /* @__PURE__ */ __commonJSMin(((exports) => {
 	var stream$2 = __require("node:stream");
 	var authclient_1 = require_authclient();
 	var sts = require_stscredentials();
-	var util_1 = require_util$3();
+	var util_1 = require_util$2();
 	/**
 	* The required token exchange grant_type: rfc8693#section-2.1
 	*/
@@ -10880,7 +8976,7 @@ var require_baseexternalclient = /* @__PURE__ */ __commonJSMin(((exports) => {
 	/** The workforce audience pattern. */
 	var WORKFORCE_AUDIENCE_PATTERN = "//iam\\.googleapis\\.com/locations/[^/]+/workforcePools/[^/]+/providers/.+";
 	var DEFAULT_TOKEN_URL = "https://sts.{universeDomain}/v1/token";
-	var pkg = (init_package$2(), __toCommonJS(package_exports$2).default);
+	var pkg = (init_package$1(), __toCommonJS(package_exports$1).default);
 	/**
 	* For backwards compatibility.
 	*/
@@ -11294,7 +9390,7 @@ var require_identitypoolclient = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.IdentityPoolClient = void 0;
 	var baseexternalclient_1 = require_baseexternalclient();
-	var util_1 = require_util$3();
+	var util_1 = require_util$2();
 	var filesubjecttokensupplier_1 = require_filesubjecttokensupplier();
 	var urlsubjecttokensupplier_1 = require_urlsubjecttokensupplier();
 	exports.IdentityPoolClient = class IdentityPoolClient extends baseexternalclient_1.BaseExternalAccountClient {
@@ -11657,7 +9753,7 @@ var require_awsclient = /* @__PURE__ */ __commonJSMin(((exports) => {
 	var awsrequestsigner_1 = require_awsrequestsigner();
 	var baseexternalclient_1 = require_baseexternalclient();
 	var defaultawssecuritycredentialssupplier_1 = require_defaultawssecuritycredentialssupplier();
-	var util_1 = require_util$3();
+	var util_1 = require_util$2();
 	/**
 	* AWS external account client. This is used for AWS workloads, where
 	* AWS STS GetCallerIdentity serialized signed requests are exchanged for
@@ -12166,7 +10262,7 @@ var require_externalAccountAuthorizedUserClient = /* @__PURE__ */ __commonJSMin(
 	exports.ExternalAccountAuthorizedUserClient = exports.EXTERNAL_ACCOUNT_AUTHORIZED_USER_TYPE = void 0;
 	var authclient_1 = require_authclient();
 	var oauth2common_1 = require_oauth2common();
-	var gaxios_1 = require_src$7();
+	var gaxios_1 = require_src$6();
 	var stream$1 = __require("node:stream");
 	var baseexternalclient_1 = require_baseexternalclient();
 	/**
@@ -12362,7 +10458,7 @@ var require_googleauth = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.GoogleAuth = exports.GoogleAuthExceptionMessages = exports.CLOUD_SDK_CLIENT_ID = void 0;
 	var child_process_1 = (init_child_process(), __toCommonJS(child_process_exports));
 	var fs$2 = __require("node:fs");
-	var gcpMetadata = require_src$5();
+	var gcpMetadata = require_src$4();
 	var os = __require("node:os");
 	var path$2 = __require("node:path");
 	var crypto_1 = require_crypto();
@@ -12377,7 +10473,7 @@ var require_googleauth = /* @__PURE__ */ __commonJSMin(((exports) => {
 	var baseexternalclient_1 = require_baseexternalclient();
 	var authclient_1 = require_authclient();
 	var externalAccountAuthorizedUserClient_1 = require_externalAccountAuthorizedUserClient();
-	var util_1 = require_util$3();
+	var util_1 = require_util$2();
 	exports.CLOUD_SDK_CLIENT_ID = "764086051850-6qr4p6gpi6hn506pt8ejuq83di341hur.apps.googleusercontent.com";
 	exports.GoogleAuthExceptionMessages = {
 		API_KEY_WITH_CREDENTIALS: "API Keys and Credentials are mutually exclusive authentication methods and cannot be used together.",
@@ -13240,8 +11336,8 @@ var require_src$2 = /* @__PURE__ */ __commonJSMin(((exports) => {
 			return googleauth_1.GoogleAuth;
 		}
 	});
-	exports.gcpMetadata = require_src$5();
-	exports.gaxios = require_src$7();
+	exports.gcpMetadata = require_src$4();
+	exports.gaxios = require_src$6();
 	var authclient_1 = require_authclient();
 	Object.defineProperty(exports, "AuthClient", {
 		enumerable: true,
@@ -13664,7 +11760,7 @@ var require_dist = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.HttpProxyAgent = void 0;
 	var net = __importStar(__require("node:net"));
 	var tls = __importStar(__require("node:tls"));
-	var debug_1 = __importDefault(require_src$8());
+	var debug_1 = __importDefault(require_src$7());
 	var events_1$1 = __require("node:events");
 	var agent_base_1 = require_dist$2();
 	var url_1$1 = __require("node:url");
@@ -14729,7 +12825,7 @@ var require_util = /* @__PURE__ */ __commonJSMin(((exports) => {
 	/*!
 	* @module common/util
 	*/
-	var projectify_1 = require_src$9();
+	var projectify_1 = require_src$8();
 	var htmlEntities = __importStar(require_commonjs());
 	var google_auth_library_1 = require_src$2();
 	var teeny_request_1 = require_src$1();
@@ -15451,7 +13547,7 @@ var require_service_object = /* @__PURE__ */ __commonJSMin(((exports) => {
 	* See the License for the specific language governing permissions and
 	* limitations under the License.
 	*/
-	var promisify_1 = require_src$10();
+	var promisify_1 = require_src$9();
 	var events_1 = __require("node:events");
 	var util_js_1 = require_util();
 	/**
@@ -17082,7 +15178,7 @@ var require_p_limit = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 //#endregion
 //#region node_modules/async-retry/lib/index.js
 var require_lib = /* @__PURE__ */ __commonJSMin(((exports, module) => {
-	var retrier = require_retry$2();
+	var retrier = require_retry$1();
 	function retry(fn, opts) {
 		function run(resolve, reject) {
 			var options = opts || {};
@@ -17123,7 +15219,7 @@ var require_lib = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 var require_acl = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.AclRoleAccessorMethods = exports.Acl = void 0;
-	var promisify_1 = require_src$10();
+	var promisify_1 = require_src$9();
 	/**
 	* Attach functionality to a {@link Storage.acl} instance. This will add an
 	* object for each role group (owners, readers, and writers), with each object
@@ -19052,7 +17148,7 @@ var require_resumable_upload = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.checkUploadStatus = checkUploadStatus;
 	var abort_controller_1 = __importDefault((init_abort_controller(), __toCommonJS(abort_controller_exports)));
 	var crypto_1$1 = __require("node:crypto");
-	var gaxios = __importStar(require_src$7());
+	var gaxios = __importStar(require_src$6());
 	var google_auth_library_1 = require_src$2();
 	var stream_1$3 = __require("node:stream");
 	var async_retry_1 = __importDefault(require_lib());
@@ -20076,7 +18172,7 @@ var require_file = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.File = exports.FileExceptionMessages = exports.RequestError = exports.SkipReason = exports.STORAGE_POST_POLICY_BASE_URL = exports.ActionToHTTPMethod = void 0;
 	var index_js_1 = require_nodejs_common();
-	var promisify_1 = require_src$10();
+	var promisify_1 = require_src$9();
 	var crypto$1 = __importStar(__require("node:crypto"));
 	var fs$1 = __importStar(__require("node:fs"));
 	var mime_1 = __importDefault(require_mime());
@@ -23295,7 +21391,7 @@ var require_file = /* @__PURE__ */ __commonJSMin(((exports) => {
 var require_iam = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Iam = exports.IAMExceptionMessages = void 0;
-	var promisify_1 = require_src$10();
+	var promisify_1 = require_src$9();
 	var util_js_1 = require_util$1();
 	var IAMExceptionMessages;
 	(function(IAMExceptionMessages) {
@@ -23573,7 +21669,7 @@ var require_notification = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Notification = void 0;
 	var index_js_1 = require_nodejs_common();
-	var promisify_1 = require_src$10();
+	var promisify_1 = require_src$9();
 	/**
 	* The API-formatted resource description of the notification.
 	*
@@ -23861,8 +21957,8 @@ var require_bucket = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Bucket = exports.BucketExceptionMessages = exports.AvailableServiceObjectMethods = exports.BucketActionToHTTPMethod = exports.ComposeCleanupError = void 0;
 	var index_js_1 = require_nodejs_common();
-	var paginator_1 = require_src$11();
-	var promisify_1 = require_src$10();
+	var paginator_1 = require_src$10();
+	var promisify_1 = require_src$9();
 	var fs = __importStar(__require("node:fs"));
 	var mime_1 = __importDefault(require_mime());
 	var path$1 = __importStar(__require("node:path"));
@@ -27189,7 +25285,7 @@ var require_channel = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Channel = void 0;
 	var index_js_1 = require_nodejs_common();
-	var promisify_1 = require_src$10();
+	var promisify_1 = require_src$9();
 	/**
 	* Create a channel object to interact with a Cloud Storage channel.
 	*
@@ -27278,7 +25374,7 @@ var require_hmacKey = /* @__PURE__ */ __commonJSMin(((exports) => {
 	exports.HmacKey = void 0;
 	var index_js_1 = require_nodejs_common();
 	var storage_js_1 = require_storage();
-	var promisify_1 = require_src$10();
+	var promisify_1 = require_src$9();
 	/**
 	* The API-formatted resource description of the HMAC key.
 	*
@@ -27597,8 +25693,8 @@ var require_storage = /* @__PURE__ */ __commonJSMin(((exports) => {
 	Object.defineProperty(exports, "__esModule", { value: true });
 	exports.Storage = exports.RETRYABLE_ERR_FN_DEFAULT = exports.MAX_RETRY_DELAY_DEFAULT = exports.TOTAL_TIMEOUT_DEFAULT = exports.RETRY_DELAY_MULTIPLIER_DEFAULT = exports.MAX_RETRY_DEFAULT = exports.AUTO_RETRY_DEFAULT = exports.PROTOCOL_REGEX = exports.StorageExceptionMessages = exports.ExceptionMessages = exports.IdempotencyStrategy = void 0;
 	var index_js_1 = require_nodejs_common();
-	var paginator_1 = require_src$11();
-	var promisify_1 = require_src$10();
+	var paginator_1 = require_src$10();
+	var promisify_1 = require_src$9();
 	var stream_1 = __require("node:stream");
 	var bucket_js_1 = require_bucket();
 	var channel_js_1 = require_channel();
@@ -32334,4 +30430,4 @@ var require_src = /* @__PURE__ */ __commonJSMin(((exports) => {
 	__exportStar(require_transfer_manager(), exports);
 }));
 //#endregion
-export { require_retry$2 as a, require_ms as i, require_dist$1 as n, require_src$8 as r, require_src as t };
+export { require_retry$1 as a, require_ms as i, require_dist$1 as n, require_src$7 as r, require_src as t };

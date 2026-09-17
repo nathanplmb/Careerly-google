@@ -1,6 +1,6 @@
 import "../_libs/firebase.mjs";
 import { a as setDoc, o as collection, r as getDocs, s as doc, t as deleteDoc } from "../_libs/@firebase/firestore+[...].mjs";
-import { C as isFirebaseConfigured, m as auth, v as db } from "./router-D-SxcmZd2.mjs";
+import { C as isFirebaseConfigured, m as auth, v as db } from "./router-Chlelb_S2.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/admin-client-DqffCexl.js
 var SUPER_ADMIN_EMAIL = "nathpa1423@gmail.com";
 /**

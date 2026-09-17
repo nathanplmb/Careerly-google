@@ -1,5 +1,5 @@
 import { i as __require, t as __commonJSMin } from "../_runtime.mjs";
-import { d as require_extend } from "./@google-cloud/firestore+[...].mjs";
+import { u as require_extend } from "./@google-cloud/firestore+[...].mjs";
 import { setImmediate } from "node:timers";
 //#region node_modules/@google-cloud/paginator/build/src/resource-stream.js
 var require_resource_stream = /* @__PURE__ */ __commonJSMin(((exports) => {
