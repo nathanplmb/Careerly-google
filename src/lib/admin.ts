@@ -148,14 +148,14 @@ export async function bootstrapAdminAccount(
  */
 function calculerCompletion(data: Record<string, unknown>): number {
   const champs = [
-    data.prenom,
-    data.nom,
-    data.titre || data.formation,
-    data.ecole,
-    data.localisation,
-    data.competences,
-    data.experiences,
-    data.cv,
+    data["prenom"],
+    data["nom"],
+    data["titre"] || data["formation"],
+    data["ecole"],
+    data["localisation"],
+    data["competences"],
+    data["experiences"],
+    data["cv"],
   ];
   const remplis = champs.filter((c) =>
     Boolean(c && String(c).trim().length > 0),
@@ -213,18 +213,20 @@ export async function fetchAllUsersForAdmin(): Promise<{
           // Ignorer si vide
         }
 
-        const email = (d.email || d.emailContact || "Non disponible") as string;
-        let provider: AdminUserRecord["provider"] = "inconnu";
-        if (d.provider === "google" || email.includes("@gmail.com"))
-          provider = "google";
-        else if (d.provider === "email") provider = "email";
-        else if (d.provider === "demo") provider = "demo";
-
-        const creeLe = (d.createdAt ||
-          d.updated_at ||
+        const email = (d["email"] ||
+          d["emailContact"] ||
           "Non disponible") as string;
-        const dernierAccesLe = (d.dernierAccesLe ||
-          d.updated_at ||
+        let provider: AdminUserRecord["provider"] = "inconnu";
+        if (d["provider"] === "google" || email.includes("@gmail.com"))
+          provider = "google";
+        else if (d["provider"] === "email") provider = "email";
+        else if (d["provider"] === "demo") provider = "demo";
+
+        const creeLe = (d["createdAt"] ||
+          d["updated_at"] ||
+          "Non disponible") as string;
+        const dernierAccesLe = (d["dernierAccesLe"] ||
+          d["updated_at"] ||
           "Non disponible") as string;
 
         let statut: AdminUserRecord["statut"] = "actif";
@@ -234,13 +236,13 @@ export async function fetchAllUsersForAdmin(): Promise<{
         usersMap.set(uid, {
           id: uid,
           email,
-          prenom: (d.prenom as string) || undefined,
-          nom: (d.nom as string) || undefined,
-          titre: (d.titre as string) || undefined,
-          ecole: (d.ecole as string) || undefined,
-          formation: (d.formation as string) || undefined,
-          localisation: (d.localisation as string) || undefined,
-          photoUrl: (d.photoUrl as string) || undefined,
+          prenom: (d["prenom"] as string) || undefined,
+          nom: (d["nom"] as string) || undefined,
+          titre: (d["titre"] as string) || undefined,
+          ecole: (d["ecole"] as string) || undefined,
+          formation: (d["formation"] as string) || undefined,
+          localisation: (d["localisation"] as string) || undefined,
+          photoUrl: (d["photoUrl"] as string) || undefined,
           provider,
           emailVerified: Boolean(email && email !== "Non disponible"),
           creeLe,
@@ -384,16 +386,16 @@ export async function fetchUserDetailsForAdmin(
         const d = docSnap.data();
         candidatures.push({
           id: docSnap.id,
-          poste: (d.poste as string) || "Poste non spécifié",
+          poste: (d["poste"] as string) || "Poste non spécifié",
           entreprise:
-            (d.entreprise as string) ||
-            (d.companyName as string) ||
+            (d["entreprise"] as string) ||
+            (d["companyName"] as string) ||
             "Entreprise non spécifiée",
-          statut: (d.statut as string) || "Non défini",
-          datePostulation: (d.appliedAt ||
-            d.savedAt ||
-            d.dateCandidature) as string,
-          updatedAt: d.updatedAt as string,
+          statut: (d["statut"] as string) || "Non défini",
+          datePostulation: (d["appliedAt"] ||
+            d["savedAt"] ||
+            d["dateCandidature"]) as string,
+          updatedAt: d["updatedAt"] as string,
         });
       });
     } catch {
@@ -408,11 +410,11 @@ export async function fetchUserDetailsForAdmin(
         const d = docSnap.data();
         contacts.push({
           id: docSnap.id,
-          nom: (d.nom as string) || "Contact sans nom",
-          entreprise: d.entreprise as string,
-          poste: d.poste as string,
-          email: d.email as string,
-          telephone: d.telephone as string,
+          nom: (d["nom"] as string) || "Contact sans nom",
+          entreprise: d["entreprise"] as string,
+          poste: d["poste"] as string,
+          email: d["email"] as string,
+          telephone: d["telephone"] as string,
         });
       });
     } catch {
@@ -427,9 +429,9 @@ export async function fetchUserDetailsForAdmin(
         const d = docSnap.data();
         entreprises.push({
           id: docSnap.id,
-          nom: (d.nom as string) || "Entreprise",
-          secteur: d.secteur as string,
-          siteWeb: d.siteWeb as string,
+          nom: (d["nom"] as string) || "Entreprise",
+          secteur: d["secteur"] as string,
+          siteWeb: d["siteWeb"] as string,
         });
       });
     } catch {

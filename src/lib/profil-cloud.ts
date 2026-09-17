@@ -224,10 +224,11 @@ export async function ensureUserProfilRegistered(info: {
     const now = new Date().toISOString();
 
     const parts = (info.displayName || "").trim().split(" ");
+    const emailPrefix = info.email ? info.email.split("@")[0] : "";
     const inferredPrenom =
       info.prenom ||
       parts[0] ||
-      (info.email ? info.email.split("@")[0].split(".")[0] : "");
+      (emailPrefix ? emailPrefix.split(".")[0] || "" : "");
     const inferredNom =
       info.nom || (parts.length > 1 ? parts.slice(1).join(" ") : "");
 
@@ -246,17 +247,18 @@ export async function ensureUserProfilRegistered(info: {
       });
       await setDoc(ref, initialData, { merge: true });
     } else {
+      const existingData = snap.data();
       const updates: Record<string, unknown> = {
         updated_at: now,
         dernierAccesLe: now,
       };
-      if (info.email) updates.email = info.email;
-      if (info.provider) updates.provider = info.provider;
-      if (info.photoURL) updates.photoUrl = info.photoURL;
-      if (info.ecole) updates.ecole = info.ecole;
-      if (inferredPrenom && !snap.data()?.prenom)
-        updates.prenom = inferredPrenom;
-      if (inferredNom && !snap.data()?.nom) updates.nom = inferredNom;
+      if (info.email) updates["email"] = info.email;
+      if (info.provider) updates["provider"] = info.provider;
+      if (info.photoURL) updates["photoUrl"] = info.photoURL;
+      if (info.ecole) updates["ecole"] = info.ecole;
+      if (inferredPrenom && !existingData?.["prenom"])
+        updates["prenom"] = inferredPrenom;
+      if (inferredNom && !existingData?.["nom"]) updates["nom"] = inferredNom;
       await setDoc(ref, sanitizeForFirestore(updates), { merge: true });
     }
   } catch (err) {

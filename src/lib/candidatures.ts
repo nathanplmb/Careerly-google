@@ -586,60 +586,102 @@ export function normalizeCandidature(c: Partial<Candidature>): Candidature {
       completedSteps: ["offre"],
     },
 
-    country: c.country ?? (c as Record<string, unknown>).pays ?? base.country,
+    country:
+      c.country ??
+      ((c as Record<string, unknown>)["pays"] as string | null | undefined) ??
+      base.country,
     contractType:
       c.contractType ??
-      (c as Record<string, unknown>).contract_type ??
-      (c as Record<string, unknown>).typeContrat ??
+      ((c as Record<string, unknown>)["contract_type"] as
+        | string
+        | null
+        | undefined) ??
+      ((c as Record<string, unknown>)["typeContrat"] as
+        | string
+        | null
+        | undefined) ??
       base.contractType,
     duration:
       c.duration ??
-      (c as Record<string, unknown>).duree ??
-      (c as Record<string, unknown>).contract_duration ??
+      ((c as Record<string, unknown>)["duree"] as string | null | undefined) ??
+      ((c as Record<string, unknown>)["contract_duration"] as
+        | string
+        | null
+        | undefined) ??
       base.duration,
     startDate:
       c.startDate ??
-      (c as Record<string, unknown>).start_date ??
-      (c as Record<string, unknown>).dateDebut ??
+      ((c as Record<string, unknown>)["start_date"] as
+        | string
+        | null
+        | undefined) ??
+      ((c as Record<string, unknown>)["dateDebut"] as
+        | string
+        | null
+        | undefined) ??
       base.startDate,
     endDate:
       c.endDate ??
-      (c as Record<string, unknown>).end_date ??
-      (c as Record<string, unknown>).dateFin ??
+      ((c as Record<string, unknown>)["end_date"] as
+        | string
+        | null
+        | undefined) ??
+      ((c as Record<string, unknown>)["dateFin"] as string | null | undefined) ??
       base.endDate,
-    salary: c.salary ?? (c as Record<string, unknown>).salaire ?? base.salary,
+    salary:
+      c.salary ??
+      ((c as Record<string, unknown>)["salaire"] as string | null | undefined) ??
+      base.salary,
     salaryMin:
       typeof c.salaryMin === "number"
         ? c.salaryMin
-        : typeof (c as Record<string, unknown>).salary_min === "number"
-          ? ((c as Record<string, unknown>).salary_min as number)
+        : typeof (c as Record<string, unknown>)["salary_min"] === "number"
+          ? ((c as Record<string, unknown>)["salary_min"] as number)
           : base.salaryMin,
     salaryMax:
       typeof c.salaryMax === "number"
         ? c.salaryMax
-        : typeof (c as Record<string, unknown>).salary_max === "number"
-          ? ((c as Record<string, unknown>).salary_max as number)
+        : typeof (c as Record<string, unknown>)["salary_max"] === "number"
+          ? ((c as Record<string, unknown>)["salary_max"] as number)
           : base.salaryMax,
     salaryCurrency:
       c.salaryCurrency ??
-      (c as Record<string, unknown>).salary_currency ??
+      ((c as Record<string, unknown>)["salary_currency"] as
+        | string
+        | null
+        | undefined) ??
       base.salaryCurrency,
     remotePolicy:
       c.remotePolicy ??
-      (c as Record<string, unknown>).remote_policy ??
-      (c as Record<string, unknown>).teletravail ??
+      ((c as Record<string, unknown>)["remote_policy"] as
+        | string
+        | null
+        | undefined) ??
+      ((c as Record<string, unknown>)["teletravail"] as
+        | string
+        | null
+        | undefined) ??
       base.remotePolicy,
     remoteDetails:
       c.remoteDetails ??
-      (c as Record<string, unknown>).remote_details ??
+      ((c as Record<string, unknown>)["remote_details"] as
+        | string
+        | null
+        | undefined) ??
       base.remoteDetails,
     jobFunction:
       c.jobFunction ??
-      (c as Record<string, unknown>).job_function ??
+      ((c as Record<string, unknown>)["job_function"] as
+        | string
+        | null
+        | undefined) ??
       base.jobFunction,
     educationLevel:
       c.educationLevel ??
-      (c as Record<string, unknown>).education_level ??
+      ((c as Record<string, unknown>)["education_level"] as
+        | string
+        | null
+        | undefined) ??
       base.educationLevel,
 
     responsibilities: Array.isArray(c.responsibilities)
@@ -650,115 +692,165 @@ export function normalizeCandidature(c: Partial<Candidature>): Candidature {
     tools,
     requiredLanguages: Array.isArray(c.requiredLanguages)
       ? c.requiredLanguages
-      : Array.isArray((c as Record<string, unknown>).required_languages)
-        ? ((c as Record<string, unknown>)
-            .required_languages as OpportunityLanguage[])
+      : Array.isArray((c as Record<string, unknown>)["required_languages"])
+        ? ((c as Record<string, unknown>)[
+            "required_languages"
+          ] as OpportunityLanguage[])
         : base.requiredLanguages,
     preferredLanguages: Array.isArray(c.preferredLanguages)
       ? c.preferredLanguages
-      : Array.isArray((c as Record<string, unknown>).preferred_languages)
-        ? ((c as Record<string, unknown>)
-            .preferred_languages as OpportunityLanguage[])
+      : Array.isArray((c as Record<string, unknown>)["preferred_languages"])
+        ? ((c as Record<string, unknown>)[
+            "preferred_languages"
+          ] as OpportunityLanguage[])
         : base.preferredLanguages,
     qualities,
     experienceRequirements:
       c.experienceRequirements ??
-      (c as Record<string, unknown>).experience_requirements ??
+      ((c as Record<string, unknown>)["experience_requirements"] as
+        | string
+        | null
+        | undefined) ??
       base.experienceRequirements,
     educationRequirements: Array.isArray(c.educationRequirements)
       ? c.educationRequirements
-      : Array.isArray((c as Record<string, unknown>).education_requirements)
-        ? ((c as Record<string, unknown>).education_requirements as string[])
+      : Array.isArray((c as Record<string, unknown>)["education_requirements"])
+        ? ((c as Record<string, unknown>)[
+            "education_requirements"
+          ] as string[])
         : base.educationRequirements,
 
     parentCompany:
       c.parentCompany ??
       c.groupName ??
-      (c as Record<string, unknown>).parent_company ??
-      (c as Record<string, unknown>).group_name ??
+      ((c as Record<string, unknown>)["parent_company"] as
+        | string
+        | null
+        | undefined) ??
+      ((c as Record<string, unknown>)["group_name"] as
+        | string
+        | null
+        | undefined) ??
       base.parentCompany,
     groupName:
       c.groupName ??
       c.parentCompany ??
-      (c as Record<string, unknown>).group_name ??
-      (c as Record<string, unknown>).parent_company ??
+      ((c as Record<string, unknown>)["group_name"] as
+        | string
+        | null
+        | undefined) ??
+      ((c as Record<string, unknown>)["parent_company"] as
+        | string
+        | null
+        | undefined) ??
       base.groupName,
 
     companyDescription:
       c.companyDescription ??
-      (c as Record<string, unknown>).company_description ??
+      ((c as Record<string, unknown>)["company_description"] as
+        | string
+        | null
+        | undefined) ??
       base.companyDescription,
     companySector:
       c.companySector ??
       c.secteur ??
-      (c as Record<string, unknown>).company_sector ??
+      ((c as Record<string, unknown>)["company_sector"] as
+        | string
+        | null
+        | undefined) ??
       base.companySector,
     companySize:
       c.companySize ??
-      (c as Record<string, unknown>).company_size ??
+      ((c as Record<string, unknown>)["company_size"] as
+        | string
+        | null
+        | undefined) ??
       base.companySize,
     companyLocation:
       c.companyLocation ??
-      (c as Record<string, unknown>).company_location ??
+      ((c as Record<string, unknown>)["company_location"] as
+        | string
+        | null
+        | undefined) ??
       base.companyLocation,
     companyWebsite:
       c.companyWebsite ??
-      (c as Record<string, unknown>).company_website ??
+      ((c as Record<string, unknown>)["company_website"] as
+        | string
+        | null
+        | undefined) ??
       base.companyWebsite,
     companyContext: Array.isArray(c.companyContext)
       ? c.companyContext
-      : Array.isArray((c as Record<string, unknown>).company_context)
-        ? ((c as Record<string, unknown>).company_context as string[])
+      : Array.isArray((c as Record<string, unknown>)["company_context"])
+        ? ((c as Record<string, unknown>)["company_context"] as string[])
         : base.companyContext,
     companyPartners: Array.isArray(c.companyPartners)
       ? c.companyPartners
-      : Array.isArray((c as Record<string, unknown>).company_partners)
-        ? ((c as Record<string, unknown>).company_partners as string[])
+      : Array.isArray((c as Record<string, unknown>)["company_partners"])
+        ? ((c as Record<string, unknown>)["company_partners"] as string[])
         : base.companyPartners,
     companyMetrics: Array.isArray(c.companyMetrics)
       ? c.companyMetrics
-      : Array.isArray((c as Record<string, unknown>).company_metrics)
-        ? ((c as Record<string, unknown>)
-            .company_metrics as OpportunityCompanyMetric[])
+      : Array.isArray((c as Record<string, unknown>)["company_metrics"])
+        ? ((c as Record<string, unknown>)[
+            "company_metrics"
+          ] as OpportunityCompanyMetric[])
         : base.companyMetrics,
 
     recruitmentProcess: Array.isArray(c.recruitmentProcess)
       ? c.recruitmentProcess
-      : Array.isArray((c as Record<string, unknown>).recruitment_process)
-        ? ((c as Record<string, unknown>).recruitment_process as string[])
+      : Array.isArray((c as Record<string, unknown>)["recruitment_process"])
+        ? ((c as Record<string, unknown>)["recruitment_process"] as string[])
         : base.recruitmentProcess,
     applicationMethod:
       c.applicationMethod ??
-      (c as Record<string, unknown>).application_method ??
+      ((c as Record<string, unknown>)["application_method"] as
+        | string
+        | null
+        | undefined) ??
       base.applicationMethod,
     applicationRequirements: Array.isArray(c.applicationRequirements)
       ? c.applicationRequirements
-      : Array.isArray((c as Record<string, unknown>).application_requirements)
-        ? ((c as Record<string, unknown>).application_requirements as string[])
+      : Array.isArray((c as Record<string, unknown>)["application_requirements"])
+        ? ((c as Record<string, unknown>)["application_requirements"] as string[])
         : base.applicationRequirements,
 
     benefits: Array.isArray(c.benefits)
       ? c.benefits
-      : Array.isArray((c as Record<string, unknown>).avantages)
-        ? ((c as Record<string, unknown>).avantages as string[])
+      : Array.isArray((c as Record<string, unknown>)["avantages"])
+        ? ((c as Record<string, unknown>)["avantages"] as string[])
         : base.benefits,
 
     sourceType:
       c.sourceType ??
-      (c as Record<string, unknown>).source_type ??
+      ((c as Record<string, unknown>)["source_type"] as
+        | string
+        | null
+        | undefined) ??
       base.sourceType,
     sourceName:
       c.sourceName ??
       c.source ??
-      (c as Record<string, unknown>).source_name ??
+      ((c as Record<string, unknown>)["source_name"] as
+        | string
+        | null
+        | undefined) ??
       base.sourceName,
     sourcePublishedAt:
       c.sourcePublishedAt ??
-      (c as Record<string, unknown>).source_published_at ??
+      ((c as Record<string, unknown>)["source_published_at"] as
+        | string
+        | null
+        | undefined) ??
       base.sourcePublishedAt,
     extractedAt:
       c.extractedAt ??
-      (c as Record<string, unknown>).extracted_at ??
+      ((c as Record<string, unknown>)["extracted_at"] as
+        | string
+        | null
+        | undefined) ??
       base.extractedAt,
   };
 }
@@ -945,9 +1037,9 @@ export function validerIntegriteCandidature(
       contractType: safe.contractType,
       duration: safe.duration,
       startDate: safe.startDate,
-      metricsCount: safe.companyMetrics.length,
-      missionsCount: safe.missionsList.length,
-      skillsCount: safe.requiredSkills.length,
+      metricsCount: safe.companyMetrics?.length ?? 0,
+      missionsCount: safe.missionsList?.length ?? 0,
+      skillsCount: safe.requiredSkills?.length ?? 0,
     },
   );
 

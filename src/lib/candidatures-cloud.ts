@@ -337,7 +337,7 @@ function toCandidature(r: Row): Candidature {
       (rawObj["extractedAt"] as string) ||
       (rawObj["extracted_at"] as string) ||
       null,
-  } as Partial<Candidature>);
+  } as unknown as Partial<Candidature>);
 
   return cand;
 }
@@ -457,8 +457,6 @@ function toRow(c: Candidature, userId: string): Record<string, unknown> {
     educationRequirements: c.educationRequirements || [],
     education_requirements: c.educationRequirements || [],
 
-    companyId: c.companyId || null,
-    company_id: c.companyId || null,
     contactId: c.contactId || null,
     contact_id: c.contactId || null,
     contactIds: Array.isArray(c.contactIds) ? c.contactIds : [],
@@ -590,20 +588,20 @@ export async function upsertCandidature(
   });
   const row = toRow(c, effectiveUserId);
   console.info("[OPPORTUNITY SAVE PAYLOAD]", {
-    id: row.id,
-    entreprise: row.entreprise,
-    poste: row.poste,
-    contractType: row.contractType,
-    duration: row.duration,
-    startDate: row.startDate,
-    metricsCount: Array.isArray(row.companyMetrics)
-      ? (row.companyMetrics as unknown[]).length
+    id: row["id"],
+    entreprise: row["entreprise"],
+    poste: row["poste"],
+    contractType: row["contractType"],
+    duration: row["duration"],
+    startDate: row["startDate"],
+    metricsCount: Array.isArray(row["companyMetrics"])
+      ? (row["companyMetrics"] as unknown[]).length
       : 0,
-    missionsCount: Array.isArray(row.missionsList)
-      ? (row.missionsList as unknown[]).length
+    missionsCount: Array.isArray(row["missionsList"])
+      ? (row["missionsList"] as unknown[]).length
       : 0,
-    skillsCount: Array.isArray(row.requiredSkills)
-      ? (row.requiredSkills as unknown[]).length
+    skillsCount: Array.isArray(row["requiredSkills"])
+      ? (row["requiredSkills"] as unknown[]).length
       : 0,
   });
 
@@ -618,7 +616,7 @@ export async function upsertCandidature(
         "users",
         effectiveUserId,
         "candidatures",
-        row.id as string,
+        row["id"] as string,
       );
       await setDoc(docRef, row, { merge: true });
       const saved = toCandidature(row as unknown as Row);
@@ -644,9 +642,9 @@ export async function upsertCandidature(
 
   if (isSupabaseConfigured()) {
     try {
-      const { data, error } = await supabase
-        .from("candidatures")
-        .upsert(row as unknown as Record<string, unknown>)
+      const { data, error } = await (supabase
+        .from("candidatures") as any)
+        .upsert(row)
         .select()
         .single();
       if (error) {
@@ -722,14 +720,9 @@ export async function insertManyCandidatures(
   }
 
   if (isSupabaseConfigured()) {
-    const { data, error } = await supabase
-      .from("candidatures")
-      .insert(
-        items.map((c) => toRow(c, userId)) as unknown as Record<
-          string,
-          unknown
-        >[],
-      )
+    const { data, error } = await (supabase
+      .from("candidatures") as any)
+      .insert(items.map((c) => toRow(c, userId)))
       .select();
     if (error) throw error;
     return (data as unknown as Row[]).map(toCandidature);

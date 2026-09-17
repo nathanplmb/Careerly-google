@@ -91,11 +91,15 @@ function toContact(r: Row): Contact {
         ? [r.candidature_id || r.candidatureId || ""]
         : [];
 
-  const rawSources = Array.isArray(r.sources)
+  const rawSources: Contact["source"][] = Array.isArray(r.sources)
     ? (r.sources as Contact["source"][])
     : r.source
       ? [r.source as Contact["source"]]
       : ["manual"];
+
+  const validSources = rawSources.filter(
+    (s): s is NonNullable<Contact["source"]> => Boolean(s),
+  );
 
   const rawTags = Array.isArray(r.tags)
     ? r.tags
@@ -139,8 +143,10 @@ function toContact(r: Row): Contact {
     dateProchaineAction: r.date_prochaine_action ?? "",
     notes: r.notes ?? "",
     historique: Array.isArray(r.historique) ? (r.historique as Echange[]) : [],
-    source: (r.source as Contact["source"]) || rawSources[0] || "manual",
-    sources: rawSources as Contact["source"][],
+    source: ((r.source as Contact["source"]) ||
+      validSources[0] ||
+      "manual") as Contact["source"],
+    sources: validSources.length > 0 ? validSources : ["manual"],
     isManual: r.is_manual ?? r.isManual ?? true,
     createdAt: r.created_at || r.createdAt || base.createdAt,
     updatedAt: r.updated_at || r.updatedAt || base.updatedAt,
@@ -241,8 +247,8 @@ export async function upsertContact(
   }
 
   if (isSupabaseConfigured()) {
-    const { data, error } = await supabase
-      .from("contacts")
+    const { data, error } = await (supabase
+      .from("contacts") as any)
       .upsert(row)
       .select()
       .single();
@@ -276,7 +282,7 @@ export async function batchUpsertContacts(
 
   if (isSupabaseConfigured()) {
     const rows = contactsList.map((c) => toRow(c, userId));
-    const { data, error } = await supabase.from("contacts").upsert(rows);
+    const { data, error } = await (supabase.from("contacts") as any).upsert(rows);
     if (error) throw error;
     if (Array.isArray(data)) {
       return (data as unknown as Row[]).map(toContact);

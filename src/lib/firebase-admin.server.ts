@@ -33,13 +33,13 @@ export function getFirebaseAdminApp(): App {
   }
 
   const projectId =
-    process.env.FIREBASE_PROJECT_ID ||
+    process.env["FIREBASE_PROJECT_ID"] ||
     firebaseConfigJson.projectId ||
     "gen-lang-client-0123496230";
 
-  if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+  if (process.env["FIREBASE_SERVICE_ACCOUNT_KEY"]) {
     try {
-      const sa = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+      const sa = JSON.parse(process.env["FIREBASE_SERVICE_ACCOUNT_KEY"]);
       adminApp = initializeApp({
         credential: cert(sa),
         projectId,
@@ -173,7 +173,7 @@ export async function verifyAuthToken(
       typeof payload["auth_time"] === "number" ? payload["auth_time"] : nowSec;
 
     const projectId =
-      process.env.FIREBASE_PROJECT_ID ||
+      process.env["FIREBASE_PROJECT_ID"] ||
       firebaseConfigJson.projectId ||
       "gen-lang-client-0123496230";
 
@@ -222,7 +222,7 @@ export async function verifyIsAdmin(idToken: string): Promise<{
   const uid = decoded.uid;
   const isSuperAdmin = email === SUPER_ADMIN_EMAIL;
 
-  if (isSuperAdmin || decoded.admin === true) {
+  if (isSuperAdmin || (decoded as unknown as Record<string, unknown>)["admin"] === true) {
     return { isAdmin: true, isSuperAdmin, uid, email };
   }
 
@@ -234,7 +234,7 @@ export async function verifyIsAdmin(idToken: string): Promise<{
       return { isAdmin: true, isSuperAdmin: false, uid, email };
     }
   } catch (err) {
-    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+    if (process.env["FIREBASE_SERVICE_ACCOUNT_KEY"]) {
       console.warn("Erreur vérification collection admins:", err);
     }
   }
@@ -290,7 +290,7 @@ export async function listAllUsersAdmin(): Promise<{
     const adminsSnap = await db.collection("admins").get();
     adminsSnap.forEach((doc) => adminUids.add(doc.id));
   } catch (err) {
-    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+    if (process.env["FIREBASE_SERVICE_ACCOUNT_KEY"]) {
       console.warn("Erreur chargement liste admins:", err);
     }
   }
@@ -364,7 +364,7 @@ export async function listAllUsersAdmin(): Promise<{
       nextPageToken = listResult.pageToken;
     } while (nextPageToken);
   } catch (authErr) {
-    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+    if (process.env["FIREBASE_SERVICE_ACCOUNT_KEY"]) {
       console.warn(
         "Échec récupération admin.auth().listUsers (fallback Firestore actif):",
         authErr,
@@ -440,7 +440,7 @@ export async function listAllUsersAdmin(): Promise<{
             data["dernierAccesLe"] ||
             data["updated_at"] ||
             new Date().toISOString(),
-          isAdmin: isAdm,
+          isAdmin: Boolean(isAdm),
           isSuperAdmin: isSuper,
           hasFirestoreProfile: true,
           statutDiagnostic: "firestore_sans_auth",
@@ -458,7 +458,7 @@ export async function listAllUsersAdmin(): Promise<{
       }
     }
   } catch (profErr) {
-    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+    if (process.env["FIREBASE_SERVICE_ACCOUNT_KEY"]) {
       console.warn("Erreur chargement profils Firestore:", profErr);
     }
   }
@@ -572,7 +572,7 @@ export async function searchAndDiagnoseUser(
     const admDoc = await db.collection("admins").doc(uid).get();
     if (admDoc.exists) isAdmin = true;
   } catch (e) {
-    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+    if (process.env["FIREBASE_SERVICE_ACCOUNT_KEY"]) {
       console.warn("Erreur lecture rôle admin:", e);
     }
   }
@@ -585,7 +585,7 @@ export async function searchAndDiagnoseUser(
       profData = profDoc.data() || null;
     }
   } catch (e) {
-    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+    if (process.env["FIREBASE_SERVICE_ACCOUNT_KEY"]) {
       console.warn("Erreur lecture profil Firestore:", e);
     }
   }
@@ -651,7 +651,7 @@ export async function searchAndDiagnoseUser(
     if (e) entsCount = e.size;
     if (d) docsCount = d.size;
   } catch (e) {
-    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+    if (process.env["FIREBASE_SERVICE_ACCOUNT_KEY"]) {
       console.warn("Erreur comptage collections:", e);
     }
   }
@@ -824,7 +824,7 @@ export async function executeCascadeAccountDeletion({
     );
     await userDocRef.delete();
   } catch (err) {
-    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+    if (process.env["FIREBASE_SERVICE_ACCOUNT_KEY"]) {
       console.warn("Erreur suppression sous-collections Firestore:", err);
     }
   }
@@ -834,7 +834,7 @@ export async function executeCascadeAccountDeletion({
     await db.collection("profils").doc(targetUid).delete();
     details.profileDeleted = true;
   } catch (err) {
-    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+    if (process.env["FIREBASE_SERVICE_ACCOUNT_KEY"]) {
       console.warn("Erreur suppression profil:", err);
     }
   }
@@ -843,7 +843,7 @@ export async function executeCascadeAccountDeletion({
   try {
     await db.collection("admins").doc(targetUid).delete();
   } catch (e) {
-    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+    if (process.env["FIREBASE_SERVICE_ACCOUNT_KEY"]) {
       console.warn("Erreur suppression document admin:", e);
     }
   }
@@ -857,7 +857,7 @@ export async function executeCascadeAccountDeletion({
       details.storageFilesDeleted++;
     }
   } catch (err) {
-    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+    if (process.env["FIREBASE_SERVICE_ACCOUNT_KEY"]) {
       console.warn("Erreur suppression fichiers Storage:", err);
     }
   }
@@ -870,7 +870,7 @@ export async function executeCascadeAccountDeletion({
     const msg = err instanceof Error ? err.message : String(err);
     if (
       !msg.includes("user-not-found") &&
-      process.env.FIREBASE_SERVICE_ACCOUNT_KEY
+      process.env["FIREBASE_SERVICE_ACCOUNT_KEY"]
     ) {
       console.warn("Erreur suppression Firebase Auth:", err);
     } else {
@@ -889,7 +889,7 @@ export async function executeCascadeAccountDeletion({
       details,
     });
   } catch (err) {
-    if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+    if (process.env["FIREBASE_SERVICE_ACCOUNT_KEY"]) {
       console.warn("Erreur écriture audit_logs:", err);
     }
   }

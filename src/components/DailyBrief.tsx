@@ -231,7 +231,7 @@ function getDynamicSubtitle(actions: BriefItem[]): string {
   const candidatures = actions.filter((a) => a.type === "preparation");
 
   if (count === 1) {
-    if (entretiens.length === 1) {
+    if (entretiens.length === 1 && entretiens[0]) {
       const e = entretiens[0];
       if (e.dateContext === "Aujourd'hui") {
         return "Votre entretien a lieu aujourd'hui.";
@@ -241,7 +241,7 @@ function getDynamicSubtitle(actions: BriefItem[]): string {
       }
       return "Une préparation d'entretien mérite votre attention.";
     }
-    if (deadlines.length === 1) {
+    if (deadlines.length === 1 && deadlines[0]) {
       const d = deadlines[0];
       if (d.dateContext === "Échue") {
         return "Une date limite est arrivée à échéance.";
@@ -254,7 +254,7 @@ function getDynamicSubtitle(actions: BriefItem[]): string {
     if (relances.length === 1) {
       return "Une relance mérite d'être effectuée.";
     }
-    if (candidatures.length === 1) {
+    if (candidatures.length === 1 && candidatures[0]) {
       if (candidatures[0].dateContext === "Dossier prêt") {
         return "Votre candidature est prête à partir.";
       }
@@ -389,15 +389,13 @@ export function DailyBrief({
         Boolean(c.preparedAt) ||
         (Boolean(c.preparation?.pourquoiEntreprise?.trim()) &&
           Boolean(c.preparation?.pourquoiPoste?.trim())),
-      hasContact: Boolean(c.contact || c.contactNom || c.contactEmail),
+      hasContact: Boolean(c.contact),
       contactNom:
-        c.contactNom ||
-        (c.contact && !c.contact.includes("@") && !c.contact.startsWith("http")
+        c.contact && !c.contact.includes("@") && !c.contact.startsWith("http")
           ? c.contact
-          : undefined),
+          : undefined,
       contactEmail:
-        c.contactEmail ||
-        (c.contact && c.contact.includes("@") ? c.contact : undefined),
+        c.contact && c.contact.includes("@") ? c.contact : undefined,
       archive: Boolean(c.archive),
     }));
 
@@ -895,8 +893,8 @@ export function DailyBrief({
             <div className="space-y-3.5 py-2">
               {(() => {
                 const c = emailModalData.cand;
-                const contactPrenom = c.contactNom
-                  ? c.contactNom.split(" ")[0]
+                const contactPrenom = c.contact
+                  ? c.contact.split(" ")[0]
                   : "";
                 const dateEnvStr = c.dateEnvoi ? formatDate(c.dateEnvoi) : "";
 

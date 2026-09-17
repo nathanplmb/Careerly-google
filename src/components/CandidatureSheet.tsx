@@ -227,7 +227,6 @@ export function CandidatureSheet({
         ...form,
         ...extracted,
         contractType: extracted.contractType ?? null,
-        typeContrat: extracted.contractType ?? null,
         applicationDeadline: extracted.applicationDeadline ?? null,
         dateLimite: extracted.applicationDeadline || "",
         source: extracted.source || form.source || "Autre",

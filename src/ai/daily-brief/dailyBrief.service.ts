@@ -76,7 +76,7 @@ const VALID_ACTIONS_MAP: Record<string, BriefActionId> = {
  * - Actions conformes au catalogue autorisé
  */
 function sanitizeBriefItems(
-  items: BriefItem[],
+  items: any[],
   validOpportunityIds: Set<string>,
 ): BriefItem[] {
   const result: BriefItem[] = [];

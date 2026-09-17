@@ -12,7 +12,7 @@ export default defineConfig({
     plugins: [mcpPlugin()],
     define: {
       "process.env.NODE_ENV": JSON.stringify(
-        process.env.NODE_ENV || "development",
+        process.env["NODE_ENV"] || "development",
       ),
       "process.env.TSS_ROUTER_BASEPATH": JSON.stringify(""),
     },
@@ -22,5 +22,7 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
-  nitro: {},
+  nitro: {
+    preset: process.env["VERCEL"] ? "vercel" : undefined,
+  },
 });

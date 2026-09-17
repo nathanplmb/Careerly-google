@@ -138,6 +138,7 @@ export function useContacts() {
 
       for (let i = 0; i < incomingList.length; i++) {
         const incoming = incomingList[i];
+        if (!incoming) continue;
         const matchResult = findMatchingContact(incoming, currentContacts);
         const userChoice = resolutions?.[incoming.id || `idx_${i}`];
 
@@ -162,7 +163,7 @@ export function useContacts() {
         } else {
           // Nouveau contact ou choix explicite "both" (créer doublon séparé)
           const newContact: Contact = {
-            ...emptyContact(incoming.nom || incoming.fullName),
+            ...emptyContact(incoming.nom || incoming.fullName || ""),
             ...incoming,
             id: crypto.randomUUID(),
             createdAt: new Date().toISOString(),

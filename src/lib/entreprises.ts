@@ -85,8 +85,9 @@ export function normalizeCompanyName(name: string): string {
 
   s = s.replace(/\s+/g, " ").trim();
 
-  if (KNOWN_ALIASES[s]) {
-    return KNOWN_ALIASES[s];
+  const alias = KNOWN_ALIASES[s];
+  if (alias) {
+    return alias;
   }
 
   return s;
@@ -119,7 +120,7 @@ export function extractRootDomain(urlOrDomain?: string | null): string | null {
     }
 
     const parts = host.split(".");
-    if (parts.length >= 2) {
+    if (parts.length >= 2 && parts[0]) {
       return parts[0];
     }
     return host;
@@ -245,10 +246,7 @@ export function syncEntrepriseFromOpportunity(
       siege: opp.companyLocation || opp.lieu || null,
       siteWeb: opp.companyWebsite || null,
       chiffresCles: Array.isArray(opp.companyMetrics)
-        ? opp.companyMetrics.map(
-            (m) =>
-              `${m.label} : ${m.value}${m.context ? ` (${m.context})` : ""}`,
-          )
+        ? opp.companyMetrics.map((m) => `${m.label} : ${m.value}`)
         : [],
       contexte: Array.isArray(opp.companyContext) ? opp.companyContext : [],
       partenaires: Array.isArray(opp.companyPartners)
@@ -338,9 +336,7 @@ export function syncEntrepriseFromOpportunity(
     const currentMetrics = new Set(updated.chiffresCles || []);
     const initialSize = currentMetrics.size;
     for (const m of opp.companyMetrics) {
-      currentMetrics.add(
-        `${m.label} : ${m.value}${m.context ? ` (${m.context})` : ""}`,
-      );
+      currentMetrics.add(`${m.label} : ${m.value}`);
     }
     if (currentMetrics.size > initialSize) {
       updated.chiffresCles = Array.from(currentMetrics);

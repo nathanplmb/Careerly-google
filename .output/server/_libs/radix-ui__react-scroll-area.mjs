@@ -1,10 +1,9 @@
 import { o as __toESM } from "../_runtime.mjs";
-import { d as Presence, h as useCallbackRef, v as useLayoutEffect2, y as Primitive } from "./@radix-ui/react-dialog+[...].mjs";
 import { u as require_react } from "./@floating-ui/react-dom+[...].mjs";
-import { a as useComposedRefs, n as createContextScope, o as require_jsx_runtime } from "./@radix-ui/react-collection+[...].mjs";
+import { A as require_jsx_runtime, D as Primitive, E as useCallbackRef, F as useComposedRefs, S as useLayoutEffect2, k as createContextScope, y as Presence } from "./@radix-ui/react-alert-dialog+[...].mjs";
+import { t as clamp } from "./radix-ui__number.mjs";
 import { t as composeEventHandlers } from "./radix-ui__primitive.mjs";
 import { t as useDirection } from "./radix-ui__react-direction.mjs";
-import { t as clamp } from "./radix-ui__number.mjs";
 //#region node_modules/@radix-ui/react-scroll-area/dist/index.mjs
 var import_react = /* @__PURE__ */ __toESM(require_react(), 1);
 var import_jsx_runtime = require_jsx_runtime();
