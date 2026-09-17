@@ -308,7 +308,7 @@ function EntreprisesPage() {
   };
 
   const activeOppsCount = candidatures.filter(
-    (c) => c.statut !== "Archivée",
+    (c) => c.statut !== "Clôturée" && (c.statut as string) !== "Archivée",
   ).length;
 
   return (

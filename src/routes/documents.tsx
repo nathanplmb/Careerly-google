@@ -6,6 +6,8 @@ import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { useCandidatures } from "@/hooks/useCandidatures";
 
+import { useSession } from "@/hooks/useSession";
+
 export const Route = createFileRoute("/documents")({
   head: () => ({
     meta: [{ title: "Documents — NACORA" }],
@@ -22,12 +24,23 @@ type Lettre = {
   creeLe: string;
 };
 
-const CLE = "careerly.lettres";
+function getDocumentsStorageKey(userId?: string): string {
+  return userId ? `nacora_${userId}_lettres_v1` : "nacora_guest_lettres_v1";
+}
 
-function charger(): Lettre[] {
+function charger(userId?: string): Lettre[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = localStorage.getItem(CLE);
+    const key = getDocumentsStorageKey(userId);
+    let raw = localStorage.getItem(key);
+    if (!raw && userId) {
+      const oldRaw = localStorage.getItem("careerly.lettres");
+      if (oldRaw) {
+        localStorage.setItem(key, oldRaw);
+        localStorage.removeItem("careerly.lettres");
+        raw = oldRaw;
+      }
+    }
     return raw ? (JSON.parse(raw) as Lettre[]) : [];
   } catch {
     return [];
@@ -35,16 +48,20 @@ function charger(): Lettre[] {
 }
 
 function DocumentsPage() {
-  const { authLoading } = useCandidatures();
+  const { user } = useSession();
+  const userId = user?.id;
   const [lettres, setLettres] = useState<Lettre[]>([]);
   const [ouverte, setOuverte] = useState<string | null>(null);
 
-  useEffect(() => setLettres(charger()), []);
+  useEffect(() => {
+    setLettres(charger(userId));
+  }, [userId]);
 
   const persister = (l: Lettre[]) => {
     setLettres(l);
     try {
-      localStorage.setItem(CLE, JSON.stringify(l));
+      const key = getDocumentsStorageKey(userId);
+      localStorage.setItem(key, JSON.stringify(l));
     } catch {
       /* quota */
     }

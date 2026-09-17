@@ -113,6 +113,14 @@ export function initPolyfills(): void {
       proto["values"] = proto[asyncIterSymbol];
     }
   }
+
+  // Handle dynamic module import failures (e.g. after deployments or stale cache)
+  if (typeof window !== "undefined") {
+    window.addEventListener("vite:preloadError", (event) => {
+      console.warn("Vite preload error detected, reloading page...", event);
+      window.location.reload();
+    });
+  }
 }
 
 // Auto-run immediately when this module is evaluated

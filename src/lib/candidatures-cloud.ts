@@ -6,7 +6,7 @@ import {
   deleteDoc,
   query,
 } from "firebase/firestore";
-import { db, isFirebaseConfigured } from "@/integrations/firebase/client";
+import { db, auth, isFirebaseConfigured } from "@/integrations/firebase/client";
 import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
 import {
   emptyPreparation,
@@ -503,62 +503,74 @@ function toRow(c: Candidature, userId: string): Record<string, unknown> {
 export async function fetchCandidatures(
   userId?: string,
 ): Promise<Candidature[]> {
+  const effectiveUserId = userId || auth.currentUser?.uid;
   console.info("[OPPORTUNITY LOAD START]", {
-    userId,
+    userId: effectiveUserId,
     timestamp: new Date().toISOString(),
   });
 
-  if (isFirebaseConfigured() && userId) {
-    try {
-      const colRef = collection(db, "users", userId, "candidatures");
-      const snap = await getDocs(query(colRef));
-      const list: Candidature[] = [];
-      snap.forEach((docSnap) => {
-        const cand = toCandidature({
-          id: docSnap.id,
-          ...docSnap.data(),
-        } as Row);
-        list.push(cand);
-      });
-      console.info(
-        `[OPPORTUNITY LOAD SUCCESS] ${list.length} opportunités chargées depuis Firestore`,
-        list.map((c) => ({
-          id: c.id,
-          poste: c.poste,
-          entreprise: c.entreprise,
-          contractType: c.contractType,
-          duration: c.duration,
-          metricsCount: c.companyMetrics?.length || 0,
-        })),
-      );
-      return list;
-    } catch (e) {
-      console.error(
-        "[OPPORTUNITY LOAD ERROR] Firestore fetchCandidatures error:",
-        e,
-      );
-      throw e;
+  if (!effectiveUserId) {
+    return [];
+  }
+
+  if (isFirebaseConfigured() && auth.currentUser) {
+    if (auth.currentUser.uid === effectiveUserId) {
+      try {
+        const colRef = collection(db, "users", effectiveUserId, "candidatures");
+        const snap = await getDocs(query(colRef));
+        const list: Candidature[] = [];
+        snap.forEach((docSnap) => {
+          const cand = toCandidature({
+            id: docSnap.id,
+            ...docSnap.data(),
+          } as Row);
+          list.push(cand);
+        });
+        console.info(
+          `[OPPORTUNITY LOAD SUCCESS] ${list.length} opportunités chargées depuis Firestore`,
+          list.map((c) => ({
+            id: c.id,
+            poste: c.poste,
+            entreprise: c.entreprise,
+            contractType: c.contractType,
+            duration: c.duration,
+            metricsCount: c.companyMetrics?.length || 0,
+          })),
+        );
+        return list;
+      } catch (e: unknown) {
+        const err = e as { message?: string };
+        console.warn(
+          "[OPPORTUNITY LOAD WARN] Firestore fetchCandidatures indisponible:",
+          err?.message || e,
+        );
+        return [];
+      }
     }
   }
 
   if (isSupabaseConfigured()) {
-    const { data, error } = await supabase
-      .from("candidatures")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (error) {
-      console.error("[OPPORTUNITY LOAD ERROR] Supabase fetch error:", error);
-      throw error;
+    try {
+      const { data, error } = await supabase
+        .from("candidatures")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) {
+        console.warn("[OPPORTUNITY LOAD WARN] Supabase fetch error:", error);
+        return [];
+      }
+      const list = (data as unknown as Row[]).map(toCandidature);
+      console.info(
+        `[OPPORTUNITY LOAD SUCCESS] ${list.length} opportunités chargées depuis Supabase`,
+      );
+      return list;
+    } catch {
+      return [];
     }
-    const list = (data as unknown as Row[]).map(toCandidature);
-    console.info(
-      `[OPPORTUNITY LOAD SUCCESS] ${list.length} opportunités chargées depuis Supabase`,
-    );
-    return list;
   }
 
   console.info(
-    "[OPPORTUNITY LOAD EMPTY] Ni Firestore ni Supabase n'est configuré.",
+    "[OPPORTUNITY LOAD LOCAL] Utilisation du stockage local sécurisé.",
   );
   return [];
 }
@@ -567,13 +579,16 @@ export async function upsertCandidature(
   c: Candidature,
   userId: string,
 ): Promise<Candidature> {
+  const effectiveUserId = userId || auth.currentUser?.uid;
+  if (!effectiveUserId) return c;
+
   console.info("[OPPORTUNITY SAVE START]", {
     id: c.id,
     poste: c.poste,
     entreprise: c.entreprise,
-    userId,
+    userId: effectiveUserId,
   });
-  const row = toRow(c, userId);
+  const row = toRow(c, effectiveUserId);
   console.info("[OPPORTUNITY SAVE PAYLOAD]", {
     id: row.id,
     entreprise: row.entreprise,
@@ -592,9 +607,19 @@ export async function upsertCandidature(
       : 0,
   });
 
-  if (isFirebaseConfigured() && userId) {
+  if (
+    isFirebaseConfigured() &&
+    auth.currentUser &&
+    auth.currentUser.uid === effectiveUserId
+  ) {
     try {
-      const docRef = doc(db, "users", userId, "candidatures", row.id as string);
+      const docRef = doc(
+        db,
+        "users",
+        effectiveUserId,
+        "candidatures",
+        row.id as string,
+      );
       await setDoc(docRef, row, { merge: true });
       const saved = toCandidature(row as unknown as Row);
       console.info(
@@ -607,31 +632,36 @@ export async function upsertCandidature(
         },
       );
       return saved;
-    } catch (e) {
-      console.error(
-        "[OPPORTUNITY SAVE ERROR] Échec écriture Firestore setDoc:",
-        e,
+    } catch (e: unknown) {
+      const err = e as { message?: string };
+      console.warn(
+        "[OPPORTUNITY SAVE WARN] Échec écriture Firestore setDoc:",
+        err?.message || e,
       );
-      throw e;
+      return c;
     }
   }
 
   if (isSupabaseConfigured()) {
-    const { data, error } = await supabase
-      .from("candidatures")
-      .upsert(row as unknown as Record<string, unknown>)
-      .select()
-      .single();
-    if (error) {
-      console.error("[OPPORTUNITY SAVE ERROR] Supabase upsert error:", error);
-      throw error;
+    try {
+      const { data, error } = await supabase
+        .from("candidatures")
+        .upsert(row as unknown as Record<string, unknown>)
+        .select()
+        .single();
+      if (error) {
+        console.warn("[OPPORTUNITY SAVE WARN] Supabase upsert error:", error);
+        return c;
+      }
+      const saved = toCandidature(data as unknown as Row);
+      console.info(
+        "[OPPORTUNITY SAVE SUCCESS] Enregistrement Supabase confirmé:",
+        { id: saved.id },
+      );
+      return saved;
+    } catch {
+      return c;
     }
-    const saved = toCandidature(data as unknown as Row);
-    console.info(
-      "[OPPORTUNITY SAVE SUCCESS] Enregistrement Supabase confirmé:",
-      { id: saved.id },
-    );
-    return saved;
   }
 
   console.info(
@@ -641,19 +671,34 @@ export async function upsertCandidature(
 }
 
 export async function deleteCandidature(id: string, userId?: string) {
-  if (isFirebaseConfigured() && userId) {
+  const effectiveUserId = userId || auth.currentUser?.uid;
+  if (!effectiveUserId) return;
+
+  if (
+    isFirebaseConfigured() &&
+    auth.currentUser &&
+    auth.currentUser.uid === effectiveUserId
+  ) {
     try {
-      const docRef = doc(db, "users", userId, "candidatures", id);
+      const docRef = doc(db, "users", effectiveUserId, "candidatures", id);
       await deleteDoc(docRef);
       return;
-    } catch (e) {
-      console.warn("Firestore deleteCandidature error:", e);
+    } catch (e: unknown) {
+      const err = e as { message?: string };
+      console.warn("Firestore deleteCandidature notice:", err?.message || e);
     }
   }
 
   if (isSupabaseConfigured()) {
-    const { error } = await supabase.from("candidatures").delete().eq("id", id);
-    if (error) throw error;
+    try {
+      const { error } = await supabase
+        .from("candidatures")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    } catch {
+      // ignorer
+    }
   }
 }
 

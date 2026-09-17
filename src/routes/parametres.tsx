@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
+  AlertTriangle,
   Check,
   Copy,
   Download,
@@ -11,13 +12,24 @@ import {
   LogIn,
   LogOut,
   RefreshCw,
+  ShieldAlert,
   ShieldCheck,
   Trash2,
   UserRound,
+  UserX,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useCandidatures } from "@/hooks/useCandidatures";
 import { useProfil } from "@/hooks/useProfil";
 import { fetchContacts } from "@/lib/contacts-cloud";
@@ -28,6 +40,7 @@ import {
   isFirebaseConfigured,
 } from "@/integrations/firebase/client";
 import { setCompteActif } from "@/lib/auth-local";
+import { deleteMyAccountSelf } from "@/lib/admin-client";
 import {
   appliquerCodeTransfert,
   genererCodeTransfert,
@@ -99,6 +112,35 @@ function ParametresPage() {
   const [busy, setBusy] = useState(false);
   const [syncCode, setSyncCode] = useState("");
   const [importCode, setImportCode] = useState("");
+
+  // État pour la suppression définitive du compte
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [deletingAccount, setDeletingAccount] = useState(false);
+
+  const handleSelfDeleteAccount = async () => {
+    if (deleteConfirmText.trim().toUpperCase() !== "SUPPRIMER") {
+      toast.error(
+        "Veuillez saisir 'SUPPRIMER' pour confirmer l'irréversibilité.",
+      );
+      return;
+    }
+
+    try {
+      setDeletingAccount(true);
+      const res = await deleteMyAccountSelf();
+      toast.success(res.message || "Compte supprimé avec succès.");
+      queryClient.clear();
+      setShowDeleteModal(false);
+      navigate({ to: "/auth" });
+    } catch (err: unknown) {
+      console.error("Erreur suppression compte:", err);
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Impossible de supprimer le compte: ${msg}`);
+    } finally {
+      setDeletingAccount(false);
+    }
+  };
 
   const handleGenerateSyncCode = () => {
     const code = genererCodeTransfert();
@@ -350,7 +392,128 @@ function ParametresPage() {
             <Trash2 /> Effacer les données locales
           </Button>
         </Carte>
+
+        {user && (
+          <section className="rounded-xl border border-destructive/40 bg-destructive/5 p-5">
+            <div className="flex items-start gap-3">
+              <div className="rounded-lg bg-destructive/10 p-2 text-destructive">
+                <ShieldAlert className="size-5" />
+              </div>
+              <div className="flex-1 space-y-1">
+                <h2 className="text-sm font-semibold text-destructive">
+                  Zone de danger — Suppression définitive du compte
+                </h2>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Supprimez irréversiblement votre compte Firebase
+                  Authentication, votre profil candidat, vos candidatures,
+                  contacts, entreprises, documents et fichiers stockés.
+                </p>
+                <div className="pt-3">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="gap-2"
+                    onClick={() => {
+                      setDeleteConfirmText("");
+                      setShowDeleteModal(true);
+                    }}
+                  >
+                    <UserX className="size-4" /> Supprimer définitivement mon
+                    compte
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
       </div>
+
+      {/* Boîte de dialogue de confirmation renforcée */}
+      <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-destructive/15 text-destructive mb-2">
+              <AlertTriangle className="size-6" />
+            </div>
+            <DialogTitle className="text-center text-lg font-bold text-destructive">
+              Suppression définitive de votre compte
+            </DialogTitle>
+            <DialogDescription className="text-center text-xs text-muted-foreground">
+              Cette action est{" "}
+              <span className="font-bold text-foreground">
+                strictement irréversible
+              </span>
+              .
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2 text-xs">
+            <div className="rounded-lg bg-muted/40 p-3 space-y-1.5 border border-border/70">
+              <p className="font-semibold text-foreground">
+                Les éléments suivants seront définitivement détruits :
+              </p>
+              <ul className="list-disc list-inside space-y-0.5 text-muted-foreground">
+                <li>Votre identifiant et compte de connexion Firebase Auth</li>
+                <li>Votre dossier de candidature central et profil complet</li>
+                <li>L'ensemble de vos candidatures et opportunités de stage</li>
+                <li>Votre carnet de contacts et entreprises cibles</li>
+                <li>Vos lettres de motivation et documents générés</li>
+                <li>Tous vos fichiers et CV hébergés sur le Cloud Storage</li>
+                <li>Vos caches locaux sur cet appareil</li>
+              </ul>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-foreground block">
+                Pour confirmer la suppression, veuillez saisir le mot{" "}
+                <span className="font-mono font-bold text-destructive">
+                  SUPPRIMER
+                </span>{" "}
+                ci-dessous :
+              </label>
+              <Input
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder="SUPPRIMER"
+                className="font-mono text-center font-bold tracking-wider uppercase"
+                autoFocus
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowDeleteModal(false)}
+              disabled={deletingAccount}
+            >
+              Annuler
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              disabled={
+                deleteConfirmText.trim().toUpperCase() !== "SUPPRIMER" ||
+                deletingAccount
+              }
+              onClick={handleSelfDeleteAccount}
+              className="gap-2"
+            >
+              {deletingAccount ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" /> Suppression en
+                  cours...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="size-4" /> Confirmer la suppression
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }

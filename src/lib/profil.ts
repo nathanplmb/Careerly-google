@@ -132,10 +132,23 @@ export function profilRempli(p: Profil): boolean {
   );
 }
 
-export function loadProfil(): Profil {
+export function getProfilStorageKey(userId?: string): string {
+  return userId ? `nacora_${userId}_profil_v1` : "nacora_guest_profil_v1";
+}
+
+export function loadProfil(userId?: string): Profil {
   if (typeof window === "undefined") return emptyProfil();
   try {
-    const raw = window.localStorage.getItem(PROFIL_STORAGE_KEY);
+    const key = getProfilStorageKey(userId);
+    let raw = window.localStorage.getItem(key);
+    if (!raw && userId) {
+      const oldRaw = window.localStorage.getItem(PROFIL_STORAGE_KEY);
+      if (oldRaw) {
+        window.localStorage.setItem(key, oldRaw);
+        window.localStorage.removeItem(PROFIL_STORAGE_KEY);
+        raw = oldRaw;
+      }
+    }
     if (!raw) return emptyProfil();
     const brut = JSON.parse(raw) as Partial<Profil>;
     const cvStruct = normaliserCvStructure(brut.cvStructure);
@@ -157,7 +170,7 @@ export function loadProfil(): Profil {
   }
 }
 
-export function saveProfilLocal(p: Profil) {
+export function saveProfilLocal(p: Profil, userId?: string) {
   if (typeof window === "undefined") return;
   // Synchronise les champs d'identité croisés
   const cvStructure = normaliserCvStructure({
@@ -178,5 +191,6 @@ export function saveProfilLocal(p: Profil) {
     cvStructure,
   };
 
-  window.localStorage.setItem(PROFIL_STORAGE_KEY, JSON.stringify(payload));
+  const key = getProfilStorageKey(userId);
+  window.localStorage.setItem(key, JSON.stringify(payload));
 }

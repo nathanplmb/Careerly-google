@@ -1155,7 +1155,7 @@ export function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function formatDate(date: string): string {
+export function formatDate(date?: string | null): string {
   if (!date) return "—";
   const [y, m, d] = date.split("-");
   if (!y || !m || !d) return "—";
@@ -1248,22 +1248,40 @@ export const SEED: Candidature[] = [
   }),
 ];
 
+const LEGACY_CAREERLY_STORAGE_KEY = "careerly_candidatures_v1";
+
 export function getStorageKey(userId?: string): string {
-  return userId ? `${STORAGE_KEY}_${userId}` : STORAGE_KEY;
+  return userId
+    ? `nacora_${userId}_candidatures_v1`
+    : "nacora_guest_candidatures_v1";
 }
 
 export function loadCandidatures(userId?: string): Candidature[] {
   if (typeof window === "undefined") return [];
   try {
     const key = getStorageKey(userId);
-    let raw = window.localStorage.getItem(key);
-    // Si la clé avec userId est vide mais qu'on a un cache global initial, repli transparent
-    if (!raw && userId) {
-      raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(key);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<Candidature>[];
+      return Array.isArray(parsed) ? parsed.map(normalizeCandidature) : [];
     }
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as Partial<Candidature>[];
-    return Array.isArray(parsed) ? parsed.map(normalizeCandidature) : [];
+
+    // Migration exclusive : si l'utilisateur principal n'a pas encore de clé partitionnée, migrer
+    if (userId) {
+      const oldRaw = window.localStorage.getItem(LEGACY_CAREERLY_STORAGE_KEY);
+      if (oldRaw) {
+        const parsed = JSON.parse(oldRaw) as Partial<Candidature>[];
+        const list = Array.isArray(parsed)
+          ? parsed.map(normalizeCandidature)
+          : [];
+        if (list.length > 0) {
+          window.localStorage.setItem(key, JSON.stringify(list));
+          window.localStorage.removeItem(LEGACY_CAREERLY_STORAGE_KEY);
+          return list;
+        }
+      }
+    }
+    return [];
   } catch {
     return [];
   }
@@ -1274,8 +1292,6 @@ export function saveCandidatures(items: Candidature[], userId?: string) {
   try {
     const key = getStorageKey(userId);
     window.localStorage.setItem(key, JSON.stringify(items));
-    // Sauvegarder aussi sur la clé globale en secours
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   } catch (err) {
     console.warn("Erreur écriture localStorage saveCandidatures:", err);
   }

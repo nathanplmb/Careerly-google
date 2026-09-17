@@ -38,6 +38,7 @@ const CANDIDATE_MODELS = [
   "gemini-3.8-flash",
   "gemini-3.7-flash",
   "gemini-flash-latest",
+  "gemini-2.5-flash",
 ];
 
 const VALID_ACTIONS_MAP: Record<string, BriefActionId> = {
@@ -184,6 +185,18 @@ export async function generateDailyBriefIA(
       console.info(
         `[Daily Brief] Modèle ${model} temporairement indisponible (${attempt + 1}/${CANDIDATE_MODELS.length}), basculement automatique.`,
       );
+      const errMsg = err instanceof Error ? err.message : String(err);
+      const isTransient =
+        errMsg.includes("503") ||
+        errMsg.includes("high demand") ||
+        errMsg.includes("UNAVAILABLE") ||
+        errMsg.includes("429") ||
+        errMsg.includes("RESOURCE_EXHAUSTED");
+      if (isTransient && attempt < CANDIDATE_MODELS.length - 1) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, 250 * (attempt + 1)),
+        );
+      }
     }
   }
 

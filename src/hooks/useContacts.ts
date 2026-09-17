@@ -19,9 +19,9 @@ import type { Candidature } from "@/lib/candidatures";
 import type { Entreprise } from "@/lib/entreprises";
 
 export function useContacts() {
-  const { user, loading: authLoading } = useSession();
+  const { user, firebaseUser, loading: authLoading } = useSession();
   const userId = user?.id;
-  const isCloudUser = Boolean(userId);
+  const isCloudUser = Boolean(firebaseUser?.uid && firebaseUser.uid === userId);
 
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +32,7 @@ export function useContacts() {
     let cancelled = false;
 
     if (!isCloudUser || !userId) {
-      setContacts(loadContactsLocal());
+      setContacts(loadContactsLocal(userId));
       setLoading(false);
       return;
     }
@@ -44,19 +44,16 @@ export function useContacts() {
         if (!cancelled) {
           if (cloud.length > 0) {
             setContacts(cloud);
-            saveContactsLocal(cloud);
+            saveContactsLocal(cloud, userId);
           } else {
-            const local = loadContactsLocal();
+            const local = loadContactsLocal(userId);
             setContacts(local);
-            if (local.length > 0) {
-              void batchUpsertContacts(local, userId);
-            }
           }
         }
       } catch (err) {
         console.warn("Échec récupération contacts cloud, repli local:", err);
         if (!cancelled) {
-          setContacts(loadContactsLocal());
+          setContacts(loadContactsLocal(userId));
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -85,7 +82,7 @@ export function useContacts() {
         const next = exists
           ? prev.map((c) => (c.id === updated.id ? updated : c))
           : [updated, ...prev];
-        saveContactsLocal(next);
+        saveContactsLocal(next, userId);
         return next;
       });
 
@@ -110,7 +107,7 @@ export function useContacts() {
     async (id: string): Promise<void> => {
       setContacts((prev) => {
         const next = prev.filter((item) => item.id !== id);
-        saveContactsLocal(next);
+        saveContactsLocal(next, userId);
         return next;
       });
 
@@ -179,7 +176,7 @@ export function useContacts() {
       }
 
       setContacts([...currentContacts]);
-      saveContactsLocal(currentContacts);
+      saveContactsLocal(currentContacts, userId);
 
       if (isCloudUser && userId && contactsToPersist.length > 0) {
         try {

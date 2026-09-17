@@ -88,13 +88,17 @@ function cleanJsonString(raw: string): string {
 /**
  * Cascade de modèles Gemini officiels :
  * 1. gemini-3.8-flash : Modèle principal ultra-rapide et haute précision
- * 2. gemini-flash-latest : Alias de fallback automatique
- * 3. gemini-3.1-flash-lite : Filet de sécurité réactif
+ * 2. gemini-3.7-flash : Modèle alternatif éprouvé et très stable
+ * 3. gemini-flash-latest : Alias de fallback automatique
+ * 4. gemini-3.1-flash-lite : Filet de sécurité réactif et basse latence
+ * 5. gemini-2.5-flash : Fallback haute disponibilité
  */
 const CANDIDATE_MODELS = [
   "gemini-3.8-flash",
+  "gemini-3.7-flash",
   "gemini-flash-latest",
   "gemini-3.1-flash-lite",
+  "gemini-2.5-flash",
 ];
 
 async function generateContentWithFallback(
@@ -142,6 +146,21 @@ async function generateContentWithFallback(
       console.warn(
         `[Opportunity AI] Modèle ${model} indisponible (${errorObj.message?.slice(0, 100)}), basculement vers candidat suivant.`,
       );
+
+      // Si erreur 503 (haute demande/surcharge) ou 429 (rate limit), pause brève avant modèle suivant
+      const isTransient =
+        errMsg.includes("503") ||
+        errMsg.includes("high demand") ||
+        errMsg.includes("UNAVAILABLE") ||
+        errMsg.includes("429") ||
+        errMsg.includes("RESOURCE_EXHAUSTED");
+
+      if (isTransient && attempt < CANDIDATE_MODELS.length - 1) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, 300 * (attempt + 1)),
+        );
+      }
+
       continue;
     }
   }

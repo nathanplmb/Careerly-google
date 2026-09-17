@@ -754,20 +754,40 @@ export function contactEnTexte(c: Contact): string {
 
 export const CONTACTS_STORAGE_KEY = "careerly_contacts_v1";
 
-export function loadContactsLocal(): Contact[] {
+export function getContactsStorageKey(userId?: string): string {
+  return userId ? `nacora_${userId}_contacts_v1` : "nacora_guest_contacts_v1";
+}
+
+export function loadContactsLocal(userId?: string): Contact[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = window.localStorage.getItem(CONTACTS_STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as Contact[]) : [];
+    const key = getContactsStorageKey(userId);
+    const raw = window.localStorage.getItem(key);
+    if (raw) {
+      return JSON.parse(raw) as Contact[];
+    }
+    if (userId) {
+      const oldRaw = window.localStorage.getItem(CONTACTS_STORAGE_KEY);
+      if (oldRaw) {
+        const parsed = JSON.parse(oldRaw) as Contact[];
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          window.localStorage.setItem(key, JSON.stringify(parsed));
+          window.localStorage.removeItem(CONTACTS_STORAGE_KEY);
+          return parsed;
+        }
+      }
+    }
+    return [];
   } catch {
     return [];
   }
 }
 
-export function saveContactsLocal(items: Contact[]): void {
+export function saveContactsLocal(items: Contact[], userId?: string): void {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(CONTACTS_STORAGE_KEY, JSON.stringify(items));
+    const key = getContactsStorageKey(userId);
+    window.localStorage.setItem(key, JSON.stringify(items));
   } catch {
     // ignorer
   }

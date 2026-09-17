@@ -206,3 +206,60 @@ export async function saveProfilCloud(
 
   return p;
 }
+
+export async function ensureUserProfilRegistered(info: {
+  uid: string;
+  email?: string | null;
+  displayName?: string | null;
+  photoURL?: string | null;
+  provider?: string;
+  prenom?: string;
+  nom?: string;
+  ecole?: string;
+}): Promise<void> {
+  if (!isFirebaseConfigured() || !info.uid) return;
+  try {
+    const ref = doc(db, "profils", info.uid);
+    const snap = await getDoc(ref);
+    const now = new Date().toISOString();
+
+    const parts = (info.displayName || "").trim().split(" ");
+    const inferredPrenom =
+      info.prenom ||
+      parts[0] ||
+      (info.email ? info.email.split("@")[0].split(".")[0] : "");
+    const inferredNom =
+      info.nom || (parts.length > 1 ? parts.slice(1).join(" ") : "");
+
+    if (!snap.exists()) {
+      const initialData = sanitizeForFirestore({
+        user_id: info.uid,
+        email: info.email || "",
+        prenom: inferredPrenom,
+        nom: inferredNom,
+        ecole: info.ecole || "",
+        photoUrl: info.photoURL || "",
+        provider: info.provider || "email",
+        createdAt: now,
+        updated_at: now,
+        dernierAccesLe: now,
+      });
+      await setDoc(ref, initialData, { merge: true });
+    } else {
+      const updates: Record<string, unknown> = {
+        updated_at: now,
+        dernierAccesLe: now,
+      };
+      if (info.email) updates.email = info.email;
+      if (info.provider) updates.provider = info.provider;
+      if (info.photoURL) updates.photoUrl = info.photoURL;
+      if (info.ecole) updates.ecole = info.ecole;
+      if (inferredPrenom && !snap.data()?.prenom)
+        updates.prenom = inferredPrenom;
+      if (inferredNom && !snap.data()?.nom) updates.nom = inferredNom;
+      await setDoc(ref, sanitizeForFirestore(updates), { merge: true });
+    }
+  } catch (err) {
+    console.warn("Échec ensureUserProfilRegistered:", err);
+  }
+}

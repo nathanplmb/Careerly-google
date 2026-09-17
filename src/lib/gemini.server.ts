@@ -28,8 +28,9 @@ const DEFAULT_MODEL_CASCADE = [
   "gemini-3.8-flash",
   "gemini-3.7-flash",
   "gemini-3.6-flash",
-  "gemini-3.1-flash-lite",
   "gemini-flash-latest",
+  "gemini-3.1-flash-lite",
+  "gemini-2.5-flash",
 ];
 
 export async function appelerGeminiSecurise(
@@ -78,6 +79,19 @@ export async function appelerGeminiSecurise(
       console.info(
         `[Gemini Server] Modèle ${model} indisponible, basculement vers le candidat suivant (${attempt + 1}/${modelsToTry.length}).`,
       );
+
+      const isTransient =
+        errMsg.includes("503") ||
+        errMsg.includes("high demand") ||
+        errMsg.includes("UNAVAILABLE") ||
+        errMsg.includes("429") ||
+        errMsg.includes("RESOURCE_EXHAUSTED");
+
+      if (isTransient && attempt < modelsToTry.length - 1) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, 250 * (attempt + 1)),
+        );
+      }
 
       continue;
     }

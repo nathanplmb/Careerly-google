@@ -471,10 +471,25 @@ export function shouldKeepEntrepriseAfterOpportunityDeleted(
 // Stockage Local (localStorage)
 // ----------------------------------------------------
 
-export function loadEntreprisesLocal(): Entreprise[] {
+export function getEntreprisesStorageKey(userId?: string): string {
+  return userId
+    ? `nacora_${userId}_entreprises_v1`
+    : "nacora_guest_entreprises_v1";
+}
+
+export function loadEntreprisesLocal(userId?: string): Entreprise[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = localStorage.getItem(STORAGE_KEY_ENTREPRISES);
+    const key = getEntreprisesStorageKey(userId);
+    let raw = localStorage.getItem(key);
+    if (!raw && userId) {
+      const oldRaw = localStorage.getItem(STORAGE_KEY_ENTREPRISES);
+      if (oldRaw) {
+        localStorage.setItem(key, oldRaw);
+        localStorage.removeItem(STORAGE_KEY_ENTREPRISES);
+        raw = oldRaw;
+      }
+    }
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) {
@@ -487,10 +502,14 @@ export function loadEntreprisesLocal(): Entreprise[] {
   }
 }
 
-export function saveEntreprisesLocal(items: Entreprise[]): void {
+export function saveEntreprisesLocal(
+  items: Entreprise[],
+  userId?: string,
+): void {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(STORAGE_KEY_ENTREPRISES, JSON.stringify(items));
+    const key = getEntreprisesStorageKey(userId);
+    localStorage.setItem(key, JSON.stringify(items));
   } catch (err) {
     console.warn("Échec écriture localStorage entreprises:", err);
   }

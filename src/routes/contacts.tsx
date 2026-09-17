@@ -640,7 +640,7 @@ export function ContactsPage() {
       {/* Modal Candidature Sheet */}
       {editingOpp && (
         <CandidatureSheet
-          candidature={editingOpp}
+          value={editingOpp}
           profil={profil}
           open={oppSheetOpen}
           onOpenChange={(v) => {

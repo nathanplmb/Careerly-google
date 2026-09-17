@@ -77,6 +77,7 @@ type Props = {
   profil?: unknown;
   existingItems?: Candidature[];
   onOpenExisting?: (c: Candidature) => void;
+  initialTab?: "offre" | "profil" | "entreprise" | "workflow";
 };
 
 export function CandidatureSheet({
@@ -87,6 +88,7 @@ export function CandidatureSheet({
   onDelete,
   existingItems,
   onOpenExisting,
+  initialTab = "offre",
 }: Props) {
   const [form, setForm] = useState<Candidature | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -100,7 +102,7 @@ export function CandidatureSheet({
   );
   const [activeTab, setActiveTab] = useState<
     "offre" | "profil" | "entreprise" | "workflow"
-  >("offre");
+  >(initialTab);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -109,7 +111,7 @@ export function CandidatureSheet({
       setForm(normalized);
       setErrorMsg(null);
       setDuplicateMatch(null);
-      setActiveTab("offre");
+      setActiveTab(initialTab || "offre");
 
       // Si c'est une toute nouvelle opportunité vierge -> afficher le menu
       if (!value.entreprise && !value.poste) {
