@@ -13,7 +13,10 @@ import {
   Users,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
+import { ContactImportModal } from "@/components/ContactImportModal";
 import { Button } from "@/components/ui/button";
+import { useContacts } from "@/hooks/useContacts";
+import { Sparkles, ArrowRight } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -74,13 +77,20 @@ const CLE_LETTRES = "careerly.lettres";
 function ImportPage() {
   const { user } = useSession();
   const { items, save } = useCandidatures();
+  const { contacts, batchImportContacts } = useContacts();
+  const [linkedinModalOpen, setLinkedinModalOpen] = useState(false);
 
   return (
-    <AppShell
-      eyebrow="Reprise de données"
-      title="Importer vos données"
-      subtitle="Excel, CSV, contacts LinkedIn, lettres de motivation, calendrier : rien ne repart de zéro."
-    >
+    <AppShell title="Importer vos données">
+      <ContactImportModal
+        open={linkedinModalOpen}
+        onOpenChange={setLinkedinModalOpen}
+        existingContacts={contacts}
+        onImportComplete={async (incoming, resolutions) => {
+          return await batchImportContacts(incoming, resolutions);
+        }}
+      />
+
       <Tabs defaultValue="tableur" className="w-full">
         <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
           <TabsList className="w-max">
@@ -138,9 +148,50 @@ function ImportPage() {
           />
         </TabsContent>
 
-        <TabsContent value="contacts" className="mt-4">
+        <TabsContent value="contacts" className="mt-4 space-y-6">
+          {/* Hero Banner LinkedIn Contact Import */}
+          <div className="rounded-2xl bg-gradient-to-br from-indigo-950/60 via-slate-900/80 to-background border border-indigo-500/20 p-6 shadow-xl relative overflow-hidden backdrop-blur-xl">
+            <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+              <Linkedin className="size-48 text-indigo-400" />
+            </div>
+
+            <div className="relative z-10 max-w-2xl space-y-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-xs font-semibold text-indigo-400">
+                <Sparkles className="size-3.5" />
+                Import LinkedIn IA Native
+              </div>
+
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                Importer mes contacts LinkedIn
+              </h2>
+
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                Glissez votre fichier de connexions LinkedIn (
+                <code>Connections.csv</code>) ou votre carnet vCard. L'IA NACORA
+                categorisera automatiquement vos contacts (RH, Alumni,
+                Professionnels ciblés), normalisera leurs postes et leurs
+                entreprises, et fusionnera les doublons sans perte.
+              </p>
+
+              <div className="pt-2 flex flex-wrap items-center gap-3">
+                <Button
+                  onClick={() => setLinkedinModalOpen(true)}
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs h-10 px-5 rounded-xl shadow-lg gap-2"
+                >
+                  <Linkedin className="size-4" />
+                  Importer mes contacts LinkedIn
+                  <ArrowRight className="size-3.5" />
+                </Button>
+
+                <span className="text-xs text-slate-400">
+                  Total actuel : <strong>{contacts.length}</strong> contact(s)
+                </span>
+              </div>
+            </div>
+          </div>
+
           {!user ? (
-            <p className="glass-card p-5 text-sm text-muted-foreground">
+            <p className="glass-card p-5 text-sm text-muted-foreground leading-relaxed">
               Connectez-vous pour importer votre carnet de contacts : il est
               enregistré sur votre compte pour être disponible sur tous vos
               appareils.
@@ -296,9 +347,13 @@ function ImportTableur({
 
   return (
     <div className="space-y-4">
-      <div className="glass-card p-5">
-        <h2 className="text-sm font-semibold">{titre}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+      <div className="glass-card p-5 sm:p-6">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
+          {titre}
+        </h2>
+        <p className="mt-1 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+          {description}
+        </p>
 
         <input
           ref={inputRef}
@@ -331,15 +386,15 @@ function ImportTableur({
       {tableau && (
         <>
           {tableau.feuilles.length > 1 && (
-            <div className="glass-card flex flex-wrap items-center gap-3 p-4">
-              <span className="text-sm text-muted-foreground">
+            <div className="glass-card flex flex-wrap items-center gap-3 p-4 sm:p-5">
+              <span className="text-sm text-foreground">
                 Feuille à importer
               </span>
               <Select
                 value={tableau.feuille}
                 onValueChange={(v) => fichier && void charger(fichier, v)}
               >
-                <SelectTrigger className="w-56">
+                <SelectTrigger className="w-56 bg-black/20 border-white/10">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -353,8 +408,8 @@ function ImportTableur({
             </div>
           )}
 
-          <div className="glass-card p-5">
-            <h3 className="text-sm font-semibold">
+          <div className="glass-card p-5 sm:p-6">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
               Correspondance des colonnes
             </h3>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -363,8 +418,11 @@ function ImportTableur({
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {champs.map((c) => (
-                <div key={c.cle} className="min-w-0">
-                  <label className="text-xs font-medium text-muted-foreground">
+                <div
+                  key={c.cle}
+                  className="min-w-0 rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-md"
+                >
+                  <label className="text-xs font-semibold text-foreground">
                     {c.label}
                     {c.requis && <span className="text-primary"> *</span>}
                   </label>
@@ -377,7 +435,7 @@ function ImportTableur({
                       }))
                     }
                   >
-                    <SelectTrigger className="mt-1 w-full">
+                    <SelectTrigger className="mt-1 w-full bg-black/20 border-white/10">
                       <SelectValue placeholder="Aucune" />
                     </SelectTrigger>
                     <SelectContent>
@@ -394,8 +452,10 @@ function ImportTableur({
             </div>
           </div>
 
-          <div className="glass-card p-5">
-            <h3 className="text-sm font-semibold">Aperçu</h3>
+          <div className="glass-card p-5 sm:p-6">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
+              Aperçu
+            </h3>
             <div className="mt-3 overflow-x-auto">
               <table className="w-full min-w-[520px] text-left text-sm">
                 <thead>
@@ -409,9 +469,9 @@ function ImportTableur({
                 </thead>
                 <tbody>
                   {lignesApercu.map((l, i) => (
-                    <tr key={i} className="border-t border-border/50">
+                    <tr key={i} className="border-t border-white/10">
                       {(l ?? ["—", "—", "—", "—"]).map((v, j) => (
-                        <td key={j} className="py-2 pr-3">
+                        <td key={j} className="py-2 pr-3 text-foreground/90">
                           {v || "—"}
                         </td>
                       ))}
@@ -428,7 +488,7 @@ function ImportTableur({
                 onChange={(e) => setIgnoreDoublons(e.target.checked)}
                 className="size-4 accent-[var(--color-primary)]"
               />
-              Ignorer les doublons déjà présents dans Careerly
+              Ignorer les doublons déjà présents dans NACORA
             </label>
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
@@ -526,11 +586,11 @@ function ImportLettres() {
   };
 
   return (
-    <div className="glass-card p-5">
-      <h2 className="text-sm font-semibold">
+    <div className="glass-card p-5 sm:p-6">
+      <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
         Vos lettres de motivation existantes
       </h2>
-      <p className="mt-1 text-sm text-muted-foreground">
+      <p className="mt-1 text-xs sm:text-sm text-muted-foreground leading-relaxed">
         Importez vos lettres déjà rédigées (PDF, DOCX, TXT, Markdown, RTF).
         Elles rejoignent la page Documents et servent de base à l'IA pour vos
         prochaines lettres.
@@ -585,9 +645,11 @@ function ExportCalendrier({
   onExport: () => void;
 }) {
   return (
-    <div className="glass-card p-5">
-      <h2 className="text-sm font-semibold">Vos échéances dans votre agenda</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
+    <div className="glass-card p-5 sm:p-6">
+      <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
+        Vos échéances dans votre agenda
+      </h2>
+      <p className="mt-1 text-xs sm:text-sm text-muted-foreground leading-relaxed">
         Careerly génère un fichier .ics contenant vos dates limites, relances et
         entretiens ({nb} échéance(s)). Il s'ouvre dans Google Agenda, Apple
         Calendrier ou Outlook.
@@ -657,12 +719,14 @@ function Guide({
   lien: { href: string; label: string };
 }) {
   return (
-    <div className={cn("glass-card p-5")}>
+    <div className="glass-card p-5 sm:p-6">
       <div className="flex items-center gap-2">
-        <span className="tone-chip size-9 shrink-0">
+        <span className="size-9 shrink-0 flex items-center justify-center rounded-xl bg-primary/15 text-primary border border-primary/25 backdrop-blur-md">
           <Icon className="size-4" />
         </span>
-        <h2 className="text-sm font-semibold">{titre}</h2>
+        <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
+          {titre}
+        </h2>
       </div>
       <ol className="mt-3 space-y-1.5 text-sm text-muted-foreground">
         {etapes.map((e, i) => (

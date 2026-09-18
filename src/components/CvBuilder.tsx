@@ -95,7 +95,7 @@ function Bloc({
 }) {
   const [open, setOpen] = useState(defaultOpen ?? true);
   return (
-    <section className="glass-card overflow-hidden">
+    <section className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden">
       <header className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5">
         <button
           type="button"
@@ -262,7 +262,7 @@ export function CvBuilder({ value, onChange }: Props) {
 
   return (
     <div className="grid gap-5">
-      <div className="glass-card p-4 sm:p-5">
+      <div className="rounded-2xl border border-border/60 bg-card/40 p-4 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-sm font-medium">
             <Sparkles className="size-4 text-primary" /> Complétion de votre CV
@@ -302,7 +302,7 @@ export function CvBuilder({ value, onChange }: Props) {
       {onglet === "identite" && (
         <>
           {/* Identité */}
-          <section className="glass-card p-4 sm:p-5">
+          <section className="rounded-2xl border border-border/60 bg-card/40 p-4 sm:p-5">
             <div className="flex items-center gap-3">
               <span className="grid size-9 place-items-center rounded-xl bg-primary/10 text-primary">
                 <UserRound className="size-4" />

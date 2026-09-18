@@ -105,7 +105,7 @@ export function ProfilObjectivesTab({ profil, onChange }: Props) {
   return (
     <div className="space-y-6">
       {/* 1. Postes & Secteurs Cibles */}
-      <div className="glass-card p-5 sm:p-6 space-y-5 rounded-2xl border border-border/70 bg-card/80">
+      <div className="rounded-2xl border border-border/60 bg-card/40 p-5 sm:p-6 space-y-5">
         <div className="flex items-center gap-3 border-b border-border/40 pb-3">
           <div className="flex size-8 items-center justify-center rounded-lg bg-purple-500/10 text-purple-400">
             <Target className="size-4" />
@@ -301,7 +301,7 @@ export function ProfilObjectivesTab({ profil, onChange }: Props) {
       </div>
 
       {/* 2. Type de contrat & Disponibilité */}
-      <div className="glass-card p-5 sm:p-6 space-y-5 rounded-2xl border border-border/70 bg-card/80">
+      <div className="rounded-2xl border border-border/60 bg-card/40 p-5 sm:p-6 space-y-5">
         <div className="flex items-center gap-3 border-b border-border/40 pb-3">
           <div className="flex size-8 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400">
             <Calendar className="size-4" />
@@ -427,7 +427,7 @@ export function ProfilObjectivesTab({ profil, onChange }: Props) {
       </div>
 
       {/* 3. Contexte IA & Critères non négociables */}
-      <div className="glass-card p-5 sm:p-6 space-y-4 rounded-2xl border border-purple-500/30 bg-gradient-to-br from-purple-500/5 via-card/80 to-indigo-500/5">
+      <div className="p-5 sm:p-6 space-y-4 rounded-2xl border border-purple-500/20 bg-card/30">
         <div className="flex items-center gap-3 border-b border-purple-500/20 pb-3">
           <div className="flex size-8 items-center justify-center rounded-lg bg-purple-500/20 text-purple-300">
             <Sparkles className="size-4" />

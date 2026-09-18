@@ -123,7 +123,7 @@ export function ProfilLanguagesTab({ profil, onChange }: Props) {
   return (
     <div className="space-y-6">
       {/* 1. Formulaire d'ajout rapide */}
-      <div className="glass-card p-5 sm:p-6 space-y-5">
+      <div className="rounded-2xl border border-border/60 bg-card/40 p-5 sm:p-6 space-y-5">
         <div className="flex items-center gap-3 border-b border-border/50 pb-3">
           <div className="flex size-8 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400">
             <Globe2 className="size-4" />
@@ -230,7 +230,7 @@ export function ProfilLanguagesTab({ profil, onChange }: Props) {
       {/* 2. Liste des Langues enregistrées */}
       <div className="space-y-3">
         {langues.length === 0 && (
-          <p className="text-xs text-muted-foreground text-center py-6 glass-card">
+          <p className="text-xs text-muted-foreground text-center py-6 rounded-2xl border border-border/60 bg-card/40">
             Aucune langue enregistrée. L'anglais et votre langue maternelle sont
             essentiels pour le Match IA.
           </p>
@@ -240,7 +240,7 @@ export function ProfilLanguagesTab({ profil, onChange }: Props) {
           {langues.map((l) => (
             <div
               key={l.id}
-              className="glass-card p-4 rounded-xl border border-border/70 flex items-center justify-between gap-3 bg-card/60"
+              className="rounded-2xl border border-border/60 bg-card/40 p-4 flex items-center justify-between gap-3"
             >
               <div className="min-w-0 space-y-1">
                 <div className="flex items-center gap-2">

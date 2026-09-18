@@ -14,6 +14,8 @@ import {
   ShieldCheck,
   Trash2,
   UserRound,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
@@ -64,9 +66,13 @@ function Carte({
   children: React.ReactNode;
 }) {
   return (
-    <section className="glass-card pop-in p-5">
-      <h2 className="text-sm font-semibold">{titre}</h2>
-      <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+    <section className="glass-card p-5 sm:p-6">
+      <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
+        {titre}
+      </h2>
+      <p className="mt-1 text-xs text-muted-foreground leading-relaxed font-medium">
+        {description}
+      </p>
       <div className="mt-4 flex flex-wrap gap-2">{children}</div>
     </section>
   );
@@ -99,6 +105,27 @@ function ParametresPage() {
   const [busy, setBusy] = useState(false);
   const [syncCode, setSyncCode] = useState("");
   const [importCode, setImportCode] = useState("");
+  const [contrastActive, setContrastActive] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("nacora_high_contrast") === "true";
+    }
+    return false;
+  });
+
+  const toggleLocalContrast = () => {
+    const next = !contrastActive;
+    setContrastActive(next);
+    localStorage.setItem("nacora_high_contrast", String(next));
+    if (next) {
+      document.documentElement.classList.add("high-contrast");
+      toast.success("Mode Contraste Élevé activé !");
+    } else {
+      document.documentElement.classList.remove("high-contrast");
+      toast.success("Mode Contraste Standard activé !");
+    }
+    window.dispatchEvent(new Event("nacora_contrast_changed"));
+    window.dispatchEvent(new Event("storage"));
+  };
 
   const handleGenerateSyncCode = () => {
     const code = genererCodeTransfert();
@@ -215,9 +242,7 @@ function ParametresPage() {
 
   return (
     <AppShell
-      eyebrow="Compte"
       title="Paramètres"
-      subtitle="Compte, données et confidentialité"
       actions={
         authLoading ? (
           <Loader2 className="size-5 animate-spin opacity-70" />
@@ -258,9 +283,9 @@ function ParametresPage() {
           description="Transférez l'intégralité de vos candidatures, contacts et profil entre la Preview Google AI Studio et votre déploiement Vercel en 1 clic sans aucune configuration serveur."
         >
           <div className="w-full space-y-4">
-            <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
+            <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-4 space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold">
+                <span className="text-xs font-semibold text-foreground">
                   1. Exporter vos données de cet appareil
                 </span>
                 <div className="flex gap-2">
@@ -268,7 +293,7 @@ function ParametresPage() {
                     size="sm"
                     variant="secondary"
                     onClick={handleGenerateSyncCode}
-                    className="h-7 text-xs gap-1.5"
+                    className="h-8 text-xs gap-1.5 cursor-pointer"
                   >
                     <RefreshCw className="size-3" /> Générer le code
                   </Button>
@@ -277,7 +302,7 @@ function ParametresPage() {
                       size="sm"
                       variant="outline"
                       onClick={handleCopyCode}
-                      className="h-7 text-xs gap-1.5"
+                      className="h-8 text-xs gap-1.5 cursor-pointer"
                     >
                       <Copy className="size-3" /> Copier
                     </Button>
@@ -289,14 +314,14 @@ function ParametresPage() {
                   readOnly
                   rows={2}
                   value={syncCode}
-                  className="font-mono text-[10px] resize-none bg-background/50 select-all"
+                  className="font-mono text-[11px] resize-none bg-black/30 border border-white/10 select-all"
                   onClick={(e) => (e.target as HTMLTextAreaElement).select()}
                 />
               )}
             </div>
 
-            <div className="rounded-lg border border-border/70 bg-muted/20 p-3 space-y-2">
-              <span className="text-xs font-semibold">
+            <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-4 space-y-2.5">
+              <span className="text-xs font-semibold text-foreground">
                 2. Importer et écraser/mettre à jour avec un code de transfert
               </span>
               <Textarea
@@ -304,12 +329,12 @@ function ParametresPage() {
                 placeholder="Collez le code CAREERLY_SYNC_... généré depuis votre autre environnement"
                 value={importCode}
                 onChange={(e) => setImportCode(e.target.value)}
-                className="font-mono text-xs resize-none"
+                className="font-mono text-xs resize-none bg-black/30 border border-white/10"
               />
               <Button
                 size="sm"
                 onClick={handleApplyCode}
-                className="w-full gap-2 mt-1"
+                className="w-full gap-2 mt-1 cursor-pointer"
               >
                 <Globe className="size-3.5" /> Appliquer la synchronisation
                 immédiatement
@@ -339,7 +364,31 @@ function ParametresPage() {
           titre="Confidentialité"
           description="Les analyses IA utilisent uniquement les informations que vous saisissez (profil, offres, contacts). Aucune donnée n'est partagée avec des tiers en dehors du traitement de la demande."
         >
-          <Button variant="secondary" asChild></Button>
+          <span className="text-[11px] font-semibold text-emerald-500 inline-flex items-center gap-1.5 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
+            <ShieldCheck className="size-4" /> Traitement sécurisé & conforme
+          </span>
+        </Carte>
+
+        <Carte
+          titre="Accessibilité & Contraste"
+          description="Améliorez la visibilité générale du site en renforçant le contraste, en accentuant les contours des blocs et en éliminant les textes grisés à faible lisibilité."
+        >
+          <Button
+            variant={contrastActive ? "default" : "outline"}
+            onClick={toggleLocalContrast}
+            className="gap-2 shrink-0 cursor-pointer"
+          >
+            {contrastActive ? (
+              <>
+                <EyeOff className="size-4 text-primary" /> Désactiver le
+                Contraste Élevé
+              </>
+            ) : (
+              <>
+                <Eye className="size-4" /> Activer le Contraste Élevé
+              </>
+            )}
+          </Button>
         </Carte>
 
         <Carte

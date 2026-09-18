@@ -161,6 +161,10 @@ export type Candidature = {
   applicationMethod?: string | null;
   applicationRequirements?: string[];
 
+  // Coordonnées de contact
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+
   benefits?: string[];
 
   sourceType?: string | null;
@@ -453,6 +457,9 @@ export function normalizeCandidature(c: Partial<Candidature>): Candidature {
 
   const commentaire = c.commentaire || c.personalNotes || base.commentaire;
   const personalNotes = c.personalNotes || c.commentaire || base.personalNotes;
+
+  const contactEmail = c.contactEmail || null;
+  const contactPhone = c.contactPhone || null;
 
   // Statut
   const statutRaw = c.statut || c.status || base.statut;

@@ -1,11 +1,9 @@
 import {
   Sparkles,
   ArrowUpRight,
-  TrendingUp,
   CheckCircle2,
   AlertCircle,
   FileText,
-  Check,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -28,10 +26,10 @@ export function ProfilHeaderCard({
   bilan,
   onOpenCvModal,
   onOpenSummaryIaModal,
-  onOpenOptimizerModal,
+  onOpenSelectTab,
   onSelectTab,
   saving,
-}: Props) {
+}: Props & { onOpenSelectTab?: (tab: string) => void }) {
   const nomAffiche =
     profil.prenom || profil.nom
       ? `${profil.prenom} ${profil.nom}`.trim()
@@ -49,16 +47,12 @@ export function ProfilHeaderCard({
     "Profil Candidat";
 
   return (
-    <div className="glass-card relative overflow-hidden p-6 sm:p-7 space-y-6 border-purple-500/20 bg-gradient-to-br from-card/90 via-card/70 to-purple-950/20">
-      {/* Background ambient glow */}
-      <div className="pointer-events-none absolute -top-20 -right-20 size-64 rounded-full bg-purple-500/15 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-20 -left-20 size-64 rounded-full bg-indigo-500/10 blur-3xl" />
-
+    <div className="rounded-2xl border border-border bg-card/60 relative overflow-hidden p-6 sm:p-7 space-y-6">
       {/* Rangée supérieure : Identité & Actions IA */}
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
         {/* Identité & Titre */}
         <div className="flex items-start gap-4 sm:gap-5">
-          <div className="relative flex size-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-700 text-xl font-bold text-white shadow-lg shadow-purple-600/30 border border-purple-400/30">
+          <div className="relative flex size-16 shrink-0 items-center justify-center rounded-2xl bg-muted border border-border text-xl font-bold text-muted-foreground shadow-sm">
             {profil.photoUrl ? (
               <img
                 src={profil.photoUrl}
@@ -86,13 +80,13 @@ export function ProfilHeaderCard({
               </Badge>
             </div>
 
-            <p className="text-xs sm:text-sm font-medium text-purple-300">
+            <p className="text-xs sm:text-sm font-semibold text-muted-foreground">
               {titrePro}
             </p>
 
             <div className="flex flex-wrap items-center gap-2 pt-1">
               {profil.contrats && (
-                <span className="inline-flex items-center rounded-lg bg-purple-500/10 border border-purple-500/20 px-2.5 py-0.5 text-xs font-medium text-purple-200">
+                <span className="inline-flex items-center rounded-lg bg-zinc-500/10 border border-zinc-500/20 px-2.5 py-0.5 text-xs font-medium text-foreground">
                   🎯 {profil.contrats}
                 </span>
               )}
@@ -102,7 +96,7 @@ export function ProfilHeaderCard({
                 </span>
               )}
               {profil.modeTravail && (
-                <span className="inline-flex items-center rounded-lg bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-0.5 text-xs font-medium text-indigo-300">
+                <span className="inline-flex items-center rounded-lg bg-zinc-500/10 border border-zinc-500/20 px-2.5 py-0.5 text-xs font-medium text-foreground">
                   💻 {profil.modeTravail}
                 </span>
               )}
@@ -120,7 +114,7 @@ export function ProfilHeaderCard({
           <Button
             size="sm"
             onClick={onOpenCvModal}
-            className="gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-md shadow-purple-600/20 text-xs font-semibold"
+            className="gap-2 bg-primary hover:bg-primary/95 text-white shadow-sm text-xs font-semibold rounded-xl"
           >
             <FileText className="size-3.5" />
             Analyser mon CV
@@ -130,7 +124,7 @@ export function ProfilHeaderCard({
             size="sm"
             variant="outline"
             onClick={onOpenSummaryIaModal}
-            className="gap-1.5 border-purple-500/30 hover:bg-purple-500/10 text-purple-300 text-xs font-semibold"
+            className="gap-1.5 border-border hover:bg-muted text-foreground/90 text-xs font-semibold rounded-xl bg-card"
           >
             <Sparkles className="size-3.5" />
             Synthèse & Conseils IA
@@ -142,7 +136,7 @@ export function ProfilHeaderCard({
       <div className="rounded-2xl border border-border/60 bg-background/50 p-4 sm:p-5 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="flex size-7 items-center justify-center rounded-lg bg-purple-500/15 text-purple-400 font-bold text-xs">
+            <span className="flex size-7 items-center justify-center rounded-lg bg-zinc-500/10 text-zinc-400 font-bold text-xs">
               ⚡
             </span>
             <div>
@@ -157,7 +151,7 @@ export function ProfilHeaderCard({
             </div>
           </div>
 
-          <span className="text-base font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-indigo-400">
+          <span className="text-base font-black text-foreground">
             {bilan.score}% complet
           </span>
         </div>
@@ -200,7 +194,7 @@ export function ProfilHeaderCard({
         {bilan.suggestions.length > 0 && bilan.suggestions[0] && (
           <div className="flex items-center justify-between gap-3 pt-2 border-t border-border/40 text-xs">
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-purple-400 font-bold shrink-0">
+              <span className="text-foreground font-bold shrink-0">
                 💡 Conseil IA :
               </span>
               <span className="text-muted-foreground truncate">
@@ -214,7 +208,7 @@ export function ProfilHeaderCard({
                   onSelectTab(bilan.suggestions[0].tab);
                 }
               }}
-              className="text-xs font-semibold text-purple-400 hover:text-purple-300 inline-flex items-center gap-1 shrink-0"
+              className="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-1 shrink-0"
             >
               Compléter (+{bilan.suggestions[0].gain} pts)
               <ArrowUpRight className="size-3" />

@@ -51,39 +51,40 @@ function DocumentsPage() {
   };
 
   return (
-    <AppShell
-      eyebrow="Documents"
-      title="Documents"
-      subtitle={`${lettres.length} document(s) enregistré(s)`}
-    >
-      <div className="grid gap-4 lg:grid-cols-[1fr_1.2fr]">
-        <section className="glass-card pop-in flex h-fit flex-col gap-4 p-5">
-          <h2 className="text-sm font-semibold">Générateur de documents</h2>
-          <p className="text-sm text-muted-foreground">
+    <AppShell title="Documents">
+      <div className="grid gap-5 lg:grid-cols-[1fr_1.2fr]">
+        <section className="glass-panel flex h-fit flex-col gap-4 p-5 sm:p-6 shadow-md">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
+            Générateur de documents
+          </h2>
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
             La génération par l'IA sera bientôt de retour dans une nouvelle
             version.
           </p>
         </section>
 
-        <section className="flex flex-col gap-3">
+        <section className="flex flex-col gap-3.5">
           {lettres.length === 0 && (
-            <p className="glass-card p-8 text-center text-sm text-muted-foreground">
-              <FileText className="mx-auto mb-3 size-6 text-primary" />
-              Aucun document pour l'instant.
-            </p>
+            <div className="glass-panel border-dashed p-8 text-center text-sm text-muted-foreground flex flex-col items-center justify-center">
+              <FileText className="mx-auto mb-3 size-8 text-primary/80" />
+              <span>Aucun document pour l'instant.</span>
+            </div>
           )}
           {lettres.map((l) => (
-            <article key={l.id} className="glass-card pop-in p-4">
+            <article
+              key={l.id}
+              className="glass-card-interactive p-5 shadow-sm"
+            >
               <div className="flex items-start justify-between gap-3">
                 <button
                   type="button"
-                  className="min-w-0 flex-1 text-left"
+                  className="min-w-0 flex-1 text-left cursor-pointer"
                   onClick={() => setOuverte(ouverte === l.id ? null : l.id)}
                 >
-                  <h3 className="truncate text-[14px] font-semibold">
+                  <h3 className="truncate text-sm font-bold text-foreground">
                     {l.titre}
                   </h3>
-                  <p className="truncate text-xs text-muted-foreground">
+                  <p className="truncate text-xs text-muted-foreground font-semibold mt-1">
                     {l.objet || new Date(l.creeLe).toLocaleDateString("fr-FR")}
                   </p>
                 </button>
@@ -95,6 +96,7 @@ function DocumentsPage() {
                       void navigator.clipboard.writeText(l.contenu);
                       toast.success("Copié.");
                     }}
+                    className="h-8 w-8 rounded-lg hover:bg-white/10"
                   >
                     <Copy className="size-4" />
                   </Button>
@@ -104,14 +106,15 @@ function DocumentsPage() {
                     onClick={() =>
                       persister(lettres.filter((x) => x.id !== l.id))
                     }
+                    className="h-8 w-8 rounded-lg hover:bg-destructive/15 text-muted-foreground hover:text-destructive"
                   >
-                    <Trash2 className="size-4 text-destructive" />
+                    <Trash2 className="size-4" />
                   </Button>
                 </div>
               </div>
               {ouverte === l.id && (
-                <div className="mt-3 border-t border-border/60 pt-3">
-                  <p className="whitespace-pre-wrap text-[13.5px] leading-relaxed text-muted-foreground">
+                <div className="mt-3.5 border-t border-white/10 pt-3.5">
+                  <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-muted-foreground font-medium">
                     {l.contenu}
                   </p>
                 </div>

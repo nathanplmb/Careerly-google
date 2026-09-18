@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import {
   Upload,
   FileText,
@@ -21,6 +22,10 @@ import {
   RefreshCw,
   Sparkles,
   Info,
+  Loader2,
+  Building2,
+  Briefcase,
+  Tag,
 } from "lucide-react";
 import {
   parseVCardString,
@@ -29,15 +34,22 @@ import {
   getContactFullName,
   getContactCompany,
   getContactJobTitle,
+  getCategoryBadgeStyle,
+  computeContactRelevance,
   type Contact,
+  type CategoryContact,
   type DuplicateMatchReason,
 } from "@/lib/contacts";
+import { classifyContactsBatchServerFn } from "@/ai/contact-import/contactImport.server-fn";
+import { useContactImport } from "@/context/ContactImportContext";
 import { toast } from "sonner";
 
 interface ContactImportModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   existingContacts: Contact[];
+  userSchool?: string;
+  userTargetSector?: string;
   onImportComplete: (
     contactsToImport: Partial<Contact>[],
     resolutions: Record<string, "merge" | "both" | "skip">,
@@ -56,6 +68,8 @@ export function ContactImportModal({
   open,
   onOpenChange,
   existingContacts,
+  userSchool,
+  userTargetSector,
   onImportComplete,
 }: ContactImportModalProps) {
   const [activeTab, setActiveTab] = useState<"vcf" | "linkedin">("vcf");
@@ -66,6 +80,14 @@ export function ContactImportModal({
   const [isProcessing, setIsProcessing] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
+  // IA Progress State
+  const [isEnriching, setIsEnriching] = useState(false);
+  const [aiProgress, setAiProgress] = useState({
+    current: 0,
+    total: 0,
+    percentage: 0,
+  });
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const resetState = () => {
@@ -74,6 +96,8 @@ export function ContactImportModal({
     setParsedItems([]);
     setSearchQuery("");
     setIsProcessing(false);
+    setIsEnriching(false);
+    setAiProgress({ current: 0, total: 0, percentage: 0 });
     setDragOver(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -125,6 +149,137 @@ export function ContactImportModal({
       toast.error("Erreur lors de l'analyse du fichier.");
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  /**
+   * Analyse IA en arrière-plan par lots (batching pour fichiers volumineux)
+   */
+  const handleRunAiEnrichment = async () => {
+    const activeSelected = parsedItems.filter(
+      (item) => item.selected && item.resolution !== "skip",
+    );
+
+    if (activeSelected.length === 0) {
+      toast.warning("Aucun contact sélectionné pour la classification.");
+      return;
+    }
+
+    setIsEnriching(true);
+    const BATCH_SIZE = 12;
+    const totalCount = activeSelected.length;
+    let processedCount = 0;
+
+    const existingCompaniesList = Array.from(
+      new Set(
+        existingContacts.map((c) => c.entreprise).filter(Boolean) as string[],
+      ),
+    );
+
+    setAiProgress({
+      current: 0,
+      total: totalCount,
+      percentage: 0,
+    });
+
+    try {
+      // Traitement par lots de BATCH_SIZE contacts
+      for (let i = 0; i < totalCount; i += BATCH_SIZE) {
+        const batch = activeSelected.slice(i, i + BATCH_SIZE);
+        const batchInputs = batch.map((item) => ({
+          id: item.id,
+          nom: getContactFullName(item.contact),
+          entreprise: item.contact.entreprise || "",
+          poste: item.contact.poste || "",
+          notes: item.contact.notes || "",
+          linkedin: item.contact.linkedin || "",
+        }));
+
+        const result = await classifyContactsBatchServerFn({
+          data: {
+            contacts: batchInputs,
+            existingCompanies: existingCompaniesList,
+            userSchool,
+            userTargetSector,
+          },
+        });
+
+        // Mise à jour progressive de parsedItems
+        const classifications =
+          result?.classifications ||
+          (result as unknown as { classified?: typeof result.classifications })
+            ?.classified ||
+          [];
+        const classMap = new Map(classifications.map((c) => [c.id, c]));
+
+        setParsedItems((prev) =>
+          prev.map((item) => {
+            const classInfo = classMap.get(item.id);
+            if (!classInfo) return item;
+
+            const updatedRole =
+              classInfo.normalizedFunction || item.contact.poste || "";
+            const updatedCompany =
+              classInfo.normalizedCompany || item.contact.entreprise || "";
+            const updatedLevel =
+              classInfo.normalizedLevel || item.contact.normalizedLevel || "";
+
+            const candidateContact: Contact = {
+              ...(item.contact as Contact),
+              entreprise: updatedCompany,
+              companyId: classInfo.companyMatchedWithExisting
+                ? undefined
+                : item.contact.companyId,
+              poste: classInfo.normalizedFunction
+                ? `${classInfo.normalizedFunction}${classInfo.normalizedLevel ? ` (${classInfo.normalizedLevel})` : ""}`
+                : item.contact.poste,
+              category: classInfo.category as CategoryContact,
+              categoryConfidence: classInfo.categoryConfidence,
+              normalizedFunction: updatedRole,
+              normalizedLevel: updatedLevel,
+              pastCompanies:
+                classInfo.pastCompanies || item.contact.pastCompanies || [],
+              education: classInfo.education || item.contact.education || [],
+              companySector:
+                classInfo.companySector || item.contact.companySector || "",
+              aiEnriched: true,
+            };
+
+            const scoring = computeContactRelevance(candidateContact, [], {
+              school: userSchool,
+              targetSectors: userTargetSector ? [userTargetSector] : undefined,
+            });
+
+            candidateContact.relevanceScore = scoring.score;
+            candidateContact.connectionPoints = scoring.connectionPoints;
+
+            return {
+              ...item,
+              contact: candidateContact,
+            };
+          }),
+        );
+
+        processedCount += batch.length;
+        const currentPercentage = Math.round(
+          (processedCount / totalCount) * 100,
+        );
+
+        setAiProgress({
+          current: Math.min(processedCount, totalCount),
+          total: totalCount,
+          percentage: currentPercentage,
+        });
+      }
+
+      toast.success(
+        `Classification IA terminée avec succès pour ${totalCount} contact(s) !`,
+      );
+    } catch (err) {
+      console.error("Erreur enrichissement IA contacts:", err);
+      toast.error("Échec de l'analyse IA. Les contacts sont conservés.");
+    } finally {
+      setIsEnriching(false);
     }
   };
 
@@ -215,6 +370,8 @@ export function ContactImportModal({
     );
   };
 
+  const { startBackgroundImport } = useContactImport();
+
   const handleConfirmImport = async () => {
     const activeSelected = parsedItems.filter(
       (item) => item.selected && item.resolution !== "skip",
@@ -236,9 +393,12 @@ export function ContactImportModal({
         }
       }
 
-      const res = await onImportComplete(contactsToImport, resolutions);
-      toast.success(
-        `${res.imported} nouveau(x) contact(s) importé(s), ${res.updated} enrichi(s) sans perte !`,
+      // Lancement en arrière-plan sans bloquer la navigation
+      void startBackgroundImport(
+        contactsToImport,
+        resolutions,
+        userSchool,
+        userTargetSector,
       );
       handleClose(false);
     } catch (err) {
@@ -414,31 +574,67 @@ export function ContactImportModal({
         ) : (
           /* Étape Aperçu & Validation */
           <div className="flex-1 flex flex-col min-h-0">
-            {/* Barre de métriques et recherche */}
-            <div className="px-6 py-3.5 bg-muted/30 border-b border-border/60 flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-2 text-xs">
-                <span className="font-semibold text-foreground">
-                  Fichier : {fileName}
-                </span>
-                <span className="text-muted-foreground">·</span>
-                <span className="inline-flex items-center gap-1 text-primary font-medium">
-                  <Users className="size-3.5" /> {stats.selected} /{" "}
-                  {stats.total} sélectionnés
-                </span>
-                <span className="text-muted-foreground">·</span>
-                <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
-                  <CheckCircle2 className="size-3.5" /> {stats.news} nouveaux
-                </span>
-                {stats.duplicates > 0 && (
-                  <>
-                    <span className="text-muted-foreground">·</span>
-                    <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
-                      <AlertCircle className="size-3.5" /> {stats.duplicates}{" "}
-                      doublons détectés
-                    </span>
-                  </>
-                )}
+            {/* Barre de métriques, IA et recherche */}
+            <div className="px-6 py-3.5 bg-muted/30 border-b border-border/60 flex flex-col gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <span className="font-semibold text-foreground">
+                    Fichier : {fileName}
+                  </span>
+                  <span className="text-muted-foreground">·</span>
+                  <span className="inline-flex items-center gap-1 text-primary font-medium">
+                    <Users className="size-3.5" /> {stats.selected} /{" "}
+                    {stats.total} sélectionnés
+                  </span>
+                  <span className="text-muted-foreground">·</span>
+                  <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
+                    <CheckCircle2 className="size-3.5" /> {stats.news} nouveaux
+                  </span>
+                  {stats.duplicates > 0 && (
+                    <>
+                      <span className="text-muted-foreground">·</span>
+                      <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
+                        <AlertCircle className="size-3.5" /> {stats.duplicates}{" "}
+                        doublons détectés
+                      </span>
+                    </>
+                  )}
+                </div>
+
+                <Button
+                  size="sm"
+                  onClick={handleRunAiEnrichment}
+                  disabled={isEnriching || stats.selected === 0}
+                  className="h-8 text-xs font-semibold gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm shrink-0"
+                >
+                  {isEnriching ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : (
+                    <Sparkles className="size-3.5" />
+                  )}
+                  {isEnriching ? "Analyse IA..." : "Classifier par IA (3 axes)"}
+                </Button>
               </div>
+
+              {/* Barre de progression de l'IA */}
+              {isEnriching && (
+                <div className="p-3 rounded-xl bg-indigo-950/30 border border-indigo-500/30 space-y-2">
+                  <div className="flex items-center justify-between text-xs font-medium text-indigo-300">
+                    <span className="flex items-center gap-1.5">
+                      <Loader2 className="size-3.5 animate-spin text-indigo-400" />
+                      Analyse et classification IA en cours...
+                    </span>
+                    <span className="font-mono text-[11px]">
+                      {aiProgress.current} / {aiProgress.total} contacts (
+                      {aiProgress.percentage}%)
+                    </span>
+                  </div>
+                  <Progress
+                    value={aiProgress.percentage}
+                    className="h-2 bg-indigo-950/80"
+                  />
+                </div>
+              )}
 
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <div className="relative flex-1 sm:w-60">
@@ -473,6 +669,8 @@ export function ContactImportModal({
                   const company = getContactCompany(item.contact);
                   const job = getContactJobTitle(item.contact);
                   const isDup = Boolean(item.match);
+                  const cat = item.contact.category;
+                  const conf = item.contact.categoryConfidence;
 
                   return (
                     <div
@@ -508,13 +706,14 @@ export function ContactImportModal({
                           className="size-4 rounded border-border text-primary focus:ring-primary mt-1 sm:mt-0"
                         />
 
-                        <div className="min-w-0">
+                        <div className="min-w-0 space-y-1">
                           <div className="flex flex-wrap items-center gap-2">
                             <p className="font-semibold text-xs text-foreground truncate">
                               {fullName}
                             </p>
                             {company && (
-                              <span className="rounded-md bg-muted/80 px-2 py-0.5 text-[10px] font-medium text-foreground">
+                              <span className="rounded-md bg-muted/80 px-2 py-0.5 text-[10px] font-medium text-foreground flex items-center gap-1">
+                                <Building2 className="size-2.5 text-muted-foreground" />
                                 {company}
                               </span>
                             )}
@@ -525,12 +724,30 @@ export function ContactImportModal({
                             )}
                           </div>
 
-                          <div className="mt-1 flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
-                            {item.contact.email && (
-                              <span>{item.contact.email}</span>
+                          <div className="flex flex-wrap items-center gap-2 text-[10px]">
+                            {cat && (
+                              <span
+                                className={`px-2 py-0.5 rounded-full font-semibold border flex items-center gap-1 backdrop-blur-md ${getCategoryBadgeStyle(cat).fullClass}`}
+                              >
+                                <Tag className="size-2.5 opacity-80" />
+                                {cat}
+                                {conf !== undefined && (
+                                  <span className="opacity-75 font-mono text-[9px]">
+                                    ({conf}%)
+                                  </span>
+                                )}
+                              </span>
                             )}
-                            {item.contact.telephone && (
-                              <span>{item.contact.telephone}</span>
+                            {item.contact.aiEnriched && (
+                              <span className="px-1.5 py-0.5 rounded bg-indigo-500/10 text-indigo-400 font-mono text-[9px] flex items-center gap-1">
+                                <Sparkles className="size-2.5 text-indigo-400" />
+                                IA
+                              </span>
+                            )}
+                            {item.contact.email && (
+                              <span className="text-muted-foreground">
+                                {item.contact.email}
+                              </span>
                             )}
                             {item.contact.linkedin && (
                               <span className="text-primary truncate max-w-xs">

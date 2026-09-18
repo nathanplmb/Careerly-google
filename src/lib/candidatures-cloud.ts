@@ -5,8 +5,13 @@ import {
   setDoc,
   deleteDoc,
   query,
+  writeBatch,
 } from "firebase/firestore";
-import { db, isFirebaseConfigured } from "@/integrations/firebase/client";
+import { db, isFirebaseConfigured, auth } from "@/integrations/firebase/client";
+import {
+  handleFirestoreError,
+  OperationType,
+} from "@/integrations/firebase/errors";
 import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
 import {
   emptyPreparation,
@@ -509,35 +514,45 @@ export async function fetchCandidatures(
   });
 
   if (isFirebaseConfigured() && userId) {
-    try {
-      const colRef = collection(db, "users", userId, "candidatures");
-      const snap = await getDocs(query(colRef));
-      const list: Candidature[] = [];
-      snap.forEach((docSnap) => {
-        const cand = toCandidature({
-          id: docSnap.id,
-          ...docSnap.data(),
-        } as Row);
-        list.push(cand);
-      });
+    if (auth.currentUser && auth.currentUser.uid === userId) {
+      try {
+        const colRef = collection(db, "users", userId, "candidatures");
+        const snap = await getDocs(query(colRef));
+        const list: Candidature[] = [];
+        snap.forEach((docSnap) => {
+          const cand = toCandidature({
+            id: docSnap.id,
+            ...docSnap.data(),
+          } as Row);
+          list.push(cand);
+        });
+        console.info(
+          `[OPPORTUNITY LOAD SUCCESS] ${list.length} opportunités chargées depuis Firestore`,
+          list.map((c) => ({
+            id: c.id,
+            poste: c.poste,
+            entreprise: c.entreprise,
+            contractType: c.contractType,
+            duration: c.duration,
+            metricsCount: c.companyMetrics?.length || 0,
+          })),
+        );
+        return list;
+      } catch (e) {
+        console.error(
+          "[OPPORTUNITY LOAD ERROR] Firestore fetchCandidatures error:",
+          e,
+        );
+        handleFirestoreError(
+          e,
+          OperationType.GET,
+          `users/${userId}/candidatures`,
+        );
+      }
+    } else {
       console.info(
-        `[OPPORTUNITY LOAD SUCCESS] ${list.length} opportunités chargées depuis Firestore`,
-        list.map((c) => ({
-          id: c.id,
-          poste: c.poste,
-          entreprise: c.entreprise,
-          contractType: c.contractType,
-          duration: c.duration,
-          metricsCount: c.companyMetrics?.length || 0,
-        })),
+        "[OPPORTUNITY LOAD LOCAL] Session Firebase Auth non active ou UID différent, mode local/Supabase.",
       );
-      return list;
-    } catch (e) {
-      console.error(
-        "[OPPORTUNITY LOAD ERROR] Firestore fetchCandidatures error:",
-        e,
-      );
-      throw e;
     }
   }
 
@@ -558,7 +573,7 @@ export async function fetchCandidatures(
   }
 
   console.info(
-    "[OPPORTUNITY LOAD EMPTY] Ni Firestore ni Supabase n'est configuré.",
+    "[OPPORTUNITY LOAD EMPTY] Mode local ou aucun cloud actif pour cette session.",
   );
   return [];
 }
@@ -593,26 +608,38 @@ export async function upsertCandidature(
   });
 
   if (isFirebaseConfigured() && userId) {
-    try {
-      const docRef = doc(db, "users", userId, "candidatures", row.id as string);
-      await setDoc(docRef, row, { merge: true });
-      const saved = toCandidature(row as unknown as Row);
-      console.info(
-        "[OPPORTUNITY SAVE SUCCESS] Enregistrement Firestore confirmé avec succès:",
-        {
-          id: saved.id,
-          entreprise: saved.entreprise,
-          poste: saved.poste,
-          metricsCount: saved.companyMetrics?.length || 0,
-        },
-      );
-      return saved;
-    } catch (e) {
-      console.error(
-        "[OPPORTUNITY SAVE ERROR] Échec écriture Firestore setDoc:",
-        e,
-      );
-      throw e;
+    if (auth.currentUser && auth.currentUser.uid === userId) {
+      try {
+        const docRef = doc(
+          db,
+          "users",
+          userId,
+          "candidatures",
+          row.id as string,
+        );
+        await setDoc(docRef, row, { merge: true });
+        const saved = toCandidature(row as unknown as Row);
+        console.info(
+          "[OPPORTUNITY SAVE SUCCESS] Enregistrement Firestore confirmé avec succès:",
+          {
+            id: saved.id,
+            entreprise: saved.entreprise,
+            poste: saved.poste,
+            metricsCount: saved.companyMetrics?.length || 0,
+          },
+        );
+        return saved;
+      } catch (e) {
+        console.error(
+          "[OPPORTUNITY SAVE ERROR] Échec écriture Firestore setDoc:",
+          e,
+        );
+        handleFirestoreError(
+          e,
+          OperationType.WRITE,
+          `users/${userId}/candidatures/${row.id}`,
+        );
+      }
     }
   }
 
@@ -642,12 +669,19 @@ export async function upsertCandidature(
 
 export async function deleteCandidature(id: string, userId?: string) {
   if (isFirebaseConfigured() && userId) {
-    try {
-      const docRef = doc(db, "users", userId, "candidatures", id);
-      await deleteDoc(docRef);
-      return;
-    } catch (e) {
-      console.warn("Firestore deleteCandidature error:", e);
+    if (auth.currentUser && auth.currentUser.uid === userId) {
+      try {
+        const docRef = doc(db, "users", userId, "candidatures", id);
+        await deleteDoc(docRef);
+        return;
+      } catch (e) {
+        console.warn("Firestore deleteCandidature error:", e);
+        handleFirestoreError(
+          e,
+          OperationType.DELETE,
+          `users/${userId}/candidatures/${id}`,
+        );
+      }
     }
   }
 
@@ -657,29 +691,48 @@ export async function deleteCandidature(id: string, userId?: string) {
   }
 }
 
-export async function insertManyCandidatures(
+export async function batchUpsertCandidatures(
   items: Candidature[],
   userId: string,
 ): Promise<Candidature[]> {
   if (items.length === 0) return items;
 
   if (isFirebaseConfigured() && userId) {
-    try {
-      const results: Candidature[] = [];
-      for (const item of items) {
-        const saved = await upsertCandidature(item, userId);
-        results.push(saved);
+    if (auth.currentUser && auth.currentUser.uid === userId) {
+      try {
+        const CHUNK_SIZE = 250;
+        for (let i = 0; i < items.length; i += CHUNK_SIZE) {
+          const chunk = items.slice(i, i + CHUNK_SIZE);
+          const batch = writeBatch(db);
+          for (const item of chunk) {
+            const row = toRow(item, userId);
+            const docRef = doc(
+              db,
+              "users",
+              userId,
+              "candidatures",
+              row.id as string,
+            );
+            batch.set(docRef, row, { merge: true });
+          }
+          await batch.commit();
+        }
+        return items;
+      } catch (e) {
+        console.warn("Firestore batchUpsertCandidatures error:", e);
+        handleFirestoreError(
+          e,
+          OperationType.WRITE,
+          `users/${userId}/candidatures`,
+        );
       }
-      return results;
-    } catch (e) {
-      console.warn("Firestore insertManyCandidatures error:", e);
     }
   }
 
   if (isSupabaseConfigured()) {
     const { data, error } = await supabase
       .from("candidatures")
-      .insert(
+      .upsert(
         items.map((c) => toRow(c, userId)) as unknown as Record<
           string,
           unknown
@@ -691,4 +744,11 @@ export async function insertManyCandidatures(
   }
 
   return items;
+}
+
+export async function insertManyCandidatures(
+  items: Candidature[],
+  userId: string,
+): Promise<Candidature[]> {
+  return batchUpsertCandidatures(items, userId);
 }

@@ -163,26 +163,25 @@ function CalendrierPage() {
 
   return (
     <AppShell
-      eyebrow="Planning"
       title="Calendrier"
-      subtitle="Deadlines, relances et entretiens"
       actions={
         authLoading ? (
           <Loader2 className="size-5 animate-spin opacity-70" />
         ) : null
       }
     >
-      <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <section className="glass-card pop-in p-3 sm:p-5">
-          <header className="mb-4 flex items-center justify-between">
-            <h2 className="text-sm font-semibold capitalize">
+      <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
+        <section className="glass-panel p-5 sm:p-6 shadow-md">
+          <header className="mb-5 flex items-center justify-between">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
               {moisLabel(annee, mois)}
             </h2>
-            <div className="flex gap-1">
+            <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-black/20 p-1 backdrop-blur-md">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => changerMois(-1)}
+                className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/10"
               >
                 <ChevronLeft className="size-4" />
               </Button>
@@ -193,6 +192,7 @@ function CalendrierPage() {
                   setAnnee(now.getFullYear());
                   setMois(now.getMonth());
                 }}
+                className="h-8 px-3 text-xs font-semibold rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/10"
               >
                 Aujourd'hui
               </Button>
@@ -200,19 +200,22 @@ function CalendrierPage() {
                 variant="ghost"
                 size="icon"
                 onClick={() => changerMois(1)}
+                className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/10"
               >
                 <ChevronRight className="size-4" />
               </Button>
             </div>
           </header>
 
-          <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-muted-foreground">
+          <div className="grid grid-cols-7 gap-1.5 text-center text-[11px] font-bold text-muted-foreground">
             {JOURS.map((j, i) => (
-              <span key={i}>{j}</span>
+              <span key={i} className="py-1">
+                {j}
+              </span>
             ))}
           </div>
 
-          <div className="mt-1 grid grid-cols-7 gap-0.5 sm:gap-1">
+          <div className="mt-2 grid grid-cols-7 gap-1.5">
             {cases.map((jour, i) => {
               if (jour === null) return <span key={`v${i}`} />;
               const d = iso(annee, mois, jour);
@@ -222,8 +225,10 @@ function CalendrierPage() {
                 <div
                   key={d}
                   className={cn(
-                    "min-w-0 overflow-hidden rounded-lg border border-border/50 p-0.5 text-left sm:rounded-xl sm:p-1 sm:min-h-16",
-                    d === today && "border-primary/60 bg-primary/10",
+                    "min-w-0 overflow-hidden rounded-xl border p-1.5 text-left min-h-18 transition-all backdrop-blur-md",
+                    d === today
+                      ? "border-primary/60 bg-primary/10 shadow-[0_0_12px_rgba(216,26,69,0.2)]"
+                      : "border-white/8 bg-white/4 dark:bg-white/4 hover:border-white/20 hover:bg-white/8",
                   )}
                 >
                   {/* Mobile : jour + pastilles */}
@@ -234,9 +239,14 @@ function CalendrierPage() {
                       setEditing(premierEvt.candidature);
                       setOpen(true);
                     }}
-                    className="flex aspect-square w-full flex-col items-center justify-center gap-1 sm:hidden"
+                    className="flex aspect-square w-full flex-col items-center justify-center gap-1 sm:hidden cursor-pointer"
                   >
-                    <span className="text-[11px] leading-none text-muted-foreground">
+                    <span
+                      className={cn(
+                        "text-[11px] leading-none font-bold",
+                        d === today ? "text-primary" : "text-muted-foreground",
+                      )}
+                    >
                       {jour}
                     </span>
                     <span className="flex items-center gap-0.5">
@@ -254,10 +264,17 @@ function CalendrierPage() {
 
                   {/* Desktop / tablette */}
                   <div className="hidden sm:block">
-                    <span className="text-[11px] text-muted-foreground">
+                    <span
+                      className={cn(
+                        "text-[11px] font-bold px-1",
+                        d === today
+                          ? "text-primary font-extrabold"
+                          : "text-muted-foreground",
+                      )}
+                    >
                       {jour}
                     </span>
-                    <div className="mt-0.5 flex flex-col gap-0.5">
+                    <div className="mt-1 flex flex-col gap-1">
                       {evts.slice(0, 2).map((e, k) => (
                         <button
                           key={k}
@@ -267,7 +284,7 @@ function CalendrierPage() {
                             setOpen(true);
                           }}
                           className={cn(
-                            "truncate rounded-md border px-1 py-0.5 text-[9.5px] font-medium",
+                            "truncate rounded-lg border px-2 py-0.5 text-[9px] font-bold text-left w-full backdrop-blur-md transition-all hover:scale-[1.02] cursor-pointer shadow-xs",
                             COULEURS[e.type],
                           )}
                           title={
@@ -278,8 +295,8 @@ function CalendrierPage() {
                         </button>
                       ))}
                       {evts.length > 2 && (
-                        <span className="text-[9.5px] text-muted-foreground">
-                          +{evts.length - 2}
+                        <span className="text-[9px] text-muted-foreground font-semibold px-1">
+                          +{evts.length - 2} de plus
                         </span>
                       )}
                     </div>
@@ -290,16 +307,17 @@ function CalendrierPage() {
           </div>
         </section>
 
-        <section className="glass-card pop-in p-5">
-          <h2 className="mb-3 inline-flex items-center gap-2 text-sm font-semibold">
+        <section className="glass-panel p-5 sm:p-6 shadow-md flex flex-col">
+          <h2 className="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-foreground">
             <CalendarClock className="size-4 text-primary" /> À venir
           </h2>
           {aVenir.length === 0 && (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              Aucune échéance à venir.
-            </p>
+            <div className="flex-1 flex flex-col items-center justify-center py-12 text-center text-sm text-muted-foreground">
+              <CalendarClock className="size-8 text-muted-foreground/40 mb-2" />
+              <p>Aucune échéance à venir.</p>
+            </div>
           )}
-          <ul className="flex flex-col gap-2">
+          <ul className="flex flex-col gap-2.5">
             {aVenir.map((e, i) => (
               <li key={i}>
                 <button
@@ -308,27 +326,27 @@ function CalendrierPage() {
                     setEditing(e.candidature);
                     setOpen(true);
                   }}
-                  className="flex w-full items-center gap-3 rounded-2xl border border-border/60 bg-card/60 px-3 py-2.5 text-left transition-colors hover:bg-accent/40"
+                  className="glass-card-interactive flex w-full items-center gap-3 px-3.5 py-3 text-left cursor-pointer"
                 >
                   <span
                     className={cn(
-                      "rounded-lg border px-2 py-1 text-[10.5px] font-semibold",
+                      "rounded-lg border px-2.5 py-1 text-[10.5px] font-semibold backdrop-blur-md",
                       COULEURS[e.type],
                     )}
                   >
                     {e.type}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[13.5px] font-medium">
+                    <span className="block truncate text-[13.5px] font-semibold text-foreground">
                       {e.titre || e.candidature.entreprise}
                     </span>
-                    <span className="block truncate text-xs text-muted-foreground">
+                    <span className="block truncate text-xs text-muted-foreground mt-0.5">
                       {e.titre
                         ? e.candidature.entreprise || e.candidature.poste
                         : e.candidature.poste}
                     </span>
                   </span>
-                  <span className="shrink-0 text-xs text-muted-foreground">
+                  <span className="shrink-0 text-xs font-mono text-muted-foreground">
                     {formatDate(e.date)}
                   </span>
                 </button>

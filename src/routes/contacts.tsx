@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import {
   Briefcase,
@@ -7,7 +8,9 @@ import {
   CheckCircle2,
   ExternalLink,
   Filter,
+  LayoutGrid,
   Linkedin,
+  List,
   Loader2,
   Mail,
   Phone,
@@ -32,6 +35,7 @@ import {
 import { AppShell } from "@/components/AppShell";
 import { ContactSheet } from "@/components/ContactSheet";
 import { ContactImportModal } from "@/components/ContactImportModal";
+import { ContactCard } from "@/components/ContactCard";
 import { CandidatureSheet } from "@/components/CandidatureSheet";
 import { useSession } from "@/hooks/useSession";
 import { useProfil } from "@/hooks/useProfil";
@@ -43,9 +47,12 @@ import {
   getContactFullName,
   getContactCompany,
   getContactJobTitle,
+  getCategoryBadgeStyle,
   TYPES_CONTACT,
+  CATEGORIES_CONTACT,
   SOURCE_LABELS,
   type Contact,
+  type CategoryContact,
   type ContactSource,
 } from "@/lib/contacts";
 import type { Candidature } from "@/lib/candidatures";
@@ -94,8 +101,24 @@ export function ContactsPage() {
   // Filtres
   const [recherche, setRecherche] = useState("");
   const [filtreType, setFiltreType] = useState<string>("tous");
+  const [filtreCategory, setFiltreCategory] = useState<string>("all");
   const [filtreSource, setFiltreSource] = useState<SourceFilter>("all");
   const [filtreRelation, setFiltreRelation] = useState<RelationFilter>("all");
+
+  const [viewMode, setViewMode] = useState<"grid" | "table">(() => {
+    if (typeof window !== "undefined") {
+      return (
+        (localStorage.getItem("nacora_contacts_view_mode") as
+          "grid" | "table") ?? "grid"
+      );
+    }
+    return "grid";
+  });
+
+  const handleSetViewMode = (mode: "grid" | "table") => {
+    setViewMode(mode);
+    localStorage.setItem("nacora_contacts_view_mode", mode);
+  };
 
   // Modales
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -130,51 +153,63 @@ export function ContactsPage() {
   // Liste filtrée
   const liste = useMemo(() => {
     const q = recherche.trim().toLowerCase();
-    return contacts.filter((c) => {
-      // Filtre type
-      if (filtreType !== "tous" && c.type !== filtreType) return false;
+    return contacts
+      .filter((c) => {
+        // Filtre type
+        if (filtreType !== "tous" && c.type !== filtreType) return false;
 
-      // Filtre source
-      if (filtreSource !== "all") {
-        const sources =
-          c.sources && c.sources.length > 0
-            ? c.sources
-            : [c.source || "manual"];
-        if (!sources.includes(filtreSource)) return false;
-      }
+        // Filtre catégorie
+        if (filtreCategory !== "all" && c.category !== filtreCategory)
+          return false;
 
-      // Filtre relation
-      const opps = getOpportunitiesForContact(c, candidatures);
-      if (filtreRelation === "with_opps" && opps.length === 0) return false;
-      if (filtreRelation === "without_opps" && opps.length > 0) return false;
-      if (filtreRelation === "with_company" && !c.companyId && !c.entreprise)
-        return false;
+        // Filtre source
+        if (filtreSource !== "all") {
+          const sources =
+            c.sources && c.sources.length > 0
+              ? c.sources
+              : [c.source || "manual"];
+          if (!sources.includes(filtreSource)) return false;
+        }
 
-      // Recherche texte
-      if (q) {
-        const fullName = getContactFullName(c).toLowerCase();
-        const company = getContactCompany(c).toLowerCase();
-        const job = getContactJobTitle(c).toLowerCase();
-        const email = (c.email || "").toLowerCase();
-        const phone = (c.telephone || "").toLowerCase();
-        const notes = (c.notes || "").toLowerCase();
+        // Filtre relation
+        const opps = getOpportunitiesForContact(c, candidatures);
+        if (filtreRelation === "with_opps" && opps.length === 0) return false;
+        if (filtreRelation === "without_opps" && opps.length > 0) return false;
+        if (filtreRelation === "with_company" && !c.companyId && !c.entreprise)
+          return false;
 
-        return (
-          fullName.includes(q) ||
-          company.includes(q) ||
-          job.includes(q) ||
-          email.includes(q) ||
-          phone.includes(q) ||
-          notes.includes(q)
-        );
-      }
+        // Recherche texte
+        if (q) {
+          const fullName = getContactFullName(c).toLowerCase();
+          const company = getContactCompany(c).toLowerCase();
+          const job = getContactJobTitle(c).toLowerCase();
+          const email = (c.email || "").toLowerCase();
+          const phone = (c.telephone || "").toLowerCase();
+          const notes = (c.notes || "").toLowerCase();
 
-      return true;
-    });
+          return (
+            fullName.includes(q) ||
+            company.includes(q) ||
+            job.includes(q) ||
+            email.includes(q) ||
+            phone.includes(q) ||
+            notes.includes(q)
+          );
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        const scoreA = a.relevanceScore ?? -1;
+        const scoreB = b.relevanceScore ?? -1;
+        if (scoreA !== scoreB) return scoreB - scoreA;
+        return getContactFullName(a).localeCompare(getContactFullName(b));
+      });
   }, [
     contacts,
     recherche,
     filtreType,
+    filtreCategory,
     filtreSource,
     filtreRelation,
     candidatures,
@@ -220,17 +255,23 @@ export function ContactsPage() {
 
   return (
     <AppShell
-      eyebrow="Réseau professionnel"
       title="Contacts"
-      subtitle="Recruteurs, RH, managers et anciens élèves synchronisés avec vos opportunités et entreprises"
       actions={
         <div className="flex items-center gap-2">
+          <Button
+            onClick={() => setImportModalOpen(true)}
+            className="gap-1.5 text-xs h-9 font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm"
+          >
+            <Linkedin className="size-3.5 text-white" /> Importer mes contacts
+            LinkedIn
+          </Button>
           <Button
             variant="outline"
             onClick={() => setImportModalOpen(true)}
             className="gap-1.5 text-xs h-9 font-medium"
           >
-            <Upload className="size-3.5 text-primary" /> Importer
+            <Upload className="size-3.5 text-muted-foreground" /> Autre import
+            (vCard)
           </Button>
           <Button
             onClick={handleOpenNew}
@@ -241,83 +282,59 @@ export function ContactsPage() {
         </div>
       }
     >
-      {/* Barre de métriques rapides */}
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur-xl">
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-medium">Total Contacts</span>
-            <Users className="size-4 text-primary" />
-          </div>
-          <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">
-            {stats.total}
-          </p>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
-            Carnet professionnel
-          </p>
+      {/* Synthèse réseau épurée style Liquid Glass */}
+      <div className="mb-5 flex flex-wrap items-center gap-2.5 text-xs font-semibold">
+        <div className="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3.5 py-1.5 text-foreground backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.12)]">
+          <span className="size-2 rounded-full bg-slate-400 shadow-[0_0_6px_rgba(148,163,184,0.6)]" />
+          <span className="text-muted-foreground font-medium">
+            Total Contacts :
+          </span>
+          <span className="font-bold">{stats.total}</span>
         </div>
-
-        <div className="rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur-xl">
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-medium">Avec opportunité</span>
-            <Briefcase className="size-4 text-emerald-500" />
-          </div>
-          <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">
-            {stats.withOpps}
-          </p>
-          <p className="mt-0.5 text-[11px] text-emerald-600 dark:text-emerald-400">
-            Liaison active avec offres
-          </p>
+        <div className="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3.5 py-1.5 text-foreground backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.12)]">
+          <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
+          <span className="text-muted-foreground font-medium">
+            Avec opportunité :
+          </span>
+          <span className="font-bold text-emerald-400">{stats.withOpps}</span>
         </div>
-
-        <div className="rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur-xl">
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-medium">Rattachés Entreprises</span>
-            <Building2 className="size-4 text-sky-500" />
-          </div>
-          <p className="mt-1 text-2xl font-bold tracking-tight text-foreground">
-            {stats.withCompany}
-          </p>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
-            Entreprises cibles
-          </p>
+        <div className="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3.5 py-1.5 text-foreground backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.12)]">
+          <span className="size-2 rounded-full bg-sky-400 shadow-[0_0_6px_rgba(56,189,248,0.8)]" />
+          <span className="text-muted-foreground font-medium">
+            Rattachés Entreprises :
+          </span>
+          <span className="font-bold text-sky-300">{stats.withCompany}</span>
         </div>
-
-        <div className="rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur-xl">
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span className="text-xs font-medium">Imports Réseau</span>
-            <Sparkles className="size-4 text-amber-500" />
-          </div>
-          <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-2xl font-bold tracking-tight text-foreground">
-              {stats.fromPhone + stats.fromLinkedin}
-            </span>
-            <span className="text-[11px] text-muted-foreground">
-              ({stats.fromPhone} tél. / {stats.fromLinkedin} in)
-            </span>
-          </div>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
-            VCard & LinkedIn CSV
-          </p>
+        <div className="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3.5 py-1.5 text-foreground backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.12)]">
+          <span className="size-2 rounded-full bg-indigo-400 shadow-[0_0_6px_rgba(129,140,248,0.8)]" />
+          <span className="text-muted-foreground font-medium">
+            Imports Réseau :
+          </span>
+          <span className="font-bold text-indigo-300">
+            {stats.fromPhone + stats.fromLinkedin} ({stats.fromPhone} tél. /{" "}
+            {stats.fromLinkedin} in)
+          </span>
         </div>
       </div>
 
-      {/* Barre de recherche et filtres */}
-      <div className="mb-6 space-y-3">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
+      {/* Barre de recherche et filtres - Panneau Verre Liquide */}
+      <section className="glass-panel mb-6 flex flex-col gap-3.5 p-3.5 sm:p-4 shadow-md">
+        <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
+          <div className="relative flex-1 min-w-[240px]">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
               value={recherche}
               onChange={(e) => setRecherche(e.target.value)}
               placeholder="Rechercher par nom, entreprise, poste, email, notes..."
-              className="pl-9 h-10 text-xs bg-card/60 backdrop-blur-sm"
+              className="h-9.5 w-full rounded-xl bg-white/5 pl-9 pr-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:bg-white/10 focus:ring-2 focus:ring-primary/20 backdrop-blur-md transition-all shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)]"
             />
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <Select value={filtreType} onValueChange={setFiltreType}>
-              <SelectTrigger className="w-40 sm:w-44 h-10 text-xs bg-card/60">
-                <SelectValue placeholder="Type" />
+              <SelectTrigger className="w-36 sm:w-40 h-9.5 text-xs rounded-xl bg-white/5 border-white/10 backdrop-blur-md">
+                <SelectValue placeholder="Rôle" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="tous" className="text-xs">
@@ -331,11 +348,35 @@ export function ContactsPage() {
               </SelectContent>
             </Select>
 
+            <Select value={filtreCategory} onValueChange={setFiltreCategory}>
+              <SelectTrigger className="w-40 sm:w-48 h-9.5 text-xs rounded-xl bg-white/5 border-white/10 backdrop-blur-md">
+                <SelectValue placeholder="Catégorie IA" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" className="text-xs">
+                  Toutes catégories IA
+                </SelectItem>
+                {CATEGORIES_CONTACT.map((cat) => {
+                  const style = getCategoryBadgeStyle(cat);
+                  return (
+                    <SelectItem key={cat} value={cat} className="text-xs">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`size-2 rounded-full shrink-0 ${style.dotClass}`}
+                        />
+                        <span>{cat}</span>
+                      </div>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+
             <Select
               value={filtreSource}
               onValueChange={(v) => setFiltreSource(v as SourceFilter)}
             >
-              <SelectTrigger className="w-36 sm:w-40 h-10 text-xs bg-card/60">
+              <SelectTrigger className="w-36 sm:w-40 h-9.5 text-xs rounded-xl bg-white/5 border-white/10 backdrop-blur-md">
                 <SelectValue placeholder="Source" />
               </SelectTrigger>
               <SelectContent>
@@ -361,7 +402,7 @@ export function ContactsPage() {
               value={filtreRelation}
               onValueChange={(v) => setFiltreRelation(v as RelationFilter)}
             >
-              <SelectTrigger className="w-40 sm:w-44 h-10 text-xs bg-card/60">
+              <SelectTrigger className="w-36 sm:w-40 h-9.5 text-xs rounded-xl bg-white/5 border-white/10 backdrop-blur-md">
                 <SelectValue placeholder="Liaison" />
               </SelectTrigger>
               <SelectContent>
@@ -379,21 +420,51 @@ export function ContactsPage() {
                 </SelectItem>
               </SelectContent>
             </Select>
+
+            {/* Selecteur de vue Grid / Table Liquid Glass */}
+            <div className="flex items-center gap-0.5 rounded-xl bg-black/25 dark:bg-black/30 backdrop-blur-xl p-1 select-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
+              <button
+                type="button"
+                onClick={() => handleSetViewMode("grid")}
+                aria-label="Vue grille"
+                className={cn(
+                  "grid size-7.5 place-items-center rounded-lg transition-all cursor-pointer",
+                  viewMode === "grid"
+                    ? "bg-white/15 dark:bg-white/15 text-foreground font-semibold shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <LayoutGrid className="size-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSetViewMode("table")}
+                aria-label="Vue tableau"
+                className={cn(
+                  "grid size-7.5 place-items-center rounded-lg transition-all cursor-pointer",
+                  viewMode === "table"
+                    ? "bg-white/15 dark:bg-white/15 text-foreground font-semibold shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                <List className="size-3.5" />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* État de chargement */}
       {contactsLoading ? (
         <div className="flex items-center justify-center p-12 text-sm text-muted-foreground gap-2">
-          <Loader2 className="size-4 animate-spin text-primary" /> Chargement de
-          vos contacts…
+          <Loader2 className="size-4 animate-spin text-muted-foreground" />{" "}
+          Chargement de vos contacts…
         </div>
       ) : liste.length === 0 ? (
         /* État vide */
-        <div className="rounded-2xl border border-dashed border-border/80 bg-card/40 p-10 text-center">
-          <div className="mx-auto grid size-12 place-items-center rounded-2xl bg-primary/10 text-primary mb-3">
-            <Users className="size-6" />
+        <div className="glass-panel border-dashed p-10 text-center">
+          <div className="mx-auto grid size-12 place-items-center rounded-2xl bg-white/5 text-muted-foreground mb-3 border border-white/10">
+            <Users className="size-6 text-primary" />
           </div>
           <h3 className="font-semibold text-sm text-foreground">
             {recherche ||
@@ -418,8 +489,8 @@ export function ContactsPage() {
               onClick={() => setImportModalOpen(true)}
               className="text-xs gap-1.5"
             >
-              <Upload className="size-3.5 text-primary" /> Importer vCard /
-              LinkedIn
+              <Upload className="size-3.5 text-muted-foreground" /> Importer
+              vCard / LinkedIn
             </Button>
             <Button
               size="sm"
@@ -430,187 +501,210 @@ export function ContactsPage() {
             </Button>
           </div>
         </div>
-      ) : (
-        /* Grille des cartes de contact */
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {liste.map((c, i) => {
-            const fullName = getContactFullName(c);
-            const company = getContactCompany(c);
-            const jobTitle = getContactJobTitle(c);
-            const initials = getInitials(c);
-            const opps = getOpportunitiesForContact(c, candidatures);
+      ) : viewMode === "table" ? (
+        /* Tableau dense de contact */
+        <div className="overflow-hidden glass-panel">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-border/50 bg-muted/20 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <th className="py-3 px-4">Contact</th>
+                  <th className="py-3 px-4">Pertinence</th>
+                  <th className="py-3 px-4">Rôle / Type</th>
+                  <th className="py-3 px-4">Entreprise & Poste</th>
+                  <th className="py-3 px-4">Opportunités liées</th>
+                  <th className="py-3 px-4">Action planifiée</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/30 text-xs">
+                {liste.map((c) => {
+                  const fullName = getContactFullName(c);
+                  const company = getContactCompany(c);
+                  const jobTitle = getContactJobTitle(c);
+                  const initials = getInitials(c);
+                  const opps = getOpportunitiesForContact(c, candidatures);
+                  const sources =
+                    c.sources && c.sources.length > 0
+                      ? c.sources
+                      : [c.source || "manual"];
 
-            const sources =
-              c.sources && c.sources.length > 0
-                ? c.sources
-                : [c.source || "manual"];
-
-            return (
-              <div
-                key={c.id}
-                className="group relative flex flex-col justify-between rounded-2xl border border-border/60 bg-card/70 p-4 backdrop-blur-xl transition-all duration-200 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5"
-              >
-                <div>
-                  {/* Haut de carte */}
-                  <div className="flex items-start justify-between gap-3">
-                    <button
-                      type="button"
-                      onClick={() => handleOpenContact(c)}
-                      className="flex items-start gap-3 min-w-0 text-left flex-1"
+                  return (
+                    <tr
+                      key={c.id}
+                      className="hover:bg-muted/10 transition-colors group"
                     >
-                      <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 text-primary font-bold text-sm shadow-sm border border-primary/10">
-                        {initials}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
-                          {fullName || "Sans nom"}
-                        </p>
-                        <p className="truncate text-xs text-muted-foreground mt-0.5">
-                          {jobTitle || "Poste non précisé"}
-                        </p>
-                        {company && (
-                          <span className="mt-1 inline-flex items-center gap-1 rounded-md bg-muted/80 px-2 py-0.5 text-[11px] font-medium text-foreground">
-                            <Building2 className="size-3 text-muted-foreground" />
-                            {company}
+                      <td className="py-3.5 px-4 min-w-[200px]">
+                        <div className="flex items-center gap-3">
+                          <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-muted text-muted-foreground font-semibold text-xs border border-border/60">
+                            {initials}
+                          </span>
+                          <div className="min-w-0">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenContact(c)}
+                              className="font-bold text-foreground hover:text-primary transition-colors text-left block"
+                            >
+                              {fullName || "Sans nom"}
+                            </button>
+                            <div className="flex items-center gap-2 mt-0.5 text-[11px] text-muted-foreground">
+                              {c.email && (
+                                <span className="truncate" title={c.email}>
+                                  {c.email}
+                                </span>
+                              )}
+                              {c.email && c.telephone && <span>•</span>}
+                              {c.telephone && (
+                                <span className="shrink-0">{c.telephone}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        {c.relevanceScore !== undefined ? (
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold border backdrop-blur-md ${
+                              c.relevanceScore >= 80
+                                ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+                                : c.relevanceScore >= 60
+                                  ? "bg-sky-500/15 text-sky-300 border-sky-500/30"
+                                  : "bg-slate-500/15 text-slate-300 border-slate-500/30"
+                            }`}
+                          >
+                            ⚡ {c.relevanceScore}%
+                          </span>
+                        ) : (
+                          <span className="text-[11px] text-muted-foreground/60">
+                            —
                           </span>
                         )}
-                      </div>
-                    </button>
-
-                    <div className="flex flex-col items-end gap-1.5 shrink-0">
-                      <span className="rounded-full border border-border/60 bg-muted/40 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                        {c.type}
-                      </span>
-
-                      {/* Pill source */}
-                      {sources.map((src) => (
-                        <span
-                          key={src}
-                          className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] text-muted-foreground"
-                          title={`Source: ${SOURCE_LABELS[src as keyof typeof SOURCE_LABELS] || src}`}
-                        >
-                          {src === "phone" && (
-                            <Smartphone className="size-3 text-emerald-500" />
-                          )}
-                          {src === "linkedin" && (
-                            <Linkedin className="size-3 text-[#0A66C2]" />
-                          )}
-                          {src === "opportunity" && (
-                            <Briefcase className="size-3 text-primary" />
-                          )}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Coordonnées rapides */}
-                  <div className="mt-3.5 space-y-1.5 text-xs text-muted-foreground">
-                    {c.email && (
-                      <a
-                        href={`mailto:${c.email}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex items-center gap-2 truncate hover:text-foreground transition-colors"
-                      >
-                        <Mail className="size-3.5 text-muted-foreground/80 shrink-0" />
-                        <span className="truncate">{c.email}</span>
-                      </a>
-                    )}
-                    {c.telephone && (
-                      <a
-                        href={`tel:${c.telephone}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex items-center gap-2 truncate hover:text-foreground transition-colors"
-                      >
-                        <Phone className="size-3.5 text-muted-foreground/80 shrink-0" />
-                        <span>{c.telephone}</span>
-                      </a>
-                    )}
-                    {c.linkedin && (
-                      <a
-                        href={
-                          c.linkedin.startsWith("http")
-                            ? c.linkedin
-                            : `https://${c.linkedin}`
-                        }
-                        target="_blank"
-                        rel="noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-2 truncate text-[#0A66C2] hover:underline"
-                      >
-                        <Linkedin className="size-3.5 shrink-0" />
-                        <span className="truncate">Profil LinkedIn</span>
-                        <ExternalLink className="size-2.5" />
-                      </a>
-                    )}
-                  </div>
-
-                  {/* Opportunités rattachées */}
-                  {opps.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-border/50">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
-                        <Briefcase className="size-3 text-primary" />
-                        {opps.length} opportunité{opps.length > 1 ? "s" : ""}{" "}
-                        liée{opps.length > 1 ? "s" : ""} :
-                      </p>
-                      <div className="space-y-1">
-                        {opps.slice(0, 2).map((opp) => (
-                          <button
-                            key={opp.id}
-                            type="button"
-                            onClick={() => handleOpenOpportunity(opp.id)}
-                            className="w-full flex items-center justify-between gap-2 rounded-lg bg-muted/40 hover:bg-muted/70 px-2 py-1 text-left text-[11px] transition-colors"
-                          >
-                            <span className="truncate font-medium text-foreground">
-                              {opp.poste || "Offre"}
+                      </td>
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <div className="flex flex-col gap-1 items-start">
+                          {c.category ? (
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold border backdrop-blur-md ${getCategoryBadgeStyle(c.category).fullClass}`}
+                            >
+                              <Sparkles className="size-2.5 opacity-80" />
+                              {c.category}
                             </span>
-                            <span className="shrink-0 text-[10px] text-primary">
-                              {opp.currentStage || opp.statut}
+                          ) : (
+                            <span className="rounded-full border border-border/60 bg-muted/40 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                              {c.type}
                             </span>
-                          </button>
-                        ))}
-                        {opps.length > 2 && (
-                          <button
-                            type="button"
-                            onClick={() => handleOpenContact(c)}
-                            className="text-[10px] text-primary hover:underline block pt-0.5"
-                          >
-                            +{opps.length - 2} autre(s) opportunité(s)...
-                          </button>
+                          )}
+                          <div className="flex items-center gap-1">
+                            {sources
+                              .filter((s) => s !== "linkedin")
+                              .map((src) => (
+                                <span
+                                  key={src}
+                                  className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground"
+                                  title={`Source: ${SOURCE_LABELS[src as keyof typeof SOURCE_LABELS] || src}`}
+                                >
+                                  {src === "phone" && (
+                                    <Smartphone className="size-3 text-emerald-500" />
+                                  )}
+                                  {src === "opportunity" && (
+                                    <Briefcase className="size-3 text-muted-foreground" />
+                                  )}
+                                </span>
+                              ))}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4 min-w-[180px]">
+                        <div className="font-medium text-foreground">
+                          {jobTitle || "Poste non précisé"}
+                        </div>
+                        {company ? (
+                          <div className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5">
+                            <Building2 className="size-3" />
+                            {company}
+                          </div>
+                        ) : (
+                          <span className="text-[10px] text-muted-foreground/60">
+                            —
+                          </span>
                         )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Prochaine action si présente */}
-                  {c.prochaineAction && (
-                    <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 p-2 text-[11px] text-primary">
-                      <strong className="font-semibold">Action : </strong>
-                      {c.prochaineAction}
-                      {c.dateProchaineAction
-                        ? ` (${c.dateProchaineAction})`
-                        : ""}
-                    </div>
-                  )}
-                </div>
-
-                {/* Bas de carte */}
-                <div className="mt-4 pt-2 flex items-center justify-between border-t border-border/40 text-xs">
-                  <span className="text-[11px] text-muted-foreground">
-                    {c.historique?.length || 0} échange
-                    {c.historique?.length > 1 ? "s" : ""}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleOpenContact(c)}
-                    className="h-7 px-2 text-xs text-primary font-medium hover:underline"
-                  >
-                    Ouvrir la fiche
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
+                      </td>
+                      <td className="py-3.5 px-4 max-w-[240px]">
+                        {opps.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {opps.slice(0, 2).map((opp) => (
+                              <button
+                                key={opp.id}
+                                type="button"
+                                onClick={() => handleOpenOpportunity(opp.id)}
+                                className="inline-flex items-center gap-1.5 rounded bg-muted hover:bg-muted/80 border border-border px-1.5 py-0.5 text-[10px] font-medium text-foreground transition-colors max-w-[140px] truncate"
+                              >
+                                <span className="truncate">
+                                  {opp.poste || "Offre"}
+                                </span>
+                              </button>
+                            ))}
+                            {opps.length > 2 && (
+                              <span className="text-[10px] text-muted-foreground self-center">
+                                +{opps.length - 2}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-[11px] text-muted-foreground/60">
+                            Aucune
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4 max-w-[180px]">
+                        {c.prochaineAction ? (
+                          <div
+                            className="text-[11px] font-medium text-amber-600 dark:text-amber-400 truncate"
+                            title={c.prochaineAction}
+                          >
+                            {c.prochaineAction}
+                            {c.dateProchaineAction && (
+                              <span className="text-[10px] text-muted-foreground block font-normal">
+                                {c.dateProchaineAction}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-[11px] text-muted-foreground/40">
+                            —
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleOpenContact(c)}
+                          className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground font-semibold"
+                        >
+                          Détails
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        /* Grille des cartes de contact (max 3 par ligne pour lisibilité optimale) */
+        <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+          {liste.map((c) => (
+            <ContactCard
+              key={c.id}
+              contact={c}
+              candidatures={candidatures}
+              onOpenDetails={handleOpenContact}
+              onOpenMessageIa={handleOpenContact}
+              onOpenOpportunity={handleOpenOpportunity}
+            />
+          ))}
         </div>
       )}
 
@@ -632,6 +726,8 @@ export function ContactsPage() {
         open={importModalOpen}
         onOpenChange={setImportModalOpen}
         existingContacts={contacts}
+        userSchool={profil?.ecole || profil?.formation}
+        userTargetSector={profil?.posteCible || profil?.metierCible}
         onImportComplete={async (contactsToImport, resolutions) => {
           return await batchImportContacts(contactsToImport, resolutions);
         }}

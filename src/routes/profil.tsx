@@ -341,7 +341,6 @@ function ProfilPage() {
   return (
     <AppShell
       title="Mon Profil"
-      subtitle="Votre dossier candidat."
       actions={
         <div className="flex items-center gap-2">
           {saving && (
@@ -354,35 +353,41 @@ function ProfilPage() {
         </div>
       }
     >
-      <div className="flex gap-4 flex-col lg:flex-row">
-        <aside className="w-full lg:w-64 shrink-0 flex flex-col gap-2">
+      <div className="flex gap-5 flex-col lg:flex-row">
+        <aside className="w-full lg:w-72 shrink-0 flex flex-col gap-2">
           {CATEGORIES.map((c) => (
             <button
               key={c.id}
               onClick={() => handleSelectTab(c.id)}
-              className={`flex items-center justify-between p-3 rounded-lg border text-left transition-colors ${
+              className={`flex items-center justify-between p-3.5 rounded-2xl text-left transition-all duration-200 cursor-pointer ${
                 activeTab === c.id
-                  ? "bg-accent border-accent text-accent-foreground"
-                  : "bg-card border-border hover:bg-accent/50"
+                  ? "bg-white/12 border border-white/20 text-foreground font-semibold shadow-[0_4px_16px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-xl"
+                  : "bg-white/4 border border-white/6 hover:bg-white/8 hover:border-white/12 text-muted-foreground backdrop-blur-md"
               }`}
             >
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-md ${c.colorClass}`}>
-                  <c.icon className="size-4" />
+              <div className="flex items-center gap-3.5">
+                <div
+                  className={`p-2.5 rounded-xl border backdrop-blur-md shadow-xs ${c.colorClass}`}
+                >
+                  <c.icon className="size-4 shrink-0" />
                 </div>
-                <div>
-                  <div className="font-medium text-sm">{c.label}</div>
-                  <div className="text-xs text-muted-foreground">
+                <div className="min-w-0">
+                  <div className="font-semibold text-xs text-foreground truncate">
+                    {c.label}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground truncate mt-0.5">
                     {c.subtitle}
                   </div>
                 </div>
               </div>
-              {c.isComplete && <Check className="size-4 text-emerald-500" />}
+              {c.isComplete && (
+                <Check className="size-4 text-emerald-400 shrink-0 ml-2 drop-shadow-[0_0_6px_rgba(52,211,153,0.5)]" />
+              )}
             </button>
           ))}
         </aside>
 
-        <main className="flex-1 glass-card p-6 min-h-[500px]">
+        <main className="flex-1 glass-panel p-6 sm:p-8 min-h-[520px] shadow-lg">
           {activeTab === "apercu" && (
             <ProfilOverviewTab
               profil={profil}

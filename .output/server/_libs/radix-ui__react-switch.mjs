@@ -1,9 +1,8 @@
 import { o as __toESM } from "../_runtime.mjs";
-import { g as useControllableState, y as Primitive } from "./@radix-ui/react-dialog+[...].mjs";
 import { u as require_react } from "./@floating-ui/react-dom+[...].mjs";
-import { a as useComposedRefs, n as createContextScope, o as require_jsx_runtime } from "./@radix-ui/react-collection+[...].mjs";
+import { A as require_jsx_runtime, D as Primitive, P as useComposedRefs, b as useControllableState, k as createContextScope } from "./@radix-ui/react-alert-dialog+[...].mjs";
 import { t as composeEventHandlers } from "./radix-ui__primitive.mjs";
-import { _ as useSize } from "./@radix-ui/react-dropdown-menu+[...].mjs";
+import { b as useSize } from "./@radix-ui/react-dropdown-menu+[...].mjs";
 //#region node_modules/@radix-ui/react-switch/dist/index.mjs
 var import_react = /* @__PURE__ */ __toESM(require_react(), 1);
 var import_jsx_runtime = require_jsx_runtime();

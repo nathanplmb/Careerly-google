@@ -19,8 +19,6 @@ import {
   Sparkles,
   Trash2,
   User,
-  UserCheck,
-  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
@@ -164,7 +162,7 @@ function AuthPage() {
 
   const rediriger = useCallback(() => {
     if (target) window.location.replace(target);
-    else navigate({ to: "/", replace: true });
+    else navigate({ to: "/opportunites", replace: true });
   }, [navigate, target]);
 
   useEffect(() => {
@@ -746,110 +744,58 @@ function AuthPage() {
   };
 
   return (
-    <div className="aurora-bg flex min-h-screen items-center justify-center bg-background px-4 py-8 md:p-12">
-      <div className="w-full max-w-4xl">
+    <div className="aurora-bg relative flex min-h-screen items-center justify-center bg-background px-4 py-10 sm:px-6">
+      {/* Lueur d'ambiance liquide d'arrière-plan */}
+      <div className="pointer-events-none absolute -top-32 left-1/2 -translate-x-1/2 size-96 rounded-full bg-primary/8 blur-[120px] saturate-50" />
+      <div className="pointer-events-none absolute bottom-12 right-1/4 size-80 rounded-full bg-indigo-500/6 blur-[130px] saturate-50" />
+
+      <div className="relative z-10 w-full max-w-lg">
         {/* En-tête de navigation */}
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-4 flex items-center justify-between px-1">
           <Link
-            to="/"
-            className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted/60 hover:text-foreground"
+            to="/opportunites"
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur-xl transition hover:bg-white/10 hover:text-foreground"
           >
-            <ArrowLeft className="size-4" /> Retour à l'application
+            <ArrowLeft className="size-3.5" /> Retour à l'application
           </Link>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <ShieldCheck className="size-4 text-emerald-500" />
+          <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-400 backdrop-blur-md">
+            <ShieldCheck className="size-3.5 text-emerald-400" />
             <span className="hidden sm:inline">
               Connexion sécurisée & chiffrée
             </span>
+            <span className="sm:hidden">Sécurisé</span>
           </div>
         </div>
 
-        {/* Carte principale en 2 colonnes sur grand écran */}
-        <div className="grid overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xl backdrop-blur-xl lg:grid-cols-12">
-          {/* Colonne gauche : Panneau de marque & Présentation */}
-          <div className="relative flex flex-col justify-between overflow-hidden bg-gradient-to-br from-primary/15 via-primary/5 to-muted/20 p-8 lg:col-span-5 lg:p-10">
-            <div className="relative z-10 space-y-6">
-              <Logo className="h-10" />
-
-              <div>
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                  <Sparkles className="size-3.5" /> Espace Candidat & IA
-                </div>
-                <h2 className="mt-3 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                  Votre copilote pour décrocher votre stage.
-                </h2>
-                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                  Centralisez vos candidatures, synchronisez vos relances et
-                  laissez l'IA auditer votre CV et structurer vos offres.
-                </p>
-              </div>
-
-              {/* Arguments clés */}
-              <div className="space-y-3 pt-2">
-                <div className="flex items-start gap-3 text-xs text-foreground/90">
-                  <div className="flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-                    <Zap className="size-3.5" />
-                  </div>
-                  <div>
-                    <span className="font-semibold">
-                      Import instantané d'offres :
-                    </span>{" "}
-                    Léa extrait le poste, les contacts et génère une synthèse en
-                    1 seconde.
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 text-xs text-foreground/90">
-                  <div className="flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-                    <UserCheck className="size-3.5" />
-                  </div>
-                  <div>
-                    <span className="font-semibold">
-                      Audit de CV & Matching :
-                    </span>{" "}
-                    Détectez immédiatement vos points forts et lacunes par
-                    rapport au poste.
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 text-xs text-foreground/90">
-                  <div className="flex size-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
-                    <Lock className="size-3.5" />
-                  </div>
-                  <div>
-                    <span className="font-semibold">
-                      Sauvegarde multi-appareils :
-                    </span>{" "}
-                    Retrouvez vos fiches et contacts en toute sécurité.
-                  </div>
-                </div>
+        {/* Carte principale Liquid Glass centrée */}
+        <div className="relative overflow-hidden rounded-3xl border border-white/15 bg-white/[0.08] p-6 shadow-[0_24px_64px_-12px_rgba(0,0,0,0.65),inset_0_1px_0_0_rgba(255,255,255,0.22)] backdrop-blur-3xl sm:p-8">
+          {/* Logo & Titre dynamique */}
+          <div className="mb-6 text-center">
+            <div className="flex justify-center mb-3">
+              <div className="relative flex items-center justify-center">
+                <div className="absolute inset-0 rounded-2xl bg-primary/25 blur-xl" />
+                <Logo className="relative h-10 w-auto" />
               </div>
             </div>
 
-            {/* Témoignage / Garantie */}
-            <div className="relative z-10 mt-8 rounded-xl border border-primary/20 bg-background/80 p-3.5 shadow-sm backdrop-blur-md">
-              <div className="flex items-center gap-2.5">
-                <div className="flex size-8 items-center justify-center rounded-full bg-primary/15 font-semibold text-primary text-xs">
-                  CP
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-foreground">
-                    Clara P. • NEOMA PGE
-                  </p>
-                  <p className="text-[11px] text-muted-foreground">
-                    « NACORA m'a permis d'organiser 45 candidatures et d'avoir 6
-                    entretiens en 3 semaines. »
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Éléments visuels de fond */}
-            <div className="pointer-events-none absolute -bottom-24 -left-24 size-72 rounded-full bg-primary/10 blur-3xl" />
+            <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+              {mode === "signin"
+                ? "Connexion"
+                : mode === "signup"
+                  ? "Créer un compte"
+                  : "Mot de passe oublié"}
+            </h1>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {mode === "signin"
+                ? "Accédez à votre espace et pilotez vos candidatures"
+                : mode === "signup"
+                  ? "Rejoignez NACORA pour suivre et propulser vos candidatures"
+                  : "Entrez votre adresse e-mail pour recevoir le lien de réinitialisation"}
+            </p>
           </div>
 
-          {/* Colonne droite : Formulaires & Actions */}
-          <div className="p-6 sm:p-8 lg:col-span-7 lg:p-10">
+          {/* Formulaires & Actions */}
+          <div>
             {/* Si un email de confirmation a été envoyé */}
             {sentEmailVerification ? (
               <motion.div
@@ -857,7 +803,7 @@ function AuthPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="space-y-5 text-center py-6"
               >
-                <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-primary/15 text-primary backdrop-blur-md">
                   <Mail className="size-7" />
                 </div>
                 <div>
@@ -877,7 +823,7 @@ function AuthPage() {
                   <Button
                     variant="outline"
                     onClick={() => setSentEmailVerification(false)}
-                    className="w-full"
+                    className="w-full bg-white/10 hover:bg-white/15 text-foreground border-none backdrop-blur-md"
                   >
                     Retour à la connexion
                   </Button>
@@ -906,9 +852,9 @@ function AuthPage() {
                 </div>
 
                 {resetSuccess ? (
-                  <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-900 dark:text-emerald-200 space-y-3">
+                  <div className="rounded-xl bg-emerald-500/15 p-4 text-sm text-emerald-200 backdrop-blur-md space-y-3">
                     <div className="flex items-center gap-2 font-medium">
-                      <CheckCircle2 className="size-5 text-emerald-500" />
+                      <CheckCircle2 className="size-5 text-emerald-400" />
                       Instructions envoyées !
                     </div>
                     <p className="text-xs leading-relaxed">
@@ -919,7 +865,7 @@ function AuthPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="w-full mt-2"
+                      className="w-full mt-2 bg-white/10 hover:bg-white/15 text-foreground border-none backdrop-blur-md"
                       onClick={() => {
                         setResetSuccess(false);
                         setMode("signin");
@@ -941,14 +887,14 @@ function AuthPage() {
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="prenom.nom@ecole.fr"
-                          className="pl-9"
+                          className="pl-9 glass-input"
                         />
                       </div>
                     </div>
 
                     <Button
                       type="submit"
-                      className="w-full gap-2"
+                      className="w-full gap-2 glass-btn-primary"
                       disabled={loading}
                     >
                       {loading ? (
@@ -964,14 +910,14 @@ function AuthPage() {
             ) : (
               /* Modes Connexion & Inscription */
               <div className="space-y-6">
-                {/* Sélecteur d'onglets ergonomique */}
-                <div className="flex rounded-xl bg-muted/60 p-1">
+                {/* Sélecteur d'onglets ergonomique en verre dépoli */}
+                <div className="flex rounded-2xl bg-white/5 p-1.5 backdrop-blur-md">
                   <button
                     type="button"
                     onClick={() => setMode("signin")}
-                    className={`flex-1 rounded-lg py-2 text-sm font-semibold transition ${
+                    className={`flex-1 rounded-xl py-2 text-xs font-bold transition-all duration-200 ${
                       mode === "signin"
-                        ? "bg-background text-foreground shadow-sm"
+                        ? "bg-white/15 text-foreground shadow-md backdrop-blur-md"
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
@@ -980,9 +926,9 @@ function AuthPage() {
                   <button
                     type="button"
                     onClick={() => setMode("signup")}
-                    className={`flex-1 rounded-lg py-2 text-sm font-semibold transition ${
+                    className={`flex-1 rounded-xl py-2 text-xs font-bold transition-all duration-200 ${
                       mode === "signup"
-                        ? "bg-background text-foreground shadow-sm"
+                        ? "bg-white/15 text-foreground shadow-md backdrop-blur-md"
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
@@ -994,8 +940,7 @@ function AuthPage() {
                 <div className="space-y-2.5">
                   <Button
                     type="button"
-                    variant="outline"
-                    className="w-full gap-3 border-border/80 bg-background font-medium hover:bg-accent hover:border-border h-11"
+                    className="w-full gap-3 glass-btn-secondary h-11 font-medium text-sm"
                     onClick={handleGoogleSignIn}
                     disabled={loading}
                   >
@@ -1060,16 +1005,16 @@ function AuthPage() {
 
                 <div className="relative flex items-center justify-center">
                   <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-border" />
+                    <span className="w-full border-t border-white/10" />
                   </div>
-                  <span className="relative bg-card px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  <span className="relative bg-transparent px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground backdrop-blur-md">
                     ou par e-mail
                   </span>
                 </div>
 
                 {/* Si des comptes récents existent sur cet appareil */}
                 {comptesRecents.length > 0 && mode === "signin" && (
-                  <div className="rounded-xl border border-border/80 bg-muted/30 p-3">
+                  <div className="rounded-2xl bg-white/5 p-3 backdrop-blur-md">
                     <div className="mb-2 flex items-center justify-between">
                       <span className="text-xs font-semibold text-muted-foreground">
                         Comptes sur cet appareil
@@ -1085,7 +1030,7 @@ function AuthPage() {
                         <div
                           key={compte.id}
                           onClick={() => void handleSelectRecentAccount(compte)}
-                          className="group flex cursor-pointer items-center justify-between rounded-lg border border-border/50 bg-background/80 px-3 py-2 text-xs transition hover:border-primary/50 hover:bg-primary/5"
+                          className="group flex cursor-pointer items-center justify-between rounded-xl bg-white/5 px-3 py-2 text-xs transition-all hover:bg-white/10"
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
                             <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 font-bold text-primary text-[11px]">

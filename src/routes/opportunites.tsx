@@ -2,19 +2,27 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import {
   AlertCircle,
+  Building2,
   CalendarClock,
   Clock,
   ExternalLink,
+  Filter,
   GripVertical,
+  Kanban as KanbanIcon,
   Layers,
+  List as ListIcon,
   Loader2,
+  MapPin,
   Plus,
+  RotateCcw,
+  Search,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { CandidatureSheet } from "@/components/CandidatureSheet";
+import { StatutBadge } from "@/components/StatutBadge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,23 +50,34 @@ import {
   transitionWorkflowStep,
 } from "@/lib/workflow";
 
-// Accents subtils et distinctifs pour chaque statut du pipeline
-const ACCENTS_PANNEAUX: Record<string, { dot: string; border: string }> = {
+// Styles d'accents officiels NACORA pour les 4 colonnes du pipeline
+const ACCENTS_PANNEAUX: Record<
+  string,
+  { dot: string; bgBadge: string; textBadge: string; borderHeader: string }
+> = {
   Sauvegardée: {
-    dot: "oklch(0.68 0.18 290)", // Lilas / Violet Careerly
-    border: "color-mix(in oklab, oklch(0.68 0.18 290) 25%, var(--border))",
+    dot: "#71717a",
+    bgBadge: "bg-zinc-500/10",
+    textBadge: "text-zinc-400",
+    borderHeader: "border-zinc-500/30",
   },
   "À préparer": {
-    dot: "oklch(0.70 0.16 230)", // Bleu indigo
-    border: "color-mix(in oklab, oklch(0.70 0.16 230) 25%, var(--border))",
+    dot: "#f59e0b",
+    bgBadge: "bg-amber-500/10",
+    textBadge: "text-amber-400",
+    borderHeader: "border-amber-500/30",
   },
   "À étudier": {
-    dot: "oklch(0.75 0.15 65)", // Ambre chaud
-    border: "color-mix(in oklab, oklch(0.75 0.15 65) 25%, var(--border))",
+    dot: "#3b82f6",
+    bgBadge: "bg-blue-500/10",
+    textBadge: "text-blue-400",
+    borderHeader: "border-blue-500/30",
   },
   "À candidater": {
-    dot: "oklch(0.72 0.17 150)", // Émeraude doux
-    border: "color-mix(in oklab, oklch(0.72 0.17 150) 25%, var(--border))",
+    dot: "var(--primary)",
+    bgBadge: "bg-primary/10",
+    textBadge: "text-primary",
+    borderHeader: "border-primary/30",
   },
 };
 
@@ -75,7 +94,7 @@ export const Route = createFileRoute("/opportunites")({
       {
         property: "og:description",
         content:
-          "Tableau de bord pipeline en 4 panneaux avec glisser-déposer et alertes de deadlines.",
+          "Tableau de bord pipeline interactif avec vue Kanban et vue Liste.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -91,8 +110,17 @@ function OpportunitesPage() {
   const [editing, setEditing] = useState<Candidature | null>(null);
   const [open, setOpen] = useState(false);
 
-  // Filtre de vue : "all" (Kanban complet) ou "overdue" (Deadlines dépassées uniquement)
+  // Modes de vue : "all" (complet) ou "overdue" (retards)
   const [viewMode, setViewMode] = useState<"all" | "overdue">("all");
+
+  // Mode de rendu : "kanban" (défaut) ou "list"
+  const [displayLayout, setDisplayLayout] = useState<"kanban" | "list">(
+    "kanban",
+  );
+
+  // Filtres de recherche & contrat
+  const [searchQuery, setSearchQuery] = useState("");
+  const [contractFilter, setContractFilter] = useState<string>("all");
 
   // État Drag & Drop
   const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -104,18 +132,52 @@ function OpportunitesPage() {
 
   const today = todayIso();
 
-  // Détection des opportunités en retard (état calculé sans altérer les modèles)
+  // Candidatures filtrées par recherche et type de contrat
+  const filteredItems = useMemo(() => {
+    return items.filter((c) => {
+      // Filtre texte
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const matchEnterprise = (c.entreprise || "").toLowerCase().includes(q);
+        const matchPoste = (c.poste || "").toLowerCase().includes(q);
+        const matchLieu = (c.lieu || "").toLowerCase().includes(q);
+        if (!matchEnterprise && !matchPoste && !matchLieu) return false;
+      }
+      // Filtre contrat
+      if (contractFilter !== "all") {
+        if (
+          (c.contractType || "").toLowerCase() !== contractFilter.toLowerCase()
+        ) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [items, searchQuery, contractFilter]);
+
+  // Détection des opportunités en retard
   const overdueItems = useMemo(
-    () => items.filter((c) => isDeadlineOverdue(c, today)),
-    [items, today],
+    () => filteredItems.filter((c) => isDeadlineOverdue(c, today)),
+    [filteredItems, today],
   );
+
+  // Types de contrats disponibles pour le filtre
+  const availableContractTypes = useMemo(() => {
+    const set = new Set<string>();
+    items.forEach((c) => {
+      if (c.contractType && c.contractType.trim()) {
+        set.add(c.contractType.trim());
+      }
+    });
+    return Array.from(set);
+  }, [items]);
 
   // 4 Panneaux du pipeline
   const colonnes = useMemo(() => {
     const sourceItems =
       viewMode === "overdue"
-        ? items.filter((c) => isDeadlineOverdue(c, today))
-        : items;
+        ? filteredItems.filter((c) => isDeadlineOverdue(c, today))
+        : filteredItems;
 
     return STATUTS_OPPORTUNITE.map((s) => ({
       statut: s,
@@ -128,12 +190,12 @@ function OpportunitesPage() {
         return false;
       }),
     }));
-  }, [items, viewMode, today]);
+  }, [filteredItems, viewMode, today]);
 
   // Deadlines à venir dans les 7 jours parmi les opportunités non échues
   const urgentes = useMemo(
     () =>
-      items
+      filteredItems
         .filter(
           (c) =>
             (c.dateLimite || c.applicationDeadline) &&
@@ -145,7 +207,7 @@ function OpportunitesPage() {
             b.dateLimite || b.applicationDeadline || "",
           ),
         ),
-    [items, today],
+    [filteredItems, today],
   );
 
   const ouvrir = (c: Candidature) => {
@@ -194,11 +256,18 @@ function OpportunitesPage() {
     toast.success(`« ${label} » a été supprimée.`);
   };
 
+  const hasActiveFilters =
+    searchQuery !== "" || contractFilter !== "all" || viewMode !== "all";
+
+  const resetFilters = () => {
+    setSearchQuery("");
+    setContractFilter("all");
+    setViewMode("all");
+  };
+
   return (
     <AppShell
-      eyebrow="Pipeline"
-      title="Opportunités"
-      subtitle="Visualisez et organisez votre pipeline en 4 espaces de travail"
+      title="Vos Opportunités"
       onAdd={() => {
         setEditing(emptyCandidature());
         setOpen(true);
@@ -209,108 +278,179 @@ function OpportunitesPage() {
             setEditing(emptyCandidature());
             setOpen(true);
           }}
-          className="shadow-xs"
+          className="shadow-sm"
         >
-          <Plus className="size-4" />
-          <span>Ajouter une opportunité</span>
+          <Plus className="size-4.5" />
+          <span>Nouvelle opportunité</span>
         </Button>
       }
       actions={
         authLoading || syncing ? (
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground bg-card/60 px-3 py-1.5 rounded-xl border border-border/60">
             <Loader2 className="size-4 animate-spin text-primary" />
             <span className="hidden sm:inline">Synchronisation…</span>
           </div>
         ) : null
       }
     >
-      <div className="space-y-4">
-        {/* NIVEAU 2 : CONTRÔLES & FILTRES DE VUE */}
+      <div className="space-y-6">
+        {/* BARRE DE FILTRES ET CONTRÔLES DE VUE */}
         <section
-          aria-label="Contrôles du pipeline"
-          className="flex flex-wrap items-center justify-between gap-3 border-b border-border/50 pb-3"
+          aria-label="Filtres et modes d'affichage"
+          className="glass-panel flex flex-col gap-3.5 p-3.5 sm:p-4 shadow-md"
         >
-          <div className="flex items-center gap-1.5 rounded-xl border border-border/60 bg-card/60 p-1">
-            <button
-              type="button"
-              onClick={() => setViewMode("all")}
-              className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
-                viewMode === "all"
-                  ? "bg-primary text-primary-foreground shadow-xs"
-                  : "text-muted-foreground hover:bg-accent/40 hover:text-foreground"
-              }`}
-            >
-              <Layers className="size-3.5" />
-              Toutes les colonnes
-              <span
-                className={`rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
-                  viewMode === "all"
-                    ? "bg-primary-foreground/20 text-primary-foreground"
-                    : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {items.length}
-              </span>
-            </button>
+          <div className="flex flex-wrap items-center justify-between gap-2.5">
+            {/* Recherche & Filtre par contrat */}
+            <div className="flex flex-1 flex-wrap items-center gap-2.5 min-w-[260px]">
+              <div className="relative flex-1 min-w-[200px]">
+                <Search className="absolute left-3.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Filtrer par entreprise, poste, lieu…"
+                  className="h-9.5 w-full rounded-xl bg-white/5 dark:bg-white/5 pl-9 pr-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:bg-white/10 focus:ring-2 focus:ring-primary/20 backdrop-blur-md transition-all shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)]"
+                />
+              </div>
 
-            <button
-              type="button"
-              onClick={() => setViewMode("overdue")}
-              className={`flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all ${
-                viewMode === "overdue"
-                  ? "bg-rose-600 text-white shadow-xs"
-                  : overdueItems.length > 0
-                    ? "text-rose-500 hover:bg-rose-500/10 dark:text-rose-400"
-                    : "text-muted-foreground hover:bg-accent/40 hover:text-foreground"
-              }`}
-            >
-              <AlertCircle className="size-3.5" />
-              Deadlines dépassées
-              {overdueItems.length > 0 && (
-                <span
-                  className={`rounded-full px-1.5 py-0.2 text-[10px] font-bold ${
-                    viewMode === "overdue"
-                      ? "bg-white/25 text-white"
-                      : "bg-rose-500/15 text-rose-600 dark:text-rose-400"
+              {availableContractTypes.length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <Filter className="size-3.5 text-muted-foreground shrink-0 hidden sm:block" />
+                  <select
+                    value={contractFilter}
+                    onChange={(e) => setContractFilter(e.target.value)}
+                    className="h-9.5 rounded-xl bg-white/5 dark:bg-white/5 px-3 text-xs font-normal text-foreground focus:outline-none backdrop-blur-md cursor-pointer transition-all shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)]"
+                  >
+                    <option
+                      value="all"
+                      className="bg-[#12141C] text-foreground"
+                    >
+                      Tous les contrats
+                    </option>
+                    {availableContractTypes.map((ct) => (
+                      <option
+                        key={ct}
+                        value={ct}
+                        className="bg-[#12141C] text-foreground"
+                      >
+                        {ct}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline px-2.5 py-1.5 rounded-xl bg-primary/15 cursor-pointer transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]"
+                >
+                  <RotateCcw className="size-3" /> Réinitialiser
+                </button>
+              )}
+            </div>
+
+            {/* Commutateurs de vue : Filtres statut + Toggle Kanban/Liste */}
+            <div className="flex items-center gap-2.5">
+              {/* Filtres Rapides (Tout / Retards) - Liquid Glass Segmented Control */}
+              <div className="flex items-center gap-1 rounded-xl bg-black/25 dark:bg-black/30 backdrop-blur-xl p-1 select-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("all")}
+                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all cursor-pointer ${
+                    viewMode === "all"
+                      ? "bg-white/15 dark:bg-white/15 text-foreground font-semibold shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {overdueItems.length}
-                </span>
-              )}
-            </button>
-          </div>
+                  <Layers className="size-3.5" />
+                  Toutes
+                  <span
+                    className={`rounded-full px-1.5 py-0.2 text-[10px] font-mono ${
+                      viewMode === "all"
+                        ? "bg-white/15 text-foreground"
+                        : "bg-white/5 text-muted-foreground"
+                    }`}
+                  >
+                    {filteredItems.length}
+                  </span>
+                </button>
 
-          {viewMode === "overdue" && (
-            <div className="flex items-center gap-2 text-xs">
-              <span className="text-muted-foreground">
-                Affichage filtré : opportunités expirées non envoyées
-              </span>
-              <button
-                type="button"
-                onClick={() => setViewMode("all")}
-                className="font-semibold text-primary hover:underline"
-              >
-                Tout réafficher
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("overdue")}
+                  className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all cursor-pointer ${
+                    viewMode === "overdue"
+                      ? "bg-destructive text-destructive-foreground font-semibold shadow-[0_2px_10px_rgba(240,68,56,0.4),inset_0_1px_0_rgba(255,255,255,0.3)]"
+                      : overdueItems.length > 0
+                        ? "text-destructive hover:bg-destructive/10"
+                        : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <AlertCircle className="size-3.5" />
+                  Retards
+                  {overdueItems.length > 0 && (
+                    <span
+                      className={`rounded-full px-1.5 py-0.2 text-[10px] font-mono ${
+                        viewMode === "overdue"
+                          ? "bg-black/25 text-white"
+                          : "bg-destructive/20 text-destructive"
+                      }`}
+                    >
+                      {overdueItems.length}
+                    </span>
+                  )}
+                </button>
+              </div>
+
+              {/* Toggle Kanban vs Liste - Liquid Glass Segmented Control */}
+              <div className="flex items-center gap-0.5 rounded-xl bg-black/25 dark:bg-black/30 backdrop-blur-xl p-1 select-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
+                <button
+                  type="button"
+                  onClick={() => setDisplayLayout("kanban")}
+                  title="Vue Kanban"
+                  className={`grid size-7.5 place-items-center rounded-lg transition-all cursor-pointer ${
+                    displayLayout === "kanban"
+                      ? "bg-white/15 dark:bg-white/15 text-foreground font-semibold shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <KanbanIcon className="size-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDisplayLayout("list")}
+                  title="Vue Liste"
+                  className={`grid size-7.5 place-items-center rounded-lg transition-all cursor-pointer ${
+                    displayLayout === "list"
+                      ? "bg-white/15 dark:bg-white/15 text-foreground font-semibold shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <ListIcon className="size-3.5" />
+                </button>
+              </div>
             </div>
-          )}
+          </div>
         </section>
 
-        {/* NIVEAU 3A : ALERTE INTELLIGENTE SUBTILE (DEADLINES DÉPASSÉES) */}
+        {/* ALERTE INTELLIGENTE DEADLINES DÉPASSÉES */}
         {viewMode === "all" && overdueItems.length > 0 && (
-          <div className="pop-in flex flex-col justify-between gap-2.5 rounded-xl border border-rose-500/25 bg-rose-500/[0.04] p-3 shadow-xs sm:flex-row sm:items-center">
+          <div className="flex flex-col justify-between gap-3 rounded-2xl border border-destructive/30 bg-destructive/10 backdrop-blur-xl p-4 shadow-[0_8px_24px_rgba(240,68,56,0.15)] sm:flex-row sm:items-center">
             <div className="flex items-center gap-3">
-              <span className="flex size-2 rounded-full bg-rose-500 shrink-0" />
+              <span className="flex size-2.5 rounded-full bg-destructive shrink-0 shadow-[0_0_8px_rgba(240,68,56,0.8)]" />
               <div>
-                <p className="text-xs font-semibold text-foreground">
+                <p className="text-xs sm:text-sm font-semibold text-foreground">
                   {overdueItems.length} opportunité
-                  {overdueItems.length > 1 ? "s" : ""} nécessite
-                  {overdueItems.length > 1 ? "nt" : ""} votre attention
-                </p>
-                <p className="text-[11px] text-muted-foreground">
                   {overdueItems.length > 1
-                    ? "Plusieurs dates limites de candidature sont dépassées sans envoi."
-                    : "Une date limite de candidature est dépassée sans envoi enregistré."}
+                    ? "s nécessitent"
+                    : " nécessite"}{" "}
+                  votre attention
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  La date limite de candidature est dépassée sans envoi
+                  enregistré.
                 </p>
               </div>
             </div>
@@ -318,31 +458,29 @@ function OpportunitesPage() {
               variant="outline"
               size="sm"
               onClick={() => setViewMode("overdue")}
-              className="h-7 shrink-0 self-start border-rose-500/30 text-xs font-medium text-rose-600 hover:bg-rose-500/10 dark:text-rose-400 sm:self-auto"
+              className="shrink-0 border-destructive/40 text-xs font-semibold text-destructive hover:bg-destructive/20"
             >
-              Voir les retards
+              Afficher les retards
             </Button>
           </div>
         )}
 
-        {/* NIVEAU 3B : MODULE COMPACT DE SYNTHÈSE (DEADLINES DANS LES 7 JOURS) */}
+        {/* ACCÈS RAPIDE DEADLINES DANS LES 7 JOURS */}
         {viewMode === "all" && urgentes.length > 0 && (
-          <div className="pop-in flex flex-col gap-2 rounded-xl border border-border/60 bg-card/40 px-3.5 py-2.5 sm:flex-row sm:items-center">
-            <div className="flex shrink-0 items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-              <CalendarClock className="size-3.5 text-primary" />
-              Deadlines dans les 7 jours
+          <div className="glass-panel flex flex-col gap-2.5 p-4 sm:flex-row sm:items-center">
+            <div className="flex shrink-0 items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
+              <CalendarClock className="size-4" />
+              Deadlines imminentes (7j)
             </div>
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div className="flex flex-wrap items-center gap-2">
               {urgentes.map((c) => (
                 <button
                   key={c.id}
                   type="button"
                   onClick={() => ouvrir(c)}
-                  className="press inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-foreground transition-colors hover:bg-primary/20"
+                  className="press inline-flex items-center gap-2 rounded-xl border border-primary/25 bg-primary/15 px-3 py-1.5 text-xs font-medium text-foreground backdrop-blur-md transition-all hover:bg-primary/25 hover:border-primary/40 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]"
                 >
-                  <span className="font-semibold text-primary">
-                    {c.entreprise}
-                  </span>
+                  <span className="font-bold text-primary">{c.entreprise}</span>
                   <span className="text-muted-foreground/60">•</span>
                   <span className="text-muted-foreground">
                     {formatDate(c.dateLimite || c.applicationDeadline)}
@@ -353,257 +491,354 @@ function OpportunitesPage() {
           </div>
         )}
 
-        {/* NIVEAU 4 : LES 4 GRANDS PANNEAUX (GRILLE 2 × 2 SUR DESKTOP / TABLETTE) */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:gap-5">
-          {colonnes.map(({ statut, liste }, i) => {
-            const isColumnHovered = dragOverColumn === statut;
-            const accent = ACCENTS_PANNEAUX[statut] || {
-              dot: "var(--primary)",
-              border: "var(--border)",
-            };
+        {/* MANQUE DE RÉSULTATS APPRÈS FILTRAGE */}
+        {filteredItems.length === 0 && (
+          <div className="glass-panel flex flex-col items-center justify-center border-dashed p-12 text-center">
+            <Building2 className="size-12 text-muted-foreground/50 mb-3" />
+            <h3 className="text-base font-bold text-foreground">
+              Aucune opportunité trouvée
+            </h3>
+            <p className="text-sm text-muted-foreground max-w-md mt-1 mb-6">
+              Aucune candidature ne correspond à vos critères de recherche
+              actuels.
+            </p>
+            <Button variant="outline" onClick={resetFilters}>
+              <RotateCcw className="size-4 mr-2" /> Réinitialiser les filtres
+            </Button>
+          </div>
+        )}
 
-            return (
-              <section
-                key={statut}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  e.dataTransfer.dropEffect = "move";
-                  if (dragOverColumn !== statut) {
-                    setDragOverColumn(statut);
-                  }
-                }}
-                onDragLeave={(e) => {
-                  if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+        {/* RENDU VUE KANBAN */}
+        {filteredItems.length > 0 && displayLayout === "kanban" && (
+          <div className="grid grid-cols-1 gap-4.5 md:grid-cols-2 lg:grid-cols-4">
+            {colonnes.map(({ statut, liste }) => {
+              const isColumnHovered = dragOverColumn === statut;
+              const accent = ACCENTS_PANNEAUX[statut] || {
+                dot: "var(--primary)",
+                bgBadge: "bg-secondary",
+                textBadge: "text-foreground",
+                borderHeader: "border-border",
+              };
+
+              return (
+                <section
+                  key={statut}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "move";
+                    if (dragOverColumn !== statut) {
+                      setDragOverColumn(statut);
+                    }
+                  }}
+                  onDragLeave={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                      setDragOverColumn(null);
+                    }
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
                     setDragOverColumn(null);
-                  }
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setDragOverColumn(null);
-                  const id = e.dataTransfer.getData("text/plain") || draggedId;
-                  if (id) {
-                    handleDrop(id, statut);
-                  }
-                  setDraggedId(null);
-                }}
-                className={`pop-in flex h-[480px] flex-col rounded-2xl border transition-all duration-200 lg:h-[520px] ${
-                  isColumnHovered
-                    ? "border-primary/60 bg-primary/[0.03] ring-2 ring-primary/40 shadow-md"
-                    : "border-border/60 bg-card/45 shadow-xs hover:border-border/80"
-                }`}
-                style={{ animationDelay: `${i * 40}ms` }}
-              >
-                {/* EN-TÊTE DU PANNEAU (HAUTEUR ET PADDING PARFAITEMENT ALIGNÉS) */}
-                <header className="flex shrink-0 items-center justify-between border-b border-border/50 px-4 py-3">
-                  <div className="flex items-center gap-2.5">
-                    <span
-                      className="size-2.5 shrink-0 rounded-full shadow-xs"
-                      style={{ backgroundColor: accent.dot }}
-                    />
-                    <h2 className="text-sm font-bold tracking-tight text-foreground">
-                      {statut}
-                    </h2>
-                  </div>
-                  <span className="rounded-full bg-muted/60 px-2 py-0.5 text-xs font-semibold text-muted-foreground">
-                    {liste.length}
-                  </span>
-                </header>
-
-                {/* ZONE DE CONTENU / CARTES AVEC DÉFILEMENT INTERNE ÉQUILIBRÉ */}
-                <div className="flex-1 overflow-y-auto p-3.5 space-y-2.5">
-                  {liste.length === 0 ? (
-                    <div
-                      className={`flex h-full min-h-[160px] flex-col items-center justify-center rounded-xl border border-dashed p-6 text-center text-xs transition-colors ${
-                        isColumnHovered
-                          ? "border-primary/50 bg-primary/5 text-primary"
-                          : "border-border/50 text-muted-foreground"
-                      }`}
-                    >
-                      {isColumnHovered ? (
-                        <span className="font-semibold">
-                          Déposer ici pour passer en « {statut} »
-                        </span>
-                      ) : viewMode === "overdue" ? (
-                        <span>Aucune deadline dépassée dans ce panneau.</span>
-                      ) : (
-                        <span>Aucune opportunité dans ce panneau.</span>
-                      )}
+                    const id =
+                      e.dataTransfer.getData("text/plain") || draggedId;
+                    if (id) {
+                      handleDrop(id, statut);
+                    }
+                    setDraggedId(null);
+                  }}
+                  className={`flex min-h-[500px] flex-col rounded-2xl backdrop-blur-2xl transition-all duration-200 ${
+                    isColumnHovered
+                      ? "bg-white/[0.12] ring-2 ring-primary/50 border border-primary/40 shadow-[0_16px_48px_rgba(0,0,0,0.5),0_0_32px_rgba(216,26,69,0.25)]"
+                      : "glass-panel border-white/12 shadow-[0_12px_40px_-6px_rgba(0,0,0,0.45),inset_0_1px_1px_0_rgba(255,255,255,0.2)]"
+                  }`}
+                >
+                  {/* EN-TÊTE DE LA COLONNE KANBAN */}
+                  <header className="flex shrink-0 items-center justify-between px-4 py-3.5 border-b border-white/10 bg-white/[0.04] backdrop-blur-md rounded-t-2xl">
+                    <div className="flex items-center gap-2.5">
+                      <span
+                        className="size-2.5 shrink-0 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.4)]"
+                        style={{ backgroundColor: accent.dot }}
+                      />
+                      <h2 className="text-xs font-bold tracking-tight text-foreground uppercase">
+                        {statut}
+                      </h2>
                     </div>
-                  ) : (
-                    liste.map((c) => {
-                      const isOverdue = isDeadlineOverdue(c, today);
-                      const isBeingDragged = draggedId === c.id;
+                    <span className="rounded-full bg-white/10 border border-white/12 px-2.5 py-0.5 text-[11px] font-mono font-semibold text-slate-300 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
+                      {liste.length}
+                    </span>
+                  </header>
 
-                      return (
-                        <article
-                          key={c.id}
-                          draggable
-                          onDragStart={(e) => {
-                            e.dataTransfer.setData("text/plain", c.id);
-                            e.dataTransfer.effectAllowed = "move";
-                            setDraggedId(c.id);
-                          }}
-                          onDragEnd={() => {
-                            setDraggedId(null);
-                            setDragOverColumn(null);
-                          }}
-                          className={`group relative rounded-xl border p-3 transition-all duration-150 cursor-grab active:cursor-grabbing ${
-                            isBeingDragged
-                              ? "opacity-40 ring-2 ring-primary border-primary scale-[0.98]"
-                              : isOverdue
-                                ? "border-rose-500/40 bg-card/90 hover:border-rose-500 shadow-xs"
-                                : "border-border/60 bg-card/75 hover:bg-card hover:border-border hover:shadow-xs"
-                          }`}
-                        >
-                          {/* 1. ENTREPRISE & 2. POSTE */}
-                          <div className="flex items-start justify-between gap-2">
-                            <div
-                              onClick={() => ouvrir(c)}
-                              className="block min-w-0 flex-1 cursor-pointer"
-                            >
-                              <h3 className="truncate text-xs font-bold uppercase tracking-wider text-muted-foreground transition-colors group-hover:text-primary">
-                                {c.entreprise || "Entreprise inconnue"}
-                              </h3>
-                              <p className="truncate text-[13.5px] font-semibold text-foreground">
-                                {c.poste || "Poste sans titre"}
-                              </p>
-                            </div>
+                  {/* CONTENU & CARTES KANBAN */}
+                  <div className="flex-1 overflow-y-auto p-3 space-y-3">
+                    {liste.length === 0 ? (
+                      <div
+                        className={`flex h-full min-h-[140px] flex-col items-center justify-center rounded-xl p-4 text-center text-xs transition-all border border-dashed ${
+                          isColumnHovered
+                            ? "bg-primary/15 border-primary/40 text-primary font-medium"
+                            : "bg-white/[0.03] border-white/10 text-muted-foreground/60"
+                        }`}
+                      >
+                        {isColumnHovered ? (
+                          <span className="font-semibold text-xs">
+                            Déposer en « {statut} »
+                          </span>
+                        ) : viewMode === "overdue" ? (
+                          <span>Aucun retard</span>
+                        ) : (
+                          <span>Aucune opportunité</span>
+                        )}
+                      </div>
+                    ) : (
+                      liste.map((c) => {
+                        const isOverdue = isDeadlineOverdue(c, today);
+                        const isBeingDragged = draggedId === c.id;
 
-                            <div className="flex shrink-0 items-center gap-0.5">
-                              <span
-                                title="Glisser pour déplacer"
-                                className="cursor-grab p-1 text-muted-foreground/30 transition-colors group-hover:text-muted-foreground/70"
+                        return (
+                          <article
+                            key={c.id}
+                            draggable
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData("text/plain", c.id);
+                              e.dataTransfer.effectAllowed = "move";
+                              setDraggedId(c.id);
+                            }}
+                            onDragEnd={() => {
+                              setDraggedId(null);
+                              setDragOverColumn(null);
+                            }}
+                            className={`group relative rounded-xl border p-3.5 transition-all duration-200 cursor-grab active:cursor-grabbing ${
+                              isBeingDragged
+                                ? "opacity-35 ring-2 ring-primary border-primary scale-95"
+                                : isOverdue
+                                  ? "border-destructive/40 bg-destructive/10 hover:border-destructive/70 hover:shadow-[0_8px_24px_rgba(240,68,56,0.25)]"
+                                  : "glass-card-interactive shadow-sm hover:border-white/20"
+                            }`}
+                          >
+                            {/* ENTREPRISE & POSTE */}
+                            <div className="flex items-start justify-between gap-2">
+                              <div
+                                onClick={() => ouvrir(c)}
+                                className="block min-w-0 flex-1 cursor-pointer"
                               >
-                                <GripVertical className="size-3.5" />
-                              </span>
-                              <button
-                                type="button"
-                                aria-label={`Supprimer l'opportunité ${c.poste}`}
-                                title="Supprimer cette opportunité"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setCandidateToDelete(c);
-                                }}
-                                className="rounded-md p-1 text-muted-foreground opacity-70 transition-all hover:bg-destructive/10 hover:text-destructive focus:opacity-100 sm:opacity-0 group-hover:opacity-100"
-                              >
-                                <Trash2 className="size-3.5" />
-                              </button>
-                            </div>
-                          </div>
+                                <p className="truncate text-[11px] font-medium text-muted-foreground transition-colors group-hover:text-foreground">
+                                  {c.entreprise || "Entreprise"}
+                                </p>
+                                <h3 className="truncate text-sm font-semibold text-foreground mt-0.5 tracking-tight">
+                                  {c.poste || "Poste sans titre"}
+                                </h3>
+                              </div>
 
-                          {/* 3. BADGES : TYPE DE CONTRAT, DURÉE, MÉTRIQUES, DEADLINE DÉPASSÉE */}
-                          <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                            {isOverdue && (
-                              <span className="inline-flex items-center gap-1 rounded-full border border-rose-500/30 bg-rose-500/15 px-2 py-0.5 text-[10px] font-semibold text-rose-600 dark:text-rose-400">
-                                <AlertCircle className="size-3" />
-                                Deadline dépassée (
-                                {formatDate(
-                                  c.applicationDeadline || c.dateLimite,
-                                )}
-                                )
-                              </span>
-                            )}
-
-                            {c.contractType && (
-                              <span className="rounded-md bg-primary/10 px-2 py-0.5 text-[10.5px] font-medium text-primary">
-                                {c.contractType}
-                              </span>
-                            )}
-
-                            {c.duration && (
-                              <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10.5px] text-muted-foreground">
-                                {c.duration}
-                              </span>
-                            )}
-
-                            {Array.isArray(c.companyMetrics) &&
-                              c.companyMetrics.length > 0 && (
-                                <span className="rounded-md bg-emerald-500/10 px-1.5 py-0.5 text-[10.5px] font-medium text-emerald-600 dark:text-emerald-400">
-                                  {c.companyMetrics.length} métrique
-                                  {c.companyMetrics.length > 1 ? "s" : ""}
+                              <div className="flex shrink-0 items-center gap-0.5">
+                                <span
+                                  title="Glisser pour déplacer"
+                                  className="cursor-grab p-1 text-muted-foreground/40 hover:text-muted-foreground"
+                                >
+                                  <GripVertical className="size-3.5" />
                                 </span>
-                              )}
-                          </div>
-
-                          {/* 4. LOCALISATION & DEADLINE NON ÉCHUE & 5. LIEN VERS L'OFFRE */}
-                          <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
-                            <div className="flex items-center gap-2 truncate">
-                              {c.lieu && (
-                                <span className="truncate">{c.lieu}</span>
-                              )}
-                              {c.lieu &&
-                                (c.dateLimite || c.applicationDeadline) && (
-                                  <span>•</span>
-                                )}
-                              {!isOverdue &&
-                                (c.dateLimite || c.applicationDeadline) && (
-                                  <span
-                                    className={
-                                      (c.dateLimite ||
-                                        c.applicationDeadline)! <=
-                                      addDays(today, 7)
-                                        ? "inline-flex items-center gap-1 font-medium text-primary"
-                                        : "inline-flex items-center gap-1"
-                                    }
-                                  >
-                                    <Clock className="size-3 shrink-0" />
-                                    {formatDate(
-                                      c.dateLimite || c.applicationDeadline,
-                                    )}
-                                  </span>
-                                )}
-                            </div>
-
-                            {c.lien && (
-                              <a
-                                href={c.lien}
-                                target="_blank"
-                                rel="noreferrer"
-                                onClick={(e) => e.stopPropagation()}
-                                className="inline-flex shrink-0 items-center gap-1 text-[11px] font-medium text-primary hover:underline"
-                              >
-                                Offre <ExternalLink className="size-3" />
-                              </a>
-                            )}
-                          </div>
-
-                          {/* ACTIONS RAPIDES DE CHANGEMENT DE STATUT */}
-                          <div className="mt-2 flex flex-wrap gap-1 border-t border-border/40 pt-1.5">
-                            {STATUTS_OPPORTUNITE.filter((s) => s !== statut)
-                              .slice(0, 3)
-                              .map((s: Statut) => (
                                 <button
-                                  key={s}
                                   type="button"
+                                  aria-label={`Supprimer ${c.poste}`}
+                                  title="Supprimer cette opportunité"
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleMoveToStatut(c, s);
+                                    setCandidateToDelete(c);
                                   }}
-                                  className="rounded-full border border-border/60 bg-muted/30 px-2 py-0.5 text-[10px] text-muted-foreground transition-colors hover:border-primary/40 hover:bg-card hover:text-foreground"
+                                  className="rounded-lg p-1 text-muted-foreground/60 transition-all hover:bg-destructive/15 hover:text-destructive focus:opacity-100 sm:opacity-0 group-hover:opacity-100 cursor-pointer"
                                 >
-                                  → {s}
+                                  <Trash2 className="size-3.5" />
                                 </button>
-                              ))}
-                          </div>
-                        </article>
-                      );
-                    })
-                  )}
+                              </div>
+                            </div>
 
-                  {/* DROP ZONE ACTIVE EN SURVOL */}
-                  {isColumnHovered && liste.length > 0 && (
-                    <div className="rounded-xl border border-dashed border-primary/50 bg-primary/5 py-2.5 text-center text-xs font-medium text-primary animate-pulse">
-                      Déposer ici pour passer en « {statut} »
-                    </div>
-                  )}
-                </div>
-              </section>
-            );
-          })}
-        </div>
+                            {/* BADGES & MÉTADONNÉES */}
+                            <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                              {isOverdue && (
+                                <span className="inline-flex items-center gap-1 rounded-full border border-destructive/35 bg-destructive/15 px-2 py-0.5 text-[10px] font-medium text-destructive backdrop-blur-md">
+                                  <AlertCircle className="size-2.5" />
+                                  Expirée (
+                                  {formatDate(
+                                    c.applicationDeadline || c.dateLimite,
+                                  )}
+                                  )
+                                </span>
+                              )}
+
+                              {c.contractType && (
+                                <span className="rounded-lg bg-white/10 px-2 py-0.5 text-[11px] font-medium text-slate-200 backdrop-blur-md">
+                                  {c.contractType}
+                                </span>
+                              )}
+
+                              {c.duration && (
+                                <span className="rounded-lg bg-white/7 px-2 py-0.5 text-[11px] text-slate-300 backdrop-blur-md">
+                                  {c.duration}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* LOCALISATION & DEADLINE */}
+                            <div className="mt-3 flex items-center justify-between gap-1.5 text-xs text-muted-foreground border-t border-white/5 pt-2">
+                              <div className="flex items-center gap-2 truncate">
+                                {c.lieu && (
+                                  <span className="inline-flex items-center gap-1 truncate text-[11px]">
+                                    <MapPin className="size-3 shrink-0 text-muted-foreground/60" />
+                                    {c.lieu}
+                                  </span>
+                                )}
+                                {!isOverdue &&
+                                  (c.dateLimite || c.applicationDeadline) && (
+                                    <span
+                                      className={
+                                        (c.dateLimite ||
+                                          c.applicationDeadline)! <=
+                                        addDays(today, 7)
+                                          ? "inline-flex items-center gap-1 font-semibold text-amber-400 text-[11px]"
+                                          : "inline-flex items-center gap-1 text-[11px]"
+                                      }
+                                    >
+                                      <Clock className="size-3 shrink-0" />
+                                      {formatDate(
+                                        c.dateLimite || c.applicationDeadline,
+                                      )}
+                                    </span>
+                                  )}
+                              </div>
+
+                              {c.lien && (
+                                <a
+                                  href={c.lien}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="inline-flex shrink-0 items-center gap-0.5 text-[11px] font-medium text-primary hover:underline"
+                                >
+                                  Lien <ExternalLink className="size-2.5" />
+                                </a>
+                              )}
+                            </div>
+
+                            {/* ACTIONS RAPIDES DE STATUT */}
+                            <div className="mt-2.5 flex flex-wrap gap-1 border-t border-white/5 pt-2">
+                              {STATUTS_OPPORTUNITE.filter((s) => s !== statut)
+                                .slice(0, 3)
+                                .map((s: Statut) => (
+                                  <button
+                                    key={s}
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleMoveToStatut(c, s);
+                                    }}
+                                    className="rounded-lg border border-white/10 bg-white/5 px-2 py-0.5 text-[10px] font-medium text-muted-foreground backdrop-blur-md transition-all hover:bg-white/10 hover:border-white/20 hover:text-foreground cursor-pointer"
+                                  >
+                                    → {s}
+                                  </button>
+                                ))}
+                            </div>
+                          </article>
+                        );
+                      })
+                    )}
+                  </div>
+                </section>
+              );
+            })}
+          </div>
+        )}
+
+        {/* RENDU VUE LISTE */}
+        {filteredItems.length > 0 && displayLayout === "list" && (
+          <div className="glass-panel overflow-hidden shadow-md">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm border-collapse">
+                <thead>
+                  <tr className="border-b border-white/10 bg-white/5 text-xs font-semibold text-muted-foreground backdrop-blur-md">
+                    <th className="px-5 py-3.5">Entreprise & Poste</th>
+                    <th className="px-5 py-3.5">Étape actuelle</th>
+                    <th className="px-5 py-3.5">Contrat & Lieu</th>
+                    <th className="px-5 py-3.5">Deadline</th>
+                    <th className="px-5 py-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {filteredItems.map((c) => {
+                    const isOverdue = isDeadlineOverdue(c, today);
+                    return (
+                      <tr
+                        key={c.id}
+                        onClick={() => ouvrir(c)}
+                        className="group hover:bg-white/5 transition-colors cursor-pointer"
+                      >
+                        <td className="px-5 py-3.5">
+                          <p className="text-xs font-medium text-muted-foreground">
+                            {c.entreprise || "Entreprise"}
+                          </p>
+                          <p className="text-sm font-semibold text-foreground mt-0.5">
+                            {c.poste || "Poste sans titre"}
+                          </p>
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <StatutBadge statut={c.statut} size="sm" />
+                        </td>
+                        <td className="px-5 py-3.5">
+                          <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
+                            <span className="font-medium text-foreground">
+                              {c.contractType || "—"}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground/70">
+                              {c.lieu || "Non spécifié"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-5 py-3.5">
+                          {isOverdue ? (
+                            <span className="inline-flex items-center gap-1 text-xs font-medium text-destructive">
+                              <AlertCircle className="size-3" />
+                              {formatDate(
+                                c.applicationDeadline || c.dateLimite,
+                              )}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground font-mono">
+                              {formatDate(
+                                c.applicationDeadline || c.dateLimite,
+                              )}
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-5 py-3.5 text-right">
+                          <div
+                            className="flex items-center justify-end gap-1.5"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => ouvrir(c)}
+                              className="h-8 px-3 text-xs"
+                            >
+                              Ouvrir
+                            </Button>
+                            <button
+                              type="button"
+                              onClick={() => setCandidateToDelete(c)}
+                              className="p-1.5 text-muted-foreground/60 hover:text-destructive rounded-lg hover:bg-destructive/15 transition-all cursor-pointer"
+                              title="Supprimer"
+                            >
+                              <Trash2 className="size-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* DIALOGUE DE CONFIRMATION DE SUPPRESSION (ALERTDIALOG) */}
+      {/* DIALOGUE DE CONFIRMATION DE SUPPRESSION */}
       <AlertDialog
         open={Boolean(candidateToDelete)}
         onOpenChange={(openDialog) => {
@@ -618,9 +853,8 @@ function OpportunitesPage() {
             <AlertDialogDescription className="text-sm text-muted-foreground">
               Cette action est irréversible. L'opportunité «{" "}
               {candidateToDelete?.poste || "Sans titre"} » chez «{" "}
-              {candidateToDelete?.entreprise || "Entreprise inconnue"} » ainsi
-              que ses événements associés et notes de suivi seront
-              définitivement supprimés.
+              {candidateToDelete?.entreprise || "Entreprise inconnue"} » sera
+              définitivement supprimée.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

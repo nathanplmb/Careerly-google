@@ -155,7 +155,7 @@ export function ProfilJourneyTab({ profil, onChange }: Props) {
   return (
     <div className="space-y-6">
       {/* Sélecteur de sous-section (Expériences vs Formations) */}
-      <div className="glass-card p-3 flex items-center justify-between gap-3">
+      <div className="rounded-2xl border border-border/60 bg-card/40 p-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 bg-muted/40 p-1 rounded-xl border border-border/50">
           <button
             type="button"
@@ -221,7 +221,7 @@ export function ProfilJourneyTab({ profil, onChange }: Props) {
       {subView === "experiences" && (
         <div className="space-y-4">
           {experiences.length === 0 && (
-            <div className="glass-card p-10 text-center space-y-3">
+            <div className="rounded-2xl border border-border/60 bg-card/40 p-10 text-center space-y-3">
               <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-purple-500/10 text-purple-400">
                 <Briefcase className="size-6" />
               </div>
@@ -264,7 +264,7 @@ export function ProfilJourneyTab({ profil, onChange }: Props) {
             return (
               <div
                 key={exp.id}
-                className="glass-card overflow-hidden transition-all border border-border/70 bg-card/60"
+                className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden transition-all"
               >
                 {/* Header accordéon */}
                 <div
@@ -510,7 +510,7 @@ export function ProfilJourneyTab({ profil, onChange }: Props) {
       {subView === "formations" && (
         <div className="space-y-4">
           {formations.length === 0 && (
-            <div className="glass-card p-10 text-center space-y-3">
+            <div className="rounded-2xl border border-border/60 bg-card/40 p-10 text-center space-y-3">
               <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-indigo-500/10 text-indigo-400">
                 <GraduationCap className="size-6" />
               </div>
@@ -549,7 +549,7 @@ export function ProfilJourneyTab({ profil, onChange }: Props) {
             return (
               <div
                 key={f.id}
-                className="glass-card overflow-hidden transition-all border border-border/70 bg-card/60"
+                className="rounded-2xl border border-border/60 bg-card/40 overflow-hidden transition-all"
               >
                 {/* Header accordéon */}
                 <div

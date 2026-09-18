@@ -5,8 +5,13 @@ import {
   setDoc,
   deleteDoc,
   query,
+  writeBatch,
 } from "firebase/firestore";
 import { db, isFirebaseConfigured, auth } from "@/integrations/firebase/client";
+import {
+  handleFirestoreError,
+  OperationType,
+} from "@/integrations/firebase/errors";
 import { emptyEntreprise, type Entreprise } from "./entreprises";
 
 type EntrepriseRow = {
@@ -112,7 +117,12 @@ function toRow(e: Entreprise, userId: string): Record<string, unknown> {
 
 export async function fetchEntreprises(userId?: string): Promise<Entreprise[]> {
   const effectiveUserId = userId || auth.currentUser?.uid;
-  if (isFirebaseConfigured() && effectiveUserId) {
+  if (
+    isFirebaseConfigured() &&
+    effectiveUserId &&
+    auth.currentUser &&
+    auth.currentUser.uid === effectiveUserId
+  ) {
     try {
       const colRef = collection(db, "users", effectiveUserId, "entreprises");
       const snap = await getDocs(query(colRef));
@@ -125,6 +135,11 @@ export async function fetchEntreprises(userId?: string): Promise<Entreprise[]> {
       return list;
     } catch (e) {
       console.warn("Firestore fetchEntreprises error:", e);
+      handleFirestoreError(
+        e,
+        OperationType.GET,
+        `users/${effectiveUserId}/entreprises`,
+      );
     }
   }
   return [];
@@ -134,7 +149,12 @@ export async function upsertEntreprise(
   e: Entreprise,
   userId: string,
 ): Promise<Entreprise> {
-  if (isFirebaseConfigured() && userId) {
+  if (
+    isFirebaseConfigured() &&
+    userId &&
+    auth.currentUser &&
+    auth.currentUser.uid === userId
+  ) {
     try {
       const row = toRow(e, userId);
       const docRef = doc(db, "users", userId, "entreprises", e.id);
@@ -142,21 +162,72 @@ export async function upsertEntreprise(
       return toEntreprise(row as unknown as EntrepriseRow);
     } catch (err) {
       console.warn("Firestore upsertEntreprise error:", err);
+      handleFirestoreError(
+        err,
+        OperationType.WRITE,
+        `users/${userId}/entreprises/${e.id}`,
+      );
     }
   }
   return e;
+}
+
+export async function batchUpsertEntreprises(
+  items: Entreprise[],
+  userId: string,
+): Promise<Entreprise[]> {
+  if (!items.length) return [];
+  if (
+    isFirebaseConfigured() &&
+    userId &&
+    auth.currentUser &&
+    auth.currentUser.uid === userId
+  ) {
+    try {
+      const CHUNK_SIZE = 250;
+      for (let i = 0; i < items.length; i += CHUNK_SIZE) {
+        const chunk = items.slice(i, i + CHUNK_SIZE);
+        const batch = writeBatch(db);
+        for (const e of chunk) {
+          const row = toRow(e, userId);
+          const docRef = doc(db, "users", userId, "entreprises", e.id);
+          batch.set(docRef, row, { merge: true });
+        }
+        await batch.commit();
+      }
+      return items;
+    } catch (err) {
+      console.warn("Firestore batchUpsertEntreprises error:", err);
+      handleFirestoreError(
+        err,
+        OperationType.WRITE,
+        `users/${userId}/entreprises`,
+      );
+    }
+  }
+  return items;
 }
 
 export async function deleteEntrepriseCloud(
   id: string,
   userId: string,
 ): Promise<void> {
-  if (isFirebaseConfigured() && userId) {
+  if (
+    isFirebaseConfigured() &&
+    userId &&
+    auth.currentUser &&
+    auth.currentUser.uid === userId
+  ) {
     try {
       const docRef = doc(db, "users", userId, "entreprises", id);
       await deleteDoc(docRef);
     } catch (err) {
       console.warn("Firestore deleteEntreprise error:", err);
+      handleFirestoreError(
+        err,
+        OperationType.DELETE,
+        `users/${userId}/entreprises/${id}`,
+      );
     }
   }
 }

@@ -1,7 +1,6 @@
 import { o as __toESM } from "../_runtime.mjs";
-import { y as Primitive } from "./@radix-ui/react-dialog+[...].mjs";
 import { u as require_react } from "./@floating-ui/react-dom+[...].mjs";
-import { n as createContextScope, o as require_jsx_runtime } from "./@radix-ui/react-collection+[...].mjs";
+import { A as require_jsx_runtime, D as Primitive, k as createContextScope } from "./@radix-ui/react-alert-dialog+[...].mjs";
 //#region node_modules/@radix-ui/react-progress/dist/index.mjs
 var import_react = /* @__PURE__ */ __toESM(require_react(), 1);
 var import_jsx_runtime = require_jsx_runtime();

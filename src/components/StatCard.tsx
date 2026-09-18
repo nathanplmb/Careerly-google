@@ -73,36 +73,32 @@ export function StatCard({
         } as React.CSSProperties
       }
       className={cn(
-        "tone-card pop-in relative overflow-hidden p-4",
-        accent &&
-          "shadow-[0_0_44px_-18px_color-mix(in_oklab,var(--tone)_90%,transparent)]",
+        "glass-card-interactive pop-in relative overflow-hidden p-4.5 transition-all",
+        accent && "border-primary/40 shadow-[0_0_20px_rgba(216,26,69,0.15)]",
       )}
     >
-      <div className="flex items-center gap-3">
-        <span className="tone-chip size-10 shrink-0 rounded-2xl">
-          <Icon className="size-5" />
+      <div className="flex items-center gap-3.5">
+        <span className="size-10 shrink-0 rounded-xl bg-white/5 dark:bg-white/5 flex items-center justify-center text-foreground border border-white/10 backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">
+          <Icon className="size-4.5" />
         </span>
         <div className="min-w-0 flex-1">
-          <div className="num text-[30px] font-extrabold leading-none">
+          <div className="num text-2xl sm:text-[26px] font-bold leading-none text-foreground tracking-tight">
             <AnimatedNumber value={value} />
             {suffix}
           </div>
-          <p className="mt-1 truncate text-[13px] text-muted-foreground">
+          <p className="mt-1.5 truncate text-xs font-normal text-muted-foreground">
             {label}
           </p>
         </div>
       </div>
-      <div className="mt-2 flex items-end justify-between gap-2">
-        <span
-          className="truncate text-[11px] font-semibold"
-          style={{ color: "var(--tone)" }}
-        >
+      <div className="mt-3 flex items-end justify-between gap-2 border-t border-white/5 pt-2">
+        <span className="truncate text-[11px] font-medium text-muted-foreground/80">
           {delta ?? ""}
         </span>
         <Spark seed={index} />
       </div>
       {to ? (
-        <ChevronRight className="absolute right-3 top-3 size-4 text-muted-foreground opacity-0 transition group-hover:opacity-100" />
+        <ChevronRight className="absolute right-3 top-3 size-4 text-muted-foreground/60 opacity-0 transition group-hover:opacity-100" />
       ) : null}
     </div>
   );

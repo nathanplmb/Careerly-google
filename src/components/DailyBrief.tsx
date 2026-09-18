@@ -82,49 +82,49 @@ type DailyBriefProps = {
 
 /**
  * Palette sémantique sobre et élégante (accents subtils par catégorie) :
- * - CANDIDATURE : Violet (border, dot, badge, action directe)
- * - RELANCE : Bleu (border, dot, badge, action directe)
- * - ENTRETIEN : Orange / Ambre (border, dot, badge, action directe)
- * - DEADLINE : Rouge / Rose (border, dot, badge, action directe)
- * - OPPORTUNITÉ : Vert (border, dot, badge, action directe)
+ * - CANDIDATURE : Gris argent / Ardoise
+ * - RELANCE : Bleu acier
+ * - ENTRETIEN : Ambre / Or discret
+ * - DEADLINE : Rouge signal Nacora (#D81A45)
+ * - OPPORTUNITÉ : Émeraude sobre
  */
 function getCategoryVisuals(item: BriefItem) {
   const rawCat = (item.category || "").toLowerCase();
   const type = (item.type || "").toLowerCase();
 
-  // 1. DEADLINE (Rouge / Rose)
+  // 1. DEADLINE (Rouge signal Nacora)
   if (rawCat === "urgent" || type === "deadline") {
     return {
       label: item.categoryLabel || "DEADLINE",
-      labelClass: "text-rose-400 font-semibold tracking-wider",
-      dotClass: "bg-rose-500",
-      borderAccentClass: "border-l-rose-500/80",
+      labelClass: "text-[#EF0651] font-semibold tracking-wider",
+      dotClass: "bg-[#D81A45]",
+      borderAccentClass: "border-l-[#D81A45]",
       ctaClass:
-        "bg-rose-500/15 text-rose-200 hover:bg-rose-500/25 border-rose-500/35",
+        "bg-[#D81A45]/15 text-[#FEC9D5] hover:bg-[#D81A45]/25 border-[#D81A45]/35",
     };
   }
 
-  // 2. ENTRETIEN (Orange / Ambre)
+  // 2. ENTRETIEN (Ambre discret)
   if (rawCat === "entretien" || type === "entretien") {
     return {
       label: item.categoryLabel || "ENTRETIEN",
       labelClass: "text-amber-400 font-semibold tracking-wider",
-      dotClass: "bg-amber-500",
-      borderAccentClass: "border-l-amber-500/80",
+      dotClass: "bg-amber-400",
+      borderAccentClass: "border-l-amber-400",
       ctaClass:
         "bg-amber-500/15 text-amber-200 hover:bg-amber-500/25 border-amber-500/35",
     };
   }
 
-  // 3. RELANCE (Bleu / Ciel)
+  // 3. RELANCE (Bleu acier)
   if (rawCat === "relance" || type === "relance") {
     return {
       label: item.categoryLabel || "RELANCE",
-      labelClass: "text-sky-400 font-semibold tracking-wider",
-      dotClass: "bg-sky-500",
-      borderAccentClass: "border-l-sky-500/80",
+      labelClass: "text-blue-400 font-semibold tracking-wider",
+      dotClass: "bg-blue-400",
+      borderAccentClass: "border-l-blue-400",
       ctaClass:
-        "bg-sky-500/15 text-sky-200 hover:bg-sky-500/25 border-sky-500/35",
+        "bg-blue-500/15 text-blue-200 hover:bg-blue-500/25 border-blue-500/35",
     };
   }
 
@@ -133,33 +133,33 @@ function getCategoryVisuals(item: BriefItem) {
     return {
       label: item.categoryLabel || "DÉCISION",
       labelClass: "text-amber-400 font-semibold tracking-wider",
-      dotClass: "bg-amber-500",
-      borderAccentClass: "border-l-amber-500/80",
+      dotClass: "bg-amber-400",
+      borderAccentClass: "border-l-amber-400",
       ctaClass:
         "bg-amber-500/15 text-amber-200 hover:bg-amber-500/25 border-amber-500/35",
     };
   }
 
-  // 5. OPPORTUNITÉ (Vert / Émeraude)
+  // 5. OPPORTUNITÉ (Émeraude sobre)
   if (type === "opportunite" || item.categoryLabel === "OPPORTUNITÉ") {
     return {
       label: item.categoryLabel || "OPPORTUNITÉ",
       labelClass: "text-emerald-400 font-semibold tracking-wider",
-      dotClass: "bg-emerald-500",
-      borderAccentClass: "border-l-emerald-500/80",
+      dotClass: "bg-emerald-400",
+      borderAccentClass: "border-l-emerald-400",
       ctaClass:
         "bg-emerald-500/15 text-emerald-200 hover:bg-emerald-500/25 border-emerald-500/35",
     };
   }
 
-  // 6. CANDIDATURE / PRÉPARATION (Violet)
+  // 6. CANDIDATURE / PRÉPARATION (Ardoise)
   return {
     label: item.categoryLabel || "CANDIDATURE",
-    labelClass: "text-purple-400 font-semibold tracking-wider",
-    dotClass: "bg-purple-500",
-    borderAccentClass: "border-l-purple-500/80",
+    labelClass: "text-zinc-300 font-semibold tracking-wider",
+    dotClass: "bg-zinc-400",
+    borderAccentClass: "border-l-zinc-400",
     ctaClass:
-      "bg-purple-500/15 text-purple-200 hover:bg-purple-500/25 border-purple-500/35",
+      "bg-zinc-700/20 text-zinc-200 hover:bg-zinc-700/30 border-zinc-700/40",
   };
 }
 
@@ -679,31 +679,31 @@ export function DailyBrief({
     <>
       <section
         id="daily-brief-module"
-        className="rounded-xl border border-border/30 bg-card/25 p-5 sm:p-6 transition-all"
+        className="surface-card p-5 sm:p-6 transition-all"
         suppressHydrationWarning
       >
-        {/* En-tête sobre : Titre, nombre d'actions et actualisation */}
-        <header className="flex items-start justify-between gap-4 pb-4 border-b border-border/25">
+        {/* En-tête sobre et épuré */}
+        <header className="flex items-center justify-between gap-4 pb-4 border-b border-border/50">
           <div>
-            <h2 className="text-base sm:text-lg font-semibold tracking-tight text-foreground">
-              À faire aujourd'hui
+            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Pilote Quotidien
             </h2>
-            <p className="mt-0.5 text-xs sm:text-sm text-muted-foreground font-normal">
+            <p className="mt-0.5 text-base sm:text-lg font-bold tracking-tight text-foreground">
               {totalActions === 0
-                ? "Tout est à jour."
+                ? "Tout est à jour pour aujourd'hui."
                 : totalActions === 1
-                  ? "1 action nécessite votre attention."
-                  : `${totalActions} actions nécessitent votre attention.`}
+                  ? "Une priorité requiert votre action immédiate."
+                  : `${totalActions} priorités requièrent votre action aujourd'hui.`}
             </p>
           </div>
 
           <Button
             id="daily-brief-refresh-button"
-            variant="ghost"
+            variant="outline"
             size="sm"
             disabled={isRefreshing}
             onClick={handleManualRefresh}
-            className="h-8 gap-1.5 px-2.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent/40 rounded-lg transition-colors shrink-0"
+            className="h-8 gap-2 px-3 text-xs font-medium text-muted-foreground hover:text-foreground shrink-0"
           >
             <RefreshCw
               className={cn(
@@ -719,23 +719,24 @@ export function DailyBrief({
         {totalActions === 0 ? (
           <div
             id="daily-brief-empty-state"
-            className="py-10 text-center flex flex-col items-center justify-center gap-2.5"
+            className="py-12 text-center flex flex-col items-center justify-center gap-3"
           >
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20">
               <CheckCircle2 className="size-3.5" />
-              <span>Tout est à jour</span>
+              <span>Tableau de bord impeccable</span>
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground max-w-sm font-normal">
-              Aucune action urgente pour le moment.
+            <p className="text-xs sm:text-sm text-muted-foreground max-w-sm font-medium leading-relaxed">
+              Toutes vos relances, deadlines et opportunités sont parfaitement
+              suivies.
             </p>
             <Button
               id="daily-brief-see-opportunities"
               size="sm"
               variant="outline"
               onClick={() => navigate({ to: "/opportunites" })}
-              className="mt-2 h-8 px-3 text-xs font-medium rounded-lg gap-1.5 border-border/60 hover:bg-accent/40"
+              className="mt-2 h-8 px-4 text-xs font-semibold rounded-lg gap-1.5 border-border/60 hover:bg-muted/30"
             >
-              <span>Voir mes opportunités</span>
+              <span>Voir le pipeline d'opportunités</span>
               <ArrowRight className="size-3" />
             </Button>
           </div>
@@ -743,7 +744,7 @@ export function DailyBrief({
           /* Liste d'actions directes avec séparateurs épurés et accents sobres */
           <div
             id="daily-brief-actions-list"
-            className="divide-y divide-border/25"
+            className="divide-y divide-border/40"
           >
             {actions.map((item) => {
               const cand = item.opportunityId
@@ -764,7 +765,7 @@ export function DailyBrief({
               const primaryAction = item.primaryAction ||
                 item.recommendedActions[0] || {
                   id: "VIEW_OPPORTUNITY",
-                  label: item.actionLabel || "Agir →",
+                  label: item.actionLabel || "Agir",
                 };
 
               const secondaryActions = (
@@ -778,15 +779,14 @@ export function DailyBrief({
                   key={item.id}
                   id={`daily-brief-action-${item.id}`}
                   className={cn(
-                    "py-5 first:pt-4 last:pb-2 border-l-2 pl-4 flex flex-col gap-2 transition-colors",
-                    visuals.borderAccentClass,
+                    "py-4.5 first:pt-4 last:pb-1 flex flex-col gap-1.5 transition-all",
                   )}
                 >
                   {/* Ligne 1 : Type d'action (● CANDIDATURE) */}
-                  <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em]">
+                  <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.15em]">
                     <span
                       className={cn(
-                        "size-2 rounded-full shrink-0",
+                        "size-1.5 rounded-full shrink-0",
                         visuals.dotClass,
                       )}
                     />
@@ -795,32 +795,30 @@ export function DailyBrief({
 
                   {/* Ligne 2 : Entreprise · Rôle court ou contexte temporel */}
                   <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                    <h3 className="text-base sm:text-[17px] font-semibold tracking-tight text-foreground">
+                    <h3 className="text-sm sm:text-base font-bold text-foreground">
                       {headline.company}
                     </h3>
                     {headline.detail && (
-                      <span className="text-xs sm:text-sm text-muted-foreground/85 font-normal">
-                        · {headline.detail}
+                      <span className="text-xs text-muted-foreground font-normal">
+                        • {headline.detail}
                       </span>
                     )}
                   </div>
 
                   {/* Ligne 3 : Phrase courte, directe et humaine */}
-                  <p className="text-xs sm:text-[13.5px] text-muted-foreground font-normal leading-relaxed">
+                  <p className="text-xs text-muted-foreground font-normal leading-relaxed">
                     {item.message}
                   </p>
 
                   {/* Ligne 4 : Bouton principal d'action directe + Menu secondaire [ ••• ] */}
-                  <div className="pt-1 flex items-center gap-2">
+                  <div className="pt-1.5 flex items-center gap-2">
                     <Button
                       size="sm"
+                      variant="outline"
                       onClick={() =>
                         handleExecuteAction(primaryAction.id, item)
                       }
-                      className={cn(
-                        "h-8.5 px-3.5 text-xs font-medium gap-1.5 rounded-lg border transition-colors shadow-xs",
-                        visuals.ctaClass,
-                      )}
+                      className="h-8 px-3 text-xs font-medium gap-1.5 rounded-lg border-border/80 bg-secondary/80 hover:bg-secondary text-foreground transition-all shadow-xs"
                     >
                       <span>{primaryAction.label}</span>
                     </Button>
@@ -831,7 +829,7 @@ export function DailyBrief({
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-8.5 w-8.5 p-0 rounded-lg border-border/50 text-muted-foreground hover:text-foreground hover:bg-accent/40"
+                            className="h-8 w-8 p-0 rounded-lg border-border/60 text-muted-foreground hover:text-foreground hover:bg-secondary"
                             aria-label="Actions secondaires"
                           >
                             <MoreHorizontal className="size-4" />
@@ -839,16 +837,16 @@ export function DailyBrief({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
                           align="start"
-                          className="w-52 rounded-xl border border-border/60 bg-popover/95 p-1 backdrop-blur-md shadow-lg"
+                          className="w-52 rounded-xl border border-white/10 bg-[#161922] p-1 backdrop-blur-md shadow-xl"
                         >
                           {secondaryActions.map((sec, sIdx) => (
                             <DropdownMenuItem
                               key={`${sec.id}-${sIdx}`}
                               onClick={() => handleExecuteAction(sec.id, item)}
                               className={cn(
-                                "flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium cursor-pointer rounded-lg hover:bg-accent/50",
+                                "flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium cursor-pointer rounded-lg hover:bg-white/[0.06] text-zinc-300 hover:text-white",
                                 sec.variant === "destructive" &&
-                                  "text-rose-500 focus:text-rose-500 focus:bg-rose-500/10",
+                                  "text-rose-400 focus:text-rose-400 focus:bg-rose-500/10",
                               )}
                             >
                               {getActionIcon(sec.id)}

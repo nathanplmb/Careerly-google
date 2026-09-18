@@ -58,7 +58,7 @@ export function ProfilDocumentsTab({ profil, onChange }: Props) {
   return (
     <div className="space-y-6">
       {/* Bannière Import & Export IA */}
-      <div className="glass-card p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4 border-purple-500/30 bg-gradient-to-r from-purple-500/10 via-card/60 to-indigo-500/10">
+      <div className="rounded-2xl border border-purple-500/20 bg-card/40 p-5 sm:p-6 flex flex-wrap items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs font-semibold">
@@ -99,7 +99,7 @@ export function ProfilDocumentsTab({ profil, onChange }: Props) {
 
       {/* Panneau d'importation CV */}
       {showImporter && (
-        <div className="glass-card p-6 border-purple-500/40 bg-card/95 shadow-xl relative animate-in fade-in slide-in-from-top-4">
+        <div className="rounded-2xl border border-purple-500/30 bg-card/50 p-6 shadow-xl relative animate-in fade-in slide-in-from-top-4">
           <div className="flex justify-between items-center mb-4 pb-3 border-b border-border/50">
             <div className="flex items-center gap-2">
               <span className="flex size-7 rounded-lg bg-purple-500/20 text-purple-400 items-center justify-center">
@@ -182,7 +182,7 @@ export function ProfilDocumentsTab({ profil, onChange }: Props) {
           onChange={(nouvCv) => onChange({ cvStructure: nouvCv })}
         />
       ) : (
-        <div className="glass-card p-5 space-y-3">
+        <div className="rounded-2xl border border-border/60 bg-card/40 p-5 space-y-3">
           <div className="flex items-center gap-2 text-xs text-muted-foreground border-b border-border/50 pb-2">
             <CheckCircle2 className="size-3.5 text-emerald-400" />
             Voici exactement les données transmises au modèle IA lors de

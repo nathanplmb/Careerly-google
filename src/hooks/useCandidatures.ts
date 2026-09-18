@@ -5,6 +5,7 @@ import {
   deleteCandidature,
   fetchCandidatures,
   upsertCandidature,
+  batchUpsertCandidatures,
 } from "@/lib/candidatures-cloud";
 import {
   loadCandidatures,
@@ -23,6 +24,7 @@ import {
   deleteEntrepriseCloud,
   fetchEntreprises,
   upsertEntreprise,
+  batchUpsertEntreprises,
 } from "@/lib/entreprises-cloud";
 import {
   emptyContact,
@@ -308,7 +310,7 @@ async function migrateExistingOpportunities(
       if (cloud.length > 0) list = cloud;
     }
 
-    let modifiedEntreprises = false;
+    const newEntreprises: Entreprise[] = [];
     let modifiedOpportunities = false;
 
     const updatedItems = loadedItems.map((c) => {
@@ -318,8 +320,7 @@ async function migrateExistingOpportunities(
       const { entreprise, isNew } = syncEntrepriseFromOpportunity(c, list);
       if (isNew) {
         list = [entreprise, ...list];
-        modifiedEntreprises = true;
-        if (userId) void upsertEntreprise(entreprise, userId);
+        newEntreprises.push(entreprise);
       }
 
       if (c.companyId !== entreprise.id) {
@@ -332,8 +333,11 @@ async function migrateExistingOpportunities(
       return c;
     });
 
-    if (modifiedEntreprises) {
+    if (newEntreprises.length > 0) {
       saveEntreprisesLocal(list);
+      if (userId) {
+        void batchUpsertEntreprises(newEntreprises, userId);
+      }
     }
 
     return modifiedOpportunities ? updatedItems : loadedItems;
@@ -366,10 +370,8 @@ function mergeCloudAndLocalCandidatures(
 ): Candidature[] {
   if (localItems.length === 0) return cloudItems;
   if (cloudItems.length === 0) {
-    if (userId) {
-      localItems.forEach((item) => {
-        void upsertCandidature(item, userId).catch(() => undefined);
-      });
+    if (userId && localItems.length > 0) {
+      void batchUpsertCandidatures(localItems, userId);
     }
     return localItems;
   }
@@ -400,9 +402,7 @@ function mergeCloudAndLocalCandidatures(
   cloudMap.forEach((c) => merged.push(c));
 
   if (userId && missingInCloud.length > 0) {
-    missingInCloud.forEach((item) => {
-      void upsertCandidature(item, userId).catch(() => undefined);
-    });
+    void batchUpsertCandidatures(missingInCloud, userId);
   }
 
   return merged;

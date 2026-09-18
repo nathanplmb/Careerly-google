@@ -31,12 +31,8 @@ export async function extraireTexteFichier(file: File): Promise<string> {
 
 async function extrairePdf(file: File): Promise<string> {
   initPolyfills();
-  // Le build legacy inclut les compatibilités nécessaires à Safari/iOS plus ancien.
-  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  const workerUrl = (
-    await import("pdfjs-dist/legacy/build/pdf.worker.min.mjs?url")
-  ).default;
-  pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+  const pdfjs = await import("pdfjs-dist");
+  pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
   const buffer = await file.arrayBuffer();
   const doc = await pdfjs.getDocument({ data: new Uint8Array(buffer) }).promise;
@@ -171,7 +167,9 @@ async function extrairePdf(file: File): Promise<string> {
 }
 
 async function extraireDocx(file: File): Promise<string> {
-  const mammoth = await import("mammoth/mammoth.browser.js" as any);
+  const mammoth = await import(
+    "mammoth/mammoth.browser.js" as unknown as string
+  );
   const buffer = await file.arrayBuffer();
   const res = await (
     mammoth as unknown as {

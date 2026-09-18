@@ -72,11 +72,8 @@ export async function readCVDocument(file: File): Promise<DocumentStructure> {
 async function readPdfDocument(
   file: File,
 ): Promise<{ pages: DocumentPage[]; plainText: string }> {
-  const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  const workerUrl = (
-    await import("pdfjs-dist/legacy/build/pdf.worker.min.mjs?url")
-  ).default;
-  pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+  const pdfjs = await import("pdfjs-dist");
+  pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
   const buffer = await file.arrayBuffer();
   const doc = await pdfjs.getDocument({ data: new Uint8Array(buffer) }).promise;
@@ -212,7 +209,9 @@ async function readPdfDocument(
 async function readDocxDocument(
   file: File,
 ): Promise<{ pages: DocumentPage[]; plainText: string }> {
-  const mammoth = await import("mammoth/mammoth.browser.js" as any);
+  const mammoth = await import(
+    "mammoth/mammoth.browser.js" as unknown as string
+  );
   const buffer = await file.arrayBuffer();
   const res = await (
     mammoth as unknown as {

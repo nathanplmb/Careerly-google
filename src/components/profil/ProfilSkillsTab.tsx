@@ -123,7 +123,7 @@ export function ProfilSkillsTab({ profil, onChange }: Props) {
   return (
     <div className="space-y-6">
       {/* 1. Hard Skills qualifiés avec Niveau */}
-      <div className="glass-card p-5 sm:p-6 space-y-5">
+      <div className="rounded-2xl border border-border/60 bg-card/40 p-5 sm:p-6 space-y-5">
         <div className="flex items-center gap-3 border-b border-border/50 pb-3">
           <div className="flex size-8 items-center justify-center rounded-lg bg-purple-500/10 text-purple-400">
             <Cpu className="size-4" />
@@ -259,7 +259,7 @@ export function ProfilSkillsTab({ profil, onChange }: Props) {
       </div>
 
       {/* 2. Logiciels & Outils Maîtrisés */}
-      <div className="glass-card p-5 sm:p-6 space-y-4">
+      <div className="rounded-2xl border border-border/60 bg-card/40 p-5 sm:p-6 space-y-4">
         <div className="flex items-center gap-3 border-b border-border/50 pb-3">
           <div className="flex size-8 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400">
             <Wrench className="size-4" />
@@ -303,7 +303,7 @@ export function ProfilSkillsTab({ profil, onChange }: Props) {
       </div>
 
       {/* 3. Soft Skills & Savoir-être */}
-      <div className="glass-card p-5 sm:p-6 space-y-4">
+      <div className="rounded-2xl border border-border/60 bg-card/40 p-5 sm:p-6 space-y-4">
         <div className="flex items-center gap-3 border-b border-border/50 pb-3">
           <div className="flex size-8 items-center justify-center rounded-lg bg-rose-500/10 text-rose-400">
             <Heart className="size-4" />

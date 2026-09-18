@@ -252,21 +252,21 @@ export function WorkflowTab({ candidature, onChange }: Props) {
   return (
     <div className="space-y-6">
       {/* 1. CARTE PROÉMINENTE D'ÉTAPE ACTUELLE & ACTION RAPIDE */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border shadow-xs space-y-4">
+      <div className="p-4 sm:p-5 rounded-2xl bg-[#10131F] border border-slate-800 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                 Étape actuelle du workflow
               </span>
               <Badge
                 variant="outline"
-                className={`text-xs px-2.5 py-0.5 font-semibold ${currentConfig.badgeColor}`}
+                className="text-xs px-2.5 py-0.5 font-bold bg-primary/10 text-primary border-primary/25"
               >
                 {currentConfig.label}
               </Badge>
             </div>
-            <p className="text-sm text-foreground font-medium">
+            <p className="text-sm text-slate-300 font-medium">
               {currentConfig.description}
             </p>
           </div>
@@ -276,7 +276,7 @@ export function WorkflowTab({ candidature, onChange }: Props) {
             {currentConfig.nextStepKey && (
               <Button
                 size="sm"
-                className="gap-1.5 font-semibold text-xs h-9 shadow-xs"
+                className="gap-1.5 font-semibold text-xs h-9 shadow-xs bg-primary hover:bg-primary/95 text-white rounded-xl transition-colors"
                 onClick={handleQuickAdvance}
               >
                 <span>{currentConfig.defaultActionLabel}</span>
@@ -287,20 +287,20 @@ export function WorkflowTab({ candidature, onChange }: Props) {
             <Button
               size="sm"
               variant="outline"
-              className="gap-1.5 text-xs h-9"
+              className="gap-1.5 text-xs h-9 border-slate-800 text-slate-300 bg-slate-950/20 hover:bg-slate-800 hover:text-white rounded-xl transition-colors"
               onClick={() => openChangeStepModal()}
             >
-              <SlidersHorizontal className="size-3.5 text-muted-foreground" />
+              <SlidersHorizontal className="size-3.5 text-slate-400" />
               <span>Changer d'étape</span>
             </Button>
           </div>
         </div>
 
         {/* Barre de progression visuelle discrète */}
-        <div className="space-y-1.5 pt-1 border-t border-border/40">
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+        <div className="space-y-1.5 pt-1 border-t border-slate-800/40">
+          <div className="flex items-center justify-between text-[11px] text-slate-400">
             <span>Progression du processus</span>
-            <span className="font-medium text-foreground">
+            <span className="font-medium text-slate-200">
               {currentConfig.isTerminal
                 ? currentConfig.terminalType === "success"
                   ? "Offre acceptée"
@@ -308,13 +308,13 @@ export function WorkflowTab({ candidature, onChange }: Props) {
                 : `Étape ${Math.max(1, currentStepIndex + 1)} sur 8`}
             </span>
           </div>
-          <div className="h-1.5 w-full bg-muted/60 rounded-full overflow-hidden">
+          <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden">
             <div
               className={`h-full transition-all duration-300 ${
                 currentConfig.key === "accepted"
                   ? "bg-emerald-500 w-full"
                   : currentConfig.key === "rejected"
-                    ? "bg-destructive w-full"
+                    ? "bg-rose-500 w-full"
                     : "bg-primary"
               }`}
               style={{
@@ -327,170 +327,97 @@ export function WorkflowTab({ candidature, onChange }: Props) {
         </div>
       </div>
 
-      {/* 2. TIMELINE VERTICALE DU WORKFLOW */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-muted/15 border border-border/60 space-y-4">
+      {/* 2. PIPELINE HORIZONTAL / GRILLE COMPACTE DES 8 ÉTAPES DU WORKFLOW */}
+      <div className="p-4 sm:p-5 rounded-2xl bg-[#10131F] border border-slate-800 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Clock className="size-4 text-primary" />
-            <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
-              Timeline de la candidature
+            <Clock className="size-4 text-muted-foreground" />
+            <h4 className="text-xs font-black uppercase tracking-wider text-slate-200">
+              Pipeline de suivi ({WORKFLOW_STEPS_CONFIG.length} étapes)
             </h4>
           </div>
-          <span className="text-[11px] text-muted-foreground">
-            Cliquez sur une étape pour changer ou ajuster les détails
+          <span className="text-[11px] text-slate-400">
+            Cliquez sur n'importe quelle étape pour la définir ou l'ajuster
           </span>
         </div>
 
-        <div className="relative pl-3 sm:pl-4 space-y-6 before:absolute before:left-[19px] sm:before:left-[23px] before:top-3 before:bottom-3 before:w-0.5 before:bg-border/70">
+        {/* Grille compacte des 8 étapes */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-2.5">
           {WORKFLOW_STEPS_CONFIG.map((step, idx) => {
             const isCurrent = step.key === currentStepKey;
             const matchingEvents = events.filter((e) => e.type === step.key);
             const hasEvent = matchingEvents.length > 0;
             const latestEvent = matchingEvents[matchingEvents.length - 1];
 
-            // État de l'étape
-            let dotStyle =
-              "border-muted-foreground/30 bg-background text-muted-foreground";
-            let dotIcon = (
-              <span className="size-1.5 rounded-full bg-muted-foreground/40" />
-            );
-
-            if (isCurrent) {
-              if (step.key === "accepted") {
-                dotStyle =
-                  "border-emerald-500 bg-emerald-500 text-white ring-4 ring-emerald-500/20";
-                dotIcon = <Check className="size-3.5 stroke-[2.5]" />;
-              } else if (step.key === "rejected") {
-                dotStyle =
-                  "border-destructive bg-destructive text-white ring-4 ring-destructive/20";
-                dotIcon = <XCircle className="size-3.5" />;
-              } else {
-                dotStyle =
-                  "border-primary bg-primary text-primary-foreground ring-4 ring-primary/20";
-                dotIcon = (
-                  <div className="size-2 rounded-full bg-white animate-pulse" />
-                );
-              }
-            } else if (hasEvent) {
-              dotStyle = "border-primary/60 bg-primary/10 text-primary";
-              dotIcon = <Check className="size-3" />;
-            }
-
             return (
               <div
                 key={step.key}
-                className="relative flex items-start gap-3 sm:gap-4 group"
+                onClick={() => openChangeStepModal(step.key)}
+                className={`relative p-3 rounded-xl border flex flex-col justify-between min-h-[100px] transition-all cursor-pointer group select-none ${
+                  isCurrent
+                    ? "bg-primary/10 border-primary text-white ring-1 ring-primary/30 shadow-xs"
+                    : hasEvent
+                      ? "bg-[#0d0f17] border-slate-800 text-slate-200 hover:border-slate-700"
+                      : "bg-[#05060A]/40 border-slate-900 text-slate-400 hover:border-slate-800 hover:text-slate-200"
+                }`}
               >
-                {/* Pastille sur la ligne verticale */}
-                <button
-                  type="button"
-                  onClick={() => openChangeStepModal(step.key)}
-                  title={`Passer à l'étape : ${step.label}`}
-                  className={`relative z-10 flex size-7 sm:size-8 shrink-0 items-center justify-center rounded-full border-2 transition-transform hover:scale-110 cursor-pointer ${dotStyle}`}
-                >
-                  {dotIcon}
-                </button>
+                {/* Header carte : Numéro & Badges */}
+                <div className="flex items-center justify-between gap-1 mb-1.5">
+                  <span
+                    className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-md font-mono ${
+                      isCurrent
+                        ? "bg-primary text-white"
+                        : hasEvent
+                          ? "bg-muted text-muted-foreground"
+                          : "bg-slate-900 text-slate-500"
+                    }`}
+                  >
+                    0{idx + 1}
+                  </span>
 
-                {/* Contenu de l'étape */}
-                <div
-                  className={`flex-1 rounded-xl p-3 sm:p-3.5 transition-colors border ${
-                    isCurrent
-                      ? "bg-card border-primary/40 shadow-xs ring-1 ring-primary/20"
-                      : hasEvent
-                        ? "bg-card/70 border-border/70 hover:bg-card"
-                        : "bg-transparent border-transparent hover:bg-card/40 opacity-70 hover:opacity-100"
-                  }`}
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <button
-                        type="button"
-                        onClick={() => openChangeStepModal(step.key)}
-                        className="text-left font-semibold text-sm hover:text-primary transition-colors cursor-pointer"
-                      >
-                        {step.label}
-                      </button>
+                  {isCurrent ? (
+                    <span className="size-2 rounded-full bg-primary animate-pulse" />
+                  ) : hasEvent ? (
+                    <Check className="size-3 text-emerald-500" />
+                  ) : null}
+                </div>
 
-                      {isCurrent && (
-                        <Badge
-                          variant="secondary"
-                          className="text-[10px] px-2 py-0 font-semibold bg-primary/15 text-primary border-primary/20"
-                        >
-                          Actuelle
-                        </Badge>
-                      )}
-
-                      {latestEvent?.date && (
-                        <span className="text-xs text-muted-foreground flex items-center gap-1 font-mono">
-                          <Calendar className="size-3" />
-                          {formatDate(latestEvent.date)}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Actions de l'étape */}
-                    <div className="flex items-center gap-1.5">
-                      {hasEvent && latestEvent && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="size-7 text-muted-foreground hover:text-foreground"
-                          onClick={() => handleOpenEditEvent(latestEvent)}
-                          title="Modifier la date ou note"
-                        >
-                          <Edit2 className="size-3.5" />
-                        </Button>
-                      )}
-
-                      {!isCurrent && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 text-xs px-2 text-muted-foreground hover:text-primary"
-                          onClick={() => openChangeStepModal(step.key)}
-                        >
-                          <span>Définir</span>
-                          <ChevronRight className="size-3" />
-                        </Button>
-                      )}
-                    </div>
+                {/* Nom de l'étape */}
+                <div className="space-y-0.5 my-auto">
+                  <div
+                    className={`text-xs font-bold leading-tight line-clamp-2 ${
+                      isCurrent
+                        ? "text-white"
+                        : hasEvent
+                          ? "text-slate-100"
+                          : "text-slate-400 group-hover:text-slate-200"
+                    }`}
+                  >
+                    {step.label}
                   </div>
 
-                  {/* Description ou Détails de l'événement */}
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {latestEvent?.note || step.description}
-                  </p>
-
-                  {/* Badges contextuels selon l'étape */}
-                  {hasEvent && latestEvent && (
-                    <div className="flex flex-wrap items-center gap-1.5 mt-2.5 pt-2 border-t border-border/40">
-                      {latestEvent.channel && (
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] px-2 py-0 bg-muted/40 font-medium"
-                        >
-                          Canal : {latestEvent.channel}
-                        </Badge>
-                      )}
-                      {latestEvent.interviewType && (
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] px-2 py-0 bg-muted/40 font-medium"
-                        >
-                          Format : {latestEvent.interviewType}
-                        </Badge>
-                      )}
-                      {latestEvent.interlocuteur && (
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] px-2 py-0 bg-muted/40 font-medium flex items-center gap-1"
-                        >
-                          <User className="size-2.5" />
-                          {latestEvent.interlocuteur}
-                        </Badge>
-                      )}
+                  {latestEvent?.date && (
+                    <div className="text-[10px] font-mono text-slate-400 flex items-center gap-1 pt-1">
+                      <Calendar className="size-2.5 text-muted-foreground" />
+                      {formatDate(latestEvent.date)}
                     </div>
                   )}
+                </div>
+
+                {/* Footer carte */}
+                <div className="pt-2 border-t border-slate-800/50 flex items-center justify-between text-[10px]">
+                  <span
+                    className={`font-semibold ${
+                      isCurrent
+                        ? "text-primary"
+                        : hasEvent
+                          ? "text-emerald-400/80"
+                          : "text-slate-500 group-hover:text-slate-300"
+                    }`}
+                  >
+                    {isCurrent ? "Actuelle" : hasEvent ? "Atteinte" : "À venir"}
+                  </span>
+                  <ChevronRight className="size-3 text-slate-600 group-hover:text-slate-300 transition-transform group-hover:translate-x-0.5" />
                 </div>
               </div>
             );
@@ -499,18 +426,18 @@ export function WorkflowTab({ candidature, onChange }: Props) {
       </div>
 
       {/* 3. CONTACT RECRUTEUR & INTERLOCUTEUR */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/70 space-y-3">
+      <div className="p-4 sm:p-5 rounded-2xl bg-[#10131F] border border-slate-800 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <User className="size-4 text-primary" />
             <Label
               htmlFor="workflowContactInput"
-              className="text-xs font-bold uppercase tracking-wider text-foreground cursor-pointer"
+              className="text-xs font-bold uppercase tracking-wider text-slate-300 cursor-pointer"
             >
               Contact recruteur / Interlocuteur
             </Label>
           </div>
-          <span className="text-[11px] text-muted-foreground">
+          <span className="text-[11px] text-slate-400">
             Coordonnées des interlocuteurs du recrutement
           </span>
         </div>
@@ -520,27 +447,27 @@ export function WorkflowTab({ candidature, onChange }: Props) {
           value={candidature.contact || ""}
           onChange={(e) => onChange({ contact: e.target.value })}
           placeholder="ex: Sophie Durand (RH) — s.durand@entreprise.com — 06 12 34 56 78"
-          className="text-xs bg-background h-9"
+          className="text-xs bg-[#05060A] text-slate-100 border-slate-700/80 rounded-xl h-9"
         />
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-[11px] text-slate-400">
           Ces coordonnées restent attachées à cette opportunité et sont
           réutilisées pour vos relances et convocations d'entretien.
         </p>
       </div>
 
       {/* 4. NOTES PERSONNELLES & IMPRESSIONS */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/70 space-y-3">
+      <div className="p-4 sm:p-5 rounded-2xl bg-[#10131F] border border-slate-800 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <MessageSquare className="size-4 text-primary" />
             <Label
               htmlFor="workflowNotesInput"
-              className="text-xs font-bold uppercase tracking-wider text-foreground cursor-pointer"
+              className="text-xs font-bold uppercase tracking-wider text-slate-300 cursor-pointer"
             >
               Notes personnelles & Impressions
             </Label>
           </div>
-          <span className="text-[11px] text-muted-foreground">
+          <span className="text-[11px] text-slate-400">
             Vos notes privées (non générées par l'IA)
           </span>
         </div>
@@ -556,23 +483,23 @@ export function WorkflowTab({ candidature, onChange }: Props) {
             })
           }
           placeholder="Notez ici vos impressions sur l'équipe, questions à poser en entretien, fourchette de salaire discutée, retours..."
-          className="text-xs bg-background resize-y leading-relaxed"
+          className="text-xs bg-[#05060A] text-slate-100 border-slate-700/80 rounded-xl resize-y leading-relaxed"
         />
       </div>
 
       {/* 5. HISTORIQUE DÉTAILLÉ DU JOURNAL DU WORKFLOW */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-muted/15 border border-border/60 space-y-3">
+      <div className="p-4 sm:p-5 rounded-2xl bg-[#10131F]/40 border border-slate-800/80 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <FileText className="size-4 text-muted-foreground" />
-            <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">
+            <FileText className="size-4 text-slate-400" />
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300">
               Journal des événements ({events.length})
             </h4>
           </div>
           <Button
             variant="outline"
             size="sm"
-            className="h-7 text-xs gap-1"
+            className="h-7 text-xs gap-1 border-slate-800 text-slate-300 bg-slate-950/20 hover:bg-slate-800 hover:text-white rounded-xl transition-colors"
             onClick={() => {
               setCustomEventType(currentStepKey);
               setCustomEventDate(todayIso());
@@ -586,7 +513,7 @@ export function WorkflowTab({ candidature, onChange }: Props) {
         </div>
 
         {events.length === 0 ? (
-          <p className="text-xs text-muted-foreground py-2">
+          <p className="text-xs text-slate-500 py-2">
             Aucun événement pour le moment.
           </p>
         ) : (
@@ -596,7 +523,7 @@ export function WorkflowTab({ candidature, onChange }: Props) {
               return (
                 <div
                   key={evt.id}
-                  className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-card border border-border/50 text-xs"
+                  className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-[#08090D] border border-slate-800/80 text-xs text-slate-300"
                 >
                   <div className="flex items-center gap-2.5 flex-1 min-w-0">
                     <Badge
@@ -605,10 +532,10 @@ export function WorkflowTab({ candidature, onChange }: Props) {
                     >
                       {cfg.label}
                     </Badge>
-                    <span className="font-mono text-muted-foreground shrink-0 text-[11px]">
+                    <span className="font-mono text-slate-500 shrink-0 text-[11px]">
                       {formatDate(evt.date)}
                     </span>
-                    <span className="text-foreground truncate font-medium">
+                    <span className="text-slate-200 truncate font-medium">
                       {evt.note || cfg.description}
                     </span>
                   </div>
@@ -617,7 +544,7 @@ export function WorkflowTab({ candidature, onChange }: Props) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="size-7 text-muted-foreground hover:text-foreground"
+                      className="size-7 text-slate-400 hover:text-white"
                       onClick={() => handleOpenEditEvent(evt)}
                     >
                       <Edit2 className="size-3" />
@@ -625,7 +552,7 @@ export function WorkflowTab({ candidature, onChange }: Props) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="size-7 text-muted-foreground hover:text-destructive"
+                      className="size-7 text-slate-400 hover:text-rose-400"
                       onClick={() => handleDeleteEvent(evt.id, evt.type)}
                     >
                       <Trash2 className="size-3" />
@@ -640,13 +567,13 @@ export function WorkflowTab({ candidature, onChange }: Props) {
 
       {/* MODAL : CHANGER D'ÉTAPE */}
       <Dialog open={changeStepModalOpen} onOpenChange={setChangeStepModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-[#0E111B] border-slate-800 text-slate-100">
           <DialogHeader>
-            <DialogTitle className="text-base font-bold flex items-center gap-2">
+            <DialogTitle className="text-base font-bold flex items-center gap-2 text-white">
               <SlidersHorizontal className="size-4 text-primary" />
               Changer l'étape du workflow
             </DialogTitle>
-            <DialogDescription className="text-xs">
+            <DialogDescription className="text-xs text-slate-400">
               Sélectionnez la nouvelle étape pour faire progresser cette
               opportunité. Vous pouvez revenir en arrière à tout moment.
             </DialogDescription>
@@ -655,7 +582,7 @@ export function WorkflowTab({ candidature, onChange }: Props) {
           <div className="space-y-4 py-2">
             {/* Grille des 9 étapes */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold">
+              <Label className="text-xs font-semibold text-slate-300">
                 Choisir une étape :
               </Label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
@@ -672,13 +599,13 @@ export function WorkflowTab({ candidature, onChange }: Props) {
                       className={`px-2.5 py-2 rounded-xl text-left border text-xs font-medium transition-all cursor-pointer ${
                         isSelected
                           ? "border-primary bg-primary/10 text-primary font-semibold ring-1 ring-primary/30"
-                          : "border-border hover:bg-muted/40 text-foreground"
+                          : "border-slate-800 bg-[#08090D] hover:bg-slate-800 text-slate-300"
                       }`}
                     >
                       <div className="flex items-center justify-between">
                         <span className="truncate">{step.label}</span>
                         {isSelected && (
-                          <Check className="size-3 shrink-0 ml-1" />
+                          <Check className="size-3 shrink-0 ml-1 text-primary" />
                         )}
                       </div>
                     </button>

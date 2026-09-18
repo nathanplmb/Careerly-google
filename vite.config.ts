@@ -8,13 +8,36 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
 
 export default defineConfig({
+  nitro: {
+    preset: "node-server",
+  },
   vite: {
     plugins: [mcpPlugin()],
     define: {
       "process.env.NODE_ENV": JSON.stringify(
-        process.env.NODE_ENV || "development",
+        process.env["NODE_ENV"] || "development",
       ),
       "process.env.TSS_ROUTER_BASEPATH": JSON.stringify(""),
+    },
+    build: {
+      chunkSizeWarningLimit: 2000,
+      rollupOptions: {
+        external: ["canvas"],
+        output: {
+          manualChunks(id) {
+            if (id.includes("pdfjs-dist")) {
+              return "pdfjs";
+            }
+            if (id.includes("xlsx")) {
+              return "xlsx";
+            }
+            return undefined;
+          },
+        },
+      },
+    },
+    optimizeDeps: {
+      exclude: ["canvas"],
     },
   },
   tanstackStart: {
@@ -22,5 +45,4 @@ export default defineConfig({
     // nitro/vite builds from this
     server: { entry: "server" },
   },
-  nitro: {},
 });

@@ -90,7 +90,7 @@ export function ProfilCertificationsTab({ profil, onChange }: Props) {
   return (
     <div className="space-y-6">
       {/* 1. Formulaire d'ajout de Certification */}
-      <div className="glass-card p-5 sm:p-6 space-y-5">
+      <div className="rounded-2xl border border-border/60 bg-card/40 p-5 sm:p-6 space-y-5">
         <div className="flex items-center gap-3 border-b border-border/50 pb-3">
           <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400">
             <Award className="size-4" />
@@ -213,7 +213,7 @@ export function ProfilCertificationsTab({ profil, onChange }: Props) {
       {/* 2. Liste des Certifications enregistrées */}
       <div className="space-y-3">
         {certifs.length === 0 && (
-          <p className="text-xs text-muted-foreground text-center py-6 glass-card">
+          <p className="text-xs text-muted-foreground text-center py-6 rounded-2xl border border-border/60 bg-card/40">
             Aucune certification enregistrée. Une certification officielle
             apporte une crédibilité immédiate à votre profil !
           </p>
@@ -223,7 +223,7 @@ export function ProfilCertificationsTab({ profil, onChange }: Props) {
           {certifs.map((c) => (
             <div
               key={c.id}
-              className="glass-card p-4 rounded-xl border border-border/70 flex flex-col justify-between gap-3 bg-card/60"
+              className="rounded-2xl border border-border/60 bg-card/40 p-4 flex flex-col justify-between gap-3"
             >
               <div className="space-y-2">
                 <div className="flex items-start justify-between gap-2">

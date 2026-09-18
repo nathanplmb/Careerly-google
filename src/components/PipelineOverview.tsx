@@ -62,14 +62,14 @@ export function PipelineOverview({ items }: PipelineOverviewProps) {
   return (
     <section
       id="candidatures-overview-card"
-      className="rounded-2xl border border-border/40 bg-card/40 p-5 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.2)] backdrop-blur-sm transition-all"
+      className="glass-panel p-5.5 transition-all"
       suppressHydrationWarning
     >
-      <header className="mb-4 flex items-center justify-between border-b border-border/30 pb-3">
+      <header className="mb-4 flex items-center justify-between border-b border-white/10 pb-3.5">
         <h3 className="text-sm font-semibold tracking-tight text-foreground">
           Mes candidatures
         </h3>
-        <span className="text-xs text-muted-foreground font-medium">
+        <span className="text-xs text-muted-foreground font-normal">
           {counts.total} au total
         </span>
       </header>
@@ -79,20 +79,22 @@ export function PipelineOverview({ items }: PipelineOverviewProps) {
         {stages.map((st) => (
           <div
             key={st.label}
-            className="flex items-center justify-between text-xs"
+            className="flex items-center justify-between text-xs py-0.5"
           >
             <div className="flex items-center gap-2">
-              <span className={`size-1.5 rounded-full ${st.dot}`} />
+              <span className={`size-2 rounded-full ${st.dot} shadow-xs`} />
               <span className="text-muted-foreground font-normal">
                 {st.label}
               </span>
             </div>
-            <span className="text-foreground font-medium">{st.count}</span>
+            <span className="text-foreground font-semibold px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[11px]">
+              {st.count}
+            </span>
           </div>
         ))}
       </div>
 
-      <div className="mt-4 border-t border-border/30 pt-3">
+      <div className="mt-4 border-t border-white/10 pt-3.5">
         <Link
           to="/opportunites"
           className="group inline-flex w-full items-center justify-between text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
