@@ -23,7 +23,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
-import { ContactCard } from "@/components/ContactCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -45,7 +44,6 @@ import { useEntreprises } from "@/hooks/useEntreprises";
 import { useContacts } from "@/hooks/useContacts";
 import { useProfil } from "@/hooks/useProfil";
 import { ContactSheet } from "@/components/ContactSheet";
-import { ContactImportModal } from "@/components/ContactImportModal";
 import { emptyContact, type Contact } from "@/lib/contacts";
 import {
   emptyCandidature,
@@ -96,9 +94,7 @@ function EntreprisesPage() {
     getContactsForEntreprise,
     syncWithOpportunites,
   } = useEntreprises();
-  const { contacts, saveContact, deleteContactById, batchImportContacts } =
-    useContacts();
-  const [importModalOpen, setImportModalOpen] = useState(false);
+  const { contacts, saveContact, deleteContactById } = useContacts();
 
   const profil = useProfil(user);
   const [recherche, setRecherche] = useState("");
@@ -149,11 +145,8 @@ function EntreprisesPage() {
   // Synchronisation initiale prudente si opportunités chargées
   const lastSyncHashRef = useRef<string>("");
   useEffect(() => {
-    if (
-      !loadingEntreprises &&
-      (candidatures.length > 0 || contacts.length > 0)
-    ) {
-      const syncKey = `${candidatures.length}:${candidatures.map((c) => c.id).join(",")}:${contacts.length}:${contacts.map((c) => `${c.id}_${c.entreprise}`).join(",")}`;
+    if (candidatures.length > 0 && !loadingEntreprises) {
+      const syncKey = `${candidatures.length}:${candidatures.map((c) => c.id).join(",")}:${contacts.length}`;
       if (lastSyncHashRef.current !== syncKey) {
         lastSyncHashRef.current = syncKey;
         void syncWithOpportunites(candidatures, contacts);
@@ -204,20 +197,12 @@ function EntreprisesPage() {
 
     return enrichedEntreprises
       .filter((e) => {
-        // Recherche textuelle : nom, secteur, siège ou contacts
+        // Recherche textuelle
         if (q) {
           const matchNom = e.nom.toLowerCase().includes(q);
           const matchSecteur = Boolean(e.secteur?.toLowerCase().includes(q));
           const matchSiege = Boolean(e.siege?.toLowerCase().includes(q));
-          const matchContact = e.contactsList.some(
-            (c) =>
-              c.prenom?.toLowerCase().includes(q) ||
-              c.nom?.toLowerCase().includes(q) ||
-              c.poste?.toLowerCase().includes(q) ||
-              c.entreprise?.toLowerCase().includes(q),
-          );
-          if (!matchNom && !matchSecteur && !matchSiege && !matchContact)
-            return false;
+          if (!matchNom && !matchSecteur && !matchSiege) return false;
         }
 
         // Filtre par catégorie
@@ -352,15 +337,6 @@ function EntreprisesPage() {
           <Button
             type="button"
             size="sm"
-            onClick={() => setImportModalOpen(true)}
-            className="rounded-xl shadow-sm bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs gap-1.5"
-          >
-            <Linkedin className="size-3.5 text-white" />
-            Importer contacts LinkedIn
-          </Button>
-          <Button
-            type="button"
-            size="sm"
             onClick={() => setNewCompanyModalOpen(true)}
             className="rounded-xl shadow-sm"
           >
@@ -406,7 +382,7 @@ function EntreprisesPage() {
           <Input
             value={recherche}
             onChange={(e) => setRecherche(e.target.value)}
-            placeholder="Rechercher par entreprise, secteur, siège ou contact…"
+            placeholder="Rechercher par nom, secteur, siège…"
             className="pl-10 h-10 text-xs"
           />
         </div>
@@ -434,12 +410,7 @@ function EntreprisesPage() {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Opportunités (
-              {
-                enrichedEntreprises.filter((e) => e.opportunites.length > 0)
-                  .length
-              }
-              )
+              Opportunités
             </button>
             <button
               type="button"
@@ -450,8 +421,7 @@ function EntreprisesPage() {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              Contacts (
-              {enrichedEntreprises.filter((e) => e.contactsCount > 0).length})
+              Contacts
             </button>
             <button
               type="button"
@@ -683,37 +653,21 @@ function EntreprisesPage() {
 
                 {/* Badges de compteurs */}
                 <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <span
-                    className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 ${
-                      e.opportunites.length > 0
-                        ? "border-primary/30 bg-primary/10 text-primary font-medium"
-                        : "border-border/60 bg-card/60 text-muted-foreground/60"
-                    }`}
-                  >
-                    <Briefcase className="size-3.5" />
+                  <span className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-card/60 px-2.5 py-1 text-muted-foreground">
+                    <Briefcase className="size-3.5 text-primary" />
                     <strong className="font-semibold text-foreground">
                       {e.opportunites.length}
                     </strong>{" "}
                     opportunité{e.opportunites.length > 1 ? "s" : ""}
                   </span>
 
-                  <span
-                    className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 ${
-                      e.contactsCount > 0
-                        ? "border-sky-500/30 bg-sky-500/10 text-sky-400 font-medium"
-                        : "border-border/60 bg-card/60 text-muted-foreground/60"
-                    }`}
-                  >
-                    <Users className="size-3.5 text-sky-400" />
-                    <strong className="font-semibold text-foreground">
-                      {e.contactsCount}
-                    </strong>{" "}
-                    contact{e.contactsCount > 1 ? "s" : ""}
-                  </span>
-
-                  {e.opportunites.length === 0 && e.contactsCount > 0 && (
-                    <span className="ml-auto inline-flex items-center gap-1 rounded-full border border-sky-400/30 bg-sky-500/10 px-2 py-0.5 text-[10px] font-semibold text-sky-400">
-                      Réseau
+                  {e.contactsCount > 0 && (
+                    <span className="inline-flex items-center gap-1.5 rounded-lg border border-border/60 bg-card/60 px-2.5 py-1 text-muted-foreground">
+                      <Users className="size-3.5 text-sky-400" />
+                      <strong className="font-semibold text-foreground">
+                        {e.contactsCount}
+                      </strong>{" "}
+                      contact{e.contactsCount > 1 ? "s" : ""}
                     </span>
                   )}
 
@@ -759,12 +713,12 @@ function EntreprisesPage() {
       <CenterModal
         open={Boolean(selectedEntreprise)}
         onOpenChange={(o) => !o && setSelectedEntreprise(null)}
-        size="full"
+        size="xl"
         title={
           selectedEntreprise ? (
             <div className="flex items-center justify-between gap-3 w-full pr-6">
               <div className="flex items-center gap-3 min-w-0">
-                <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/15 border border-indigo-500/35 text-indigo-100 font-bold text-sm shadow-[inset_0_1px_1px_rgba(255,255,255,0.25)]">
+                <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-muted text-muted-foreground font-bold text-sm border border-border/60">
                   {selectedEntreprise.nom.slice(0, 2).toUpperCase()}
                 </span>
                 <span className="truncate">{selectedEntreprise.nom}</span>
@@ -772,7 +726,7 @@ function EntreprisesPage() {
               <button
                 type="button"
                 onClick={(ev) => handleToggleFavorite(ev, selectedEntreprise)}
-                className="shrink-0 p-1.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/12 text-muted-foreground transition-all cursor-pointer"
+                className="shrink-0 p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground"
                 title={
                   selectedEntreprise.isFavorite
                     ? "Retirer des favoris"
@@ -811,160 +765,34 @@ function EntreprisesPage() {
               candidatures,
             );
             const cts = getContactsForEntreprise(selectedEntreprise, contacts);
-            const oppsBadgeClass =
-              opps.length > 0
-                ? "border-primary/30 bg-primary/10 text-primary shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]"
-                : "border-white/10 bg-white/5 text-muted-foreground shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]";
-
-            const hasNotes = !!selectedEntreprise.notes;
-            const hasOpps = opps.length > 0;
-            const hasDetails = !!(
-              selectedEntreprise.siteWeb ||
-              selectedEntreprise.siege ||
-              selectedEntreprise.secteur ||
-              selectedEntreprise.taille
-            );
-            const hasManyContacts = cts.length >= 12;
 
             return (
-              <div className="flex flex-col gap-6 p-5 sm:p-6">
-                {/* 1. Bandeau de synthèse horizontal compact */}
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 shadow-sm w-full text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-tight">
-                      Opp.
-                    </span>
-                    <span className="text-sm font-bold text-primary">
-                      {opps.length}
-                    </span>
-                    <button
-                      onClick={() =>
-                        handleAddOpportunityForCompany(selectedEntreprise)
-                      }
-                      className="text-primary hover:text-white p-1 rounded hover:bg-white/10 transition-colors"
-                      title="Ajouter une opportunité"
-                    >
-                      <Plus className="size-3.5" />
-                    </button>
-                  </div>
-                  <div className="h-3 w-px bg-white/10" />
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-tight">
-                      Contacts
-                    </span>
-                    <span className="text-sm font-bold text-sky-400">
-                      {cts.length}
-                    </span>
-                  </div>
-                  <div className="h-3 w-px bg-white/10" />
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-tight">
-                      Notes
-                    </span>
-                    <span className="text-sm font-bold text-indigo-400">
-                      {selectedEntreprise.notes ? 1 : 0}
-                    </span>
-                    <button
-                      onClick={() => setIsEditingNotes(true)}
-                      className="text-indigo-400 hover:text-white p-1 rounded hover:bg-white/10 transition-colors"
-                      title="Modifier les notes"
-                    >
-                      <Pencil className="size-3.5" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* 2. Colonne unique pleine largeur */}
-                <div className="space-y-8">
-                  {/* Présentation & Description */}
+              <div className="grid gap-6 p-5 sm:p-6 md:grid-cols-3">
+                {/* Colonne Gauche principale (2/3) */}
+                <div className="md:col-span-2 space-y-6">
+                  {/* Présentation / Description */}
                   {selectedEntreprise.description && (
-                    <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-6 text-xs leading-relaxed text-muted-foreground shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]">
-                      <strong className="block font-medium text-foreground mb-2 text-sm">
+                    <div className="rounded-2xl border border-border/50 bg-card/40 p-5 text-xs leading-relaxed text-muted-foreground">
+                      <strong className="block font-medium text-foreground mb-1">
                         À propos de l'entreprise
                       </strong>
-                      <div className="text-muted-foreground/90">
-                        {selectedEntreprise.description}
-                      </div>
+                      {selectedEntreprise.description}
                     </div>
                   )}
 
-                  {/* Détails de l'entité (Version compacte horizontale si infos présentes) */}
-                  {hasDetails && (
-                    <div className="rounded-2xl border border-white/10 bg-white/5 p-5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)] backdrop-blur-md">
-                      <div className="flex flex-wrap gap-x-12 gap-y-4 text-xs">
-                        {selectedEntreprise.siteWeb && (
-                          <div>
-                            <p className="text-muted-foreground font-medium mb-1.5 uppercase text-[10px] tracking-tight">
-                              Site internet
-                            </p>
-                            <a
-                              href={
-                                selectedEntreprise.siteWeb.startsWith("http")
-                                  ? selectedEntreprise.siteWeb
-                                  : `https://${selectedEntreprise.siteWeb}`
-                              }
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-1.5 font-bold text-blue-400 hover:text-blue-300 transition-colors break-all"
-                            >
-                              <Globe className="size-3.5 shrink-0" />
-                              <span>{selectedEntreprise.siteWeb}</span>
-                            </a>
-                          </div>
-                        )}
-
-                        {selectedEntreprise.siege && (
-                          <div>
-                            <p className="text-muted-foreground font-medium mb-1.5 uppercase text-[10px] tracking-tight">
-                              Siège
-                            </p>
-                            <span className="inline-flex items-center gap-1.5 font-bold text-foreground">
-                              <MapPin className="size-3.5 text-muted-foreground" />
-                              {selectedEntreprise.siege}
-                            </span>
-                          </div>
-                        )}
-
-                        {selectedEntreprise.secteur && (
-                          <div>
-                            <p className="text-muted-foreground font-medium mb-1.5 uppercase text-[10px] tracking-tight">
-                              Secteur
-                            </p>
-                            <span className="inline-flex items-center gap-1.5 font-bold text-foreground">
-                              <Building2 className="size-3.5 text-muted-foreground" />
-                              {selectedEntreprise.secteur}
-                            </span>
-                          </div>
-                        )}
-
-                        {selectedEntreprise.taille && (
-                          <div>
-                            <p className="text-muted-foreground font-medium mb-1.5 uppercase text-[10px] tracking-tight">
-                              Taille
-                            </p>
-                            <span className="inline-flex items-center gap-1.5 font-bold text-foreground">
-                              <Users className="size-3.5 text-muted-foreground" />
-                              {selectedEntreprise.taille}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Chiffres clés */}
+                  {/* Chiffres clés et métriques IA */}
                   {selectedEntreprise.chiffresCles &&
                     selectedEntreprise.chiffresCles.length > 0 && (
-                      <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]">
-                        <h4 className="mb-4 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                          Repères stratégiques
+                      <div className="rounded-2xl border border-border/60 bg-card/40 p-4">
+                        <h4 className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Chiffres clés & repères
                         </h4>
-                        <div className="flex flex-wrap gap-2.5">
+                        <div className="flex flex-wrap gap-2">
                           {selectedEntreprise.chiffresCles.map(
                             (metric, idx) => (
                               <span
                                 key={idx}
-                                className="rounded-xl border border-white/10 bg-white/10 px-3 py-1.5 text-xs text-foreground font-medium backdrop-blur-md shadow-sm"
+                                className="rounded-lg border border-border/60 bg-card/60 px-2.5 py-1 text-xs text-foreground font-medium"
                               >
                                 {metric}
                               </span>
@@ -974,17 +802,220 @@ function EntreprisesPage() {
                       </div>
                     )}
 
-                  {/* Section Contacts (Pleine largeur, 3 colonnes) */}
-                  <div className="space-y-5">
-                    <div className="flex items-center justify-between gap-2 border-b border-white/5 pb-2">
-                      <h4 className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
-                        <Users className="size-4 text-sky-400" />
-                        Contacts réseau ({cts.length})
+                  {/* Bloc NOTES PERSONNELLES */}
+                  <div className="rounded-2xl border border-border/60 bg-card/40 p-5">
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                      <h4 className="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                        <Pencil className="size-3.5 text-muted-foreground" />{" "}
+                        Notes stratégiques & remarques
+                      </h4>
+                      {!isEditingNotes ? (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setIsEditingNotes(true)}
+                          className="h-7 text-xs text-muted-foreground hover:text-foreground"
+                        >
+                          Modifier
+                        </Button>
+                      ) : null}
+                    </div>
+
+                    {isEditingNotes ? (
+                      <div className="space-y-2">
+                        <Textarea
+                          rows={3}
+                          value={notesDraft}
+                          onChange={(e) => setNotesDraft(e.target.value)}
+                          placeholder="Ex: Entreprise en forte croissance IA, contacté lors du forum Neoma, relancer en avril…"
+                          className="text-xs resize-none"
+                        />
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setNotesDraft(selectedEntreprise.notes || "");
+                              setIsEditingNotes(false);
+                            }}
+                            className="h-7 text-xs"
+                          >
+                            Annuler
+                          </Button>
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={handleSaveNotes}
+                            className="h-7 text-xs rounded-lg"
+                          >
+                            Enregistrer la note
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                        {selectedEntreprise.notes
+                          ? selectedEntreprise.notes
+                          : "Aucune note personnelle. Cliquez sur modifier pour consigner des informations stratégiques."}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Section Opportunités associées */}
+                  <div>
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <h4 className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        <Briefcase className="size-3.5 text-muted-foreground" />{" "}
+                        Opportunités associées ({opps.length})
                       </h4>
                       <Button
                         type="button"
                         size="sm"
-                        variant="outline"
+                        variant="ghost"
+                        onClick={() =>
+                          handleAddOpportunityForCompany(selectedEntreprise)
+                        }
+                        className="h-7 text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        + Ajouter
+                      </Button>
+                    </div>
+
+                    {opps.length === 0 ? (
+                      <p className="rounded-xl border border-dashed border-border/60 p-4 text-center text-xs text-muted-foreground">
+                        Aucune opportunité rattachée pour le moment.
+                      </p>
+                    ) : (
+                      <div className="grid gap-2">
+                        {opps.map((opp) => (
+                          <button
+                            key={opp.id}
+                            type="button"
+                            onClick={() => {
+                              setEditingOpp(opp);
+                              setSheetOpen(true);
+                            }}
+                            className="group flex w-full flex-wrap items-center justify-between gap-2.5 rounded-2xl border border-border/60 bg-card/60 p-3.5 text-left transition hover:border-border/100 hover:bg-card/90"
+                          >
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-semibold text-foreground group-hover:text-foreground/90 transition-colors">
+                                {opp.poste || "Opportunité sans titre"}
+                              </p>
+                              <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                {opp.contractType && (
+                                  <span>{opp.contractType}</span>
+                                )}
+                                {opp.duration && <span>· {opp.duration}</span>}
+                                {opp.lieu && <span>· {opp.lieu}</span>}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <StatutBadge statut={opp.statut} />
+                              <ChevronRight className="size-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Colonne Droite compacte (1/3) */}
+                <div className="space-y-6">
+                  {/* Fiche d'identité d'entreprise */}
+                  <div className="rounded-2xl border border-border/60 bg-card/40 p-4 space-y-4">
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Détails de l'entité
+                    </h4>
+
+                    <div className="space-y-3.5 text-xs">
+                      {selectedEntreprise.siteWeb && (
+                        <div>
+                          <p className="text-muted-foreground font-medium mb-1">
+                            Site internet
+                          </p>
+                          <a
+                            href={
+                              selectedEntreprise.siteWeb.startsWith("http")
+                                ? selectedEntreprise.siteWeb
+                                : `https://${selectedEntreprise.siteWeb}`
+                            }
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 font-semibold text-blue-600 hover:underline break-all dark:text-blue-400"
+                          >
+                            <Globe className="size-3.5 shrink-0" />
+                            <span>{selectedEntreprise.siteWeb}</span>
+                            <ExternalLink className="size-3 shrink-0" />
+                          </a>
+                        </div>
+                      )}
+
+                      {selectedEntreprise.siege && (
+                        <div>
+                          <p className="text-muted-foreground font-medium mb-1">
+                            Localisation siège
+                          </p>
+                          <span className="inline-flex items-center gap-1.5 font-semibold text-foreground">
+                            <MapPin className="size-3.5 text-muted-foreground" />
+                            {selectedEntreprise.siege}
+                          </span>
+                        </div>
+                      )}
+
+                      {selectedEntreprise.secteur && (
+                        <div>
+                          <p className="text-muted-foreground font-medium mb-1">
+                            Secteur
+                          </p>
+                          <span className="inline-flex items-center gap-1.5 font-semibold text-foreground">
+                            <Building2 className="size-3.5 text-muted-foreground" />
+                            {selectedEntreprise.secteur}
+                          </span>
+                        </div>
+                      )}
+
+                      {selectedEntreprise.taille && (
+                        <div>
+                          <p className="text-muted-foreground font-medium mb-1">
+                            Effectif / Taille
+                          </p>
+                          <span className="inline-flex items-center gap-1.5 font-semibold text-foreground">
+                            <Users className="size-3.5 text-muted-foreground" />
+                            {selectedEntreprise.taille}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="pt-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="w-full h-9 rounded-xl text-xs gap-1.5"
+                        onClick={() =>
+                          handleAddOpportunityForCompany(selectedEntreprise)
+                        }
+                      >
+                        <Plus className="size-4" /> Nouvelle opportunité
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Section Contacts associés compact */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <h4 className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                        <Users className="size-3.5 text-sky-400" /> Contacts (
+                        {cts.length})
+                      </h4>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
                         onClick={() => {
                           setSelectedContact({
                             ...emptyContact(),
@@ -993,69 +1024,103 @@ function EntreprisesPage() {
                           });
                           setContactSheetOpen(true);
                         }}
-                        className="h-8 text-xs gap-1.5 rounded-lg border-white/10 bg-white/5 hover:bg-white/10"
+                        className="h-7 text-xs text-muted-foreground hover:text-foreground px-1"
                       >
-                        <Plus className="size-3.5" /> Ajouter un contact
+                        + Ajouter
                       </Button>
                     </div>
 
                     {cts.length === 0 ? (
-                      <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-12 text-center">
-                        <Users className="size-8 text-muted-foreground/20 mx-auto mb-3" />
-                        <p className="text-sm text-muted-foreground">
-                          Aucun contact réseau rattaché.
-                        </p>
-                      </div>
+                      <p className="rounded-xl border border-dashed border-border/60 bg-card/20 p-4 text-center text-xs text-muted-foreground">
+                        Aucun contact réseau rattaché.
+                      </p>
                     ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="grid gap-2">
                         {cts.map((ct) => (
-                          <ContactCard
+                          <div
                             key={ct.id}
-                            contact={ct}
-                            candidatures={candidatures}
-                            hideCompanyTag={true}
-                            onOpenDetails={(contact) => {
-                              setSelectedContact(contact);
+                            onClick={() => {
+                              setSelectedContact(ct);
                               setContactSheetOpen(true);
                             }}
-                            onOpenMessageIa={(contact) => {
-                              setSelectedContact(contact);
-                              setContactSheetOpen(true);
-                            }}
-                            onOpenOpportunity={(oppId) => {
-                              const found = candidatures.find(
-                                (c) => c.id === oppId,
-                              );
-                              if (found) {
-                                setEditingOpp(found);
-                                setSheetOpen(true);
-                              }
-                            }}
-                          />
+                            className="rounded-xl border border-border/60 bg-card/60 p-3 text-xs cursor-pointer hover:border-border/100 hover:bg-card/80 transition-all space-y-2"
+                          >
+                            <div className="flex items-start justify-between gap-1.5">
+                              <div className="min-w-0">
+                                <p className="font-semibold text-foreground truncate">
+                                  {ct.nom}
+                                </p>
+                                <p className="text-muted-foreground text-[10px] truncate">
+                                  {[ct.poste, ct.type]
+                                    .filter(Boolean)
+                                    .join(" · ")}
+                                </p>
+                              </div>
+                              <span className="grid size-5 shrink-0 place-items-center rounded-md bg-sky-500/10 text-sky-400">
+                                <UserCheck className="size-3" />
+                              </span>
+                            </div>
+
+                            <div
+                              className="flex flex-wrap gap-1 text-[10px]"
+                              onClick={(ev) => ev.stopPropagation()}
+                            >
+                              {ct.email && (
+                                <a
+                                  href={`mailto:${ct.email}`}
+                                  className="rounded border border-border/60 bg-muted/40 px-1.5 py-0.5 text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                  Email
+                                </a>
+                              )}
+                              {ct.telephone && (
+                                <a
+                                  href={`tel:${ct.telephone}`}
+                                  className="rounded border border-border/60 bg-muted/40 px-1.5 py-0.5 text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                  Tel
+                                </a>
+                              )}
+                              {ct.linkedin && (
+                                <a
+                                  href={
+                                    ct.linkedin.startsWith("http")
+                                      ? ct.linkedin
+                                      : `https://${ct.linkedin}`
+                                  }
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="rounded border border-border/60 bg-muted/40 px-1.5 py-0.5 text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                  In
+                                </a>
+                              )}
+                            </div>
+                          </div>
                         ))}
                       </div>
                     )}
                   </div>
+                </div>
 
-                  {/* Zone de suppression footer */}
-                  <div className="mt-8 border-t border-border/40 pt-6 flex items-center justify-between">
-                    <p className="text-xs text-muted-foreground">
-                      Dernière mise à jour le{" "}
-                      {new Date(
-                        selectedEntreprise.updatedAt,
-                      ).toLocaleDateString("fr-FR")}
-                    </p>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setDeleteConfirmTarget(selectedEntreprise)}
-                      className="h-8 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
-                    >
-                      <Trash2 className="mr-1.5 size-3.5" /> Supprimer
-                      l'entreprise
-                    </Button>
-                  </div>
+                {/* Zone de suppression footer étalé sur 3 colonnes */}
+                <div className="md:col-span-3 mt-4 border-t border-border/40 pt-4 flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">
+                    Dernière mise à jour le{" "}
+                    {new Date(selectedEntreprise.updatedAt).toLocaleDateString(
+                      "fr-FR",
+                    )}
+                  </p>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setDeleteConfirmTarget(selectedEntreprise)}
+                    className="h-8 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <Trash2 className="mr-1.5 size-3.5" /> Supprimer
+                    l'entreprise
+                  </Button>
                 </div>
               </div>
             );
@@ -1241,20 +1306,6 @@ function EntreprisesPage() {
         onDelete={(id) => {
           remove(id);
           setSheetOpen(false);
-        }}
-      />
-
-      {/* ========================================================= */}
-      {/* ContactImportModal pour import LinkedIn depuis Entreprises */}
-      {/* ========================================================= */}
-      <ContactImportModal
-        open={importModalOpen}
-        onOpenChange={setImportModalOpen}
-        existingContacts={contacts}
-        userSchool={profil?.ecole || profil?.formation}
-        userTargetSector={profil?.posteCible || profil?.metierCible}
-        onImportComplete={async (incoming, resolutions) => {
-          return await batchImportContacts(incoming, resolutions);
         }}
       />
 

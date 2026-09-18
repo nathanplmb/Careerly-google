@@ -18,45 +18,13 @@ import {
 import type { Candidature } from "@/lib/candidatures";
 import type { Entreprise } from "@/lib/entreprises";
 
-// Shared in-memory cache and listeners for instant tab switching
-let memoryCacheContacts: Contact[] | null = null;
-let hasLoadedCloudContacts = false;
-const contactListeners = new Set<(items: Contact[]) => void>();
-
-function notifyContactChange(newItems: Contact[]) {
-  memoryCacheContacts = newItems;
-  saveContactsLocal(newItems);
-  contactListeners.forEach((listener) => listener(newItems));
-}
-
 export function useContacts() {
   const { user, loading: authLoading } = useSession();
   const userId = user?.id;
   const isCloudUser = Boolean(userId);
 
-  const [contacts, setContacts] = useState<Contact[]>(() => {
-    if (memoryCacheContacts !== null) return memoryCacheContacts;
-    if (typeof window !== "undefined") {
-      const local = loadContactsLocal();
-      memoryCacheContacts = local;
-      return local;
-    }
-    return [];
-  });
-  const [loading, setLoading] = useState(
-    () => memoryCacheContacts === null || memoryCacheContacts.length === 0,
-  );
-
-  useEffect(() => {
-    const handleSync = (items: Contact[]) => {
-      setContacts(items);
-      setLoading(false);
-    };
-    contactListeners.add(handleSync);
-    return () => {
-      contactListeners.delete(handleSync);
-    };
-  }, []);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Chargement initial (Cloud ou Local)
   useEffect(() => {
@@ -64,27 +32,22 @@ export function useContacts() {
     let cancelled = false;
 
     if (!isCloudUser || !userId) {
-      const local = memoryCacheContacts ?? loadContactsLocal();
-      notifyContactChange(local);
+      setContacts(loadContactsLocal());
       setLoading(false);
       return;
     }
 
-    if (hasLoadedCloudContacts && memoryCacheContacts) {
-      setLoading(false);
-      return;
-    }
-
+    setLoading(true);
     (async () => {
       try {
         const cloud = await fetchContacts(userId);
         if (!cancelled) {
-          hasLoadedCloudContacts = true;
           if (cloud.length > 0) {
-            notifyContactChange(cloud);
+            setContacts(cloud);
+            saveContactsLocal(cloud);
           } else {
-            const local = memoryCacheContacts ?? loadContactsLocal();
-            notifyContactChange(local);
+            const local = loadContactsLocal();
+            setContacts(local);
             if (local.length > 0) {
               void batchUpsertContacts(local, userId);
             }
@@ -93,8 +56,7 @@ export function useContacts() {
       } catch (err) {
         console.warn("Échec récupération contacts cloud, repli local:", err);
         if (!cancelled) {
-          const local = memoryCacheContacts ?? loadContactsLocal();
-          notifyContactChange(local);
+          setContacts(loadContactsLocal());
         }
       } finally {
         if (!cancelled) setLoading(false);

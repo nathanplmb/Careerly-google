@@ -34,8 +34,7 @@ export function normalizeStringArray(raw: unknown): string[] {
         }
       } else if (item && typeof item === "object") {
         const itemObj = item as Record<string, unknown>;
-        const nameVal =
-          itemObj.nom || itemObj.name || itemObj.label || itemObj.title;
+        const nameVal = itemObj.nom || itemObj.name || itemObj.label || itemObj.title;
         if (typeof nameVal === "string") {
           const trimmed = nameVal.trim();
           if (trimmed && !result.includes(trimmed)) {
@@ -50,7 +49,7 @@ export function normalizeStringArray(raw: unknown): string[] {
   if (typeof raw === "string") {
     const trimmed = raw.trim();
     if (!trimmed) return [];
-
+    
     // Découpage multi-délimiteurs : virgules, points-virgules, retours à la ligne, puces
     const tokens = trimmed
       .split(/[,;\n\r•·|]+/)
@@ -87,8 +86,7 @@ export function normalizeLanguesArray(raw: unknown): string[] {
       } else if (item && typeof item === "object") {
         const langObj = item as Record<string, unknown>;
         const nom = typeof langObj.nom === "string" ? langObj.nom.trim() : "";
-        const niveau =
-          typeof langObj.niveau === "string" ? langObj.niveau.trim() : "";
+        const niveau = typeof langObj.niveau === "string" ? langObj.niveau.trim() : "";
         if (nom) {
           const label = niveau ? `${nom} (${niveau})` : nom;
           if (!result.includes(label)) {
@@ -115,9 +113,7 @@ export function normalizeLanguesArray(raw: unknown): string[] {
  * - Aucun `null` ni `undefined` dans les listes
  * - Ne fabrique AUCUNE fausse donnée (change le format, pas le contenu).
  */
-export function normalizeCandidateContext(
-  raw: unknown,
-): NormalizedCandidateContext | undefined {
+export function normalizeCandidateContext(raw: unknown): NormalizedCandidateContext | undefined {
   if (!raw || typeof raw !== "object") {
     return undefined;
   }
@@ -152,14 +148,12 @@ export function normalizeCandidateContext(
       : undefined;
 
   const experiences =
-    typeof rawObj.experiences === "string" &&
-    rawObj.experiences.trim().length > 0
+    typeof rawObj.experiences === "string" && rawObj.experiences.trim().length > 0
       ? rawObj.experiences.trim()
       : undefined;
 
   const localisation =
-    typeof rawObj.localisation === "string" &&
-    rawObj.localisation.trim().length > 0
+    typeof rawObj.localisation === "string" && rawObj.localisation.trim().length > 0
       ? rawObj.localisation.trim()
       : undefined;
 
@@ -169,16 +163,14 @@ export function normalizeCandidateContext(
       : undefined;
 
   const remuneration =
-    typeof rawObj.remuneration === "string" &&
-    rawObj.remuneration.trim().length > 0
+    typeof rawObj.remuneration === "string" && rawObj.remuneration.trim().length > 0
       ? rawObj.remuneration.trim()
       : undefined;
 
   const objectifs =
     typeof rawObj.objectifs === "string" && rawObj.objectifs.trim().length > 0
       ? rawObj.objectifs.trim()
-      : typeof rawObj.rechercheVraie === "string" &&
-          rawObj.rechercheVraie.trim().length > 0
+      : typeof rawObj.rechercheVraie === "string" && rawObj.rechercheVraie.trim().length > 0
         ? rawObj.rechercheVraie.trim()
         : undefined;
 
@@ -250,9 +242,7 @@ export function buildCandidateContextFromProfil(
   // 4. Secteur / Domaines
   const secteur =
     profil.domaines?.trim() ||
-    (typeof profil.criteres?.secteur === "string"
-      ? profil.criteres.secteur
-      : undefined) ||
+    (typeof profil.criteres?.secteur === "string" ? profil.criteres.secteur : undefined) ||
     profil.entreprisesCiblees?.trim() ||
     undefined;
 
@@ -295,11 +285,7 @@ export function buildCandidateContextFromProfil(
 
   // 8. Localisation & Mobilité
   const localisation =
-    [
-      profil.localisation,
-      profil.pays,
-      profil.mobilite ? `(Mobilité: ${profil.mobilite})` : "",
-    ]
+    [profil.localisation, profil.pays, profil.mobilite ? `(Mobilité: ${profil.mobilite})` : ""]
       .filter(Boolean)
       .join(" ")
       .trim() || undefined;

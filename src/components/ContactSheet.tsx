@@ -42,24 +42,19 @@ import {
   CANAUX,
   LIBELLES_RELANCE,
   TYPES_CONTACT,
-  CATEGORIES_CONTACT,
-  getCategoryBadgeStyle,
   TYPES_RELANCE,
   nouvelEchange,
   getContactFullName,
   SOURCE_LABELS,
-  computeContactRelevance,
   type Canal,
   type Contact,
   type TypeContact,
-  type CategoryContact,
   type TypeRelance,
 } from "@/lib/contacts";
 import type { Candidature } from "@/lib/candidatures";
 import type { Entreprise } from "@/lib/entreprises";
 import type { Profil } from "@/lib/profil";
 import { Link } from "@tanstack/react-router";
-import { generateNetworkingMessageServerFn } from "@/ai/networking-message/networkingMessage.server-fn";
 
 type Props = {
   open: boolean;
@@ -124,41 +119,29 @@ export function ContactSheet({
     setChargement(true);
     setErreur(null);
     try {
+      // Simulation intelligente de message de relance selon le profil et l'opportunité
+      await new Promise((r) => setTimeout(r, 600));
       const targetOpp = linkedCandidatures[0];
-      const res = await generateNetworkingMessageServerFn({
-        data: {
-          contactName: getContactFullName(draft) || draft.nom || "Contact",
-          contactRole: draft.poste || "",
-          contactCompany: draft.entreprise || "",
-          contactCategory: draft.category || "Autre",
-          userSchool: profil?.ecole || profil?.formation || "",
-          userTargetSector: profil?.posteCible || profil?.metierCible || "",
-          targetOpportunityTitle: targetOpp?.poste || "",
-          customInstruction: consigne
-            ? `${LIBELLES_RELANCE[typeRelance] || ""}. ${consigne}`
-            : LIBELLES_RELANCE[typeRelance] || "",
-        },
-      });
+      const jobTitle = targetOpp?.poste || draft.poste || "votre opportunité";
+      const compName =
+        targetOpp?.companyName ||
+        targetOpp?.company ||
+        draft.entreprise ||
+        "votre entreprise";
+      const subject = `Suivi de candidature — ${jobTitle} chez ${compName}`;
+      const body = `Bonjour ${draft.nom || ""},\n\nJ'espère que vous allez bien.\n\nJe me permets de revenir vers vous concernant ma candidature pour le poste de ${jobTitle} au sein de ${compName}.\n\nToujours particulièrement enthousiaste à l'idée de rejoindre vos équipes et de contribuer à vos projets, je reste à votre entière disposition pour tout échange complémentaire.\n\nEn vous remerciant pour votre temps et votre attention,\n\nBien cordialement,\n${profil?.prenom || ""} ${profil?.nom || ""}`;
 
-      if (res && res.message) {
-        setResultat({
-          objet: res.subject || "Prise de contact réseau — NACORA",
-          message: res.message,
-          conseils: res.tips || [
-            "Personnalisez avec un point précis abordé lors de votre dernier échange.",
-            "Restez concis et professionnel.",
-          ],
-        });
-      } else {
-        setErreur("Erreur lors de la génération du message par l'IA.");
-      }
-    } catch (err: unknown) {
-      console.error("Erreur génération message réseau:", err);
-      const msg =
-        err instanceof Error
-          ? err.message
-          : "Erreur lors de la génération de la relance.";
-      setErreur(msg);
+      setResultat({
+        objet: subject,
+        message: body,
+        conseils: [
+          "Personnalisez avec un point précis abordé lors de votre dernier échange.",
+          "Restez concis et professionnel.",
+          "Envoyez de préférence le matin entre 9h et 11h.",
+        ],
+      });
+    } catch {
+      setErreur("Erreur lors de la génération de la relance.");
     } finally {
       setChargement(false);
     }
@@ -217,18 +200,6 @@ export function ContactSheet({
     });
   };
 
-  const handleRecalculateScore = () => {
-    const res = computeContactRelevance(draft, candidatures, {
-      school: profil?.ecole || profil?.formation,
-      targetSectors: profil?.posteCible ? [profil.posteCible] : undefined,
-    });
-    set({
-      relevanceScore: res.score,
-      connectionPoints: res.connectionPoints,
-    });
-    toast.success(`Score de pertinence recalculé : ${res.score}%`);
-  };
-
   return (
     <>
       <CenterModal
@@ -240,11 +211,11 @@ export function ContactSheet({
           "Ajoutez les informations du contact."
         }
         footer={
-          <div className="flex items-center justify-between gap-2 w-full">
+          <div className="flex items-center justify-between gap-2">
             {onDelete ? (
               <Button
                 variant="ghost"
-                className="text-xs text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 gap-1.5 font-semibold rounded-xl h-9.5 px-4"
+                className="text-destructive hover:bg-destructive/10 text-xs"
                 onClick={() => setConfirmDeleteOpen(true)}
               >
                 <Trash2 className="size-4 mr-1.5" /> Supprimer le contact
@@ -257,7 +228,7 @@ export function ContactSheet({
                 variant="outline"
                 size="sm"
                 onClick={() => onOpenChange(false)}
-                className="text-xs font-semibold border-white/10 bg-white/5 hover:bg-white/10 hover:border-white/20 text-foreground rounded-xl px-4 h-9.5"
+                className="text-xs"
               >
                 Annuler
               </Button>
@@ -267,7 +238,7 @@ export function ContactSheet({
                   onSave(draft);
                   onOpenChange(false);
                 }}
-                className="text-xs font-semibold rounded-xl bg-primary hover:bg-primary/90 text-white shadow-md px-5 h-9.5 cursor-pointer"
+                className="text-xs font-semibold"
               >
                 Enregistrer
               </Button>
@@ -292,10 +263,7 @@ export function ContactSheet({
           </TabsList>
 
           {/* Onglet Fiche Principale */}
-          <TabsContent
-            value="infos"
-            className="mt-4 grid gap-4 sm:grid-cols-2 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5 sm:p-6 shadow-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]"
-          >
+          <TabsContent value="infos" className="mt-4 grid gap-4 sm:grid-cols-2">
             {/* Badges sources si existants */}
             <div className="sm:col-span-2 flex flex-wrap items-center gap-2">
               <span className="text-xs text-muted-foreground">Source(s) :</span>
@@ -319,103 +287,6 @@ export function ContactSheet({
                   {SOURCE_LABELS[src as keyof typeof SOURCE_LABELS] || src}
                 </span>
               ))}
-            </div>
-
-            {/* Bloc Score de Pertinence & Points de Connexion */}
-            <div className="sm:col-span-2 rounded-2xl border border-white/12 bg-white/[0.04] p-3.5 backdrop-blur-xl space-y-3 shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="grid size-7 place-items-center rounded-lg bg-indigo-500/20 border border-indigo-500/30 text-indigo-300">
-                    <Sparkles className="size-3.5" />
-                  </span>
-                  <div>
-                    <h4 className="text-xs font-semibold text-foreground flex items-center gap-2">
-                      Score de pertinence réseau
-                      {draft.relevanceScore !== undefined && (
-                        <span className="text-xs font-bold text-indigo-300 bg-indigo-500/15 border border-indigo-500/30 px-2 py-0.5 rounded-full">
-                          {draft.relevanceScore}%
-                        </span>
-                      )}
-                    </h4>
-                    <p className="text-[11px] text-muted-foreground">
-                      Analyse d'affinité basée sur vos cibles, votre école et le
-                      parcours du contact.
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRecalculateScore}
-                  className="h-7 text-[11px] px-2.5 gap-1.5 border-white/15 bg-white/5 hover:bg-white/10 shrink-0 cursor-pointer"
-                >
-                  <Sparkles className="size-3 text-indigo-400" />
-                  Recalculer
-                </Button>
-              </div>
-
-              {/* Points de connexion */}
-              {draft.connectionPoints && draft.connectionPoints.length > 0 ? (
-                <div className="space-y-1.5 pt-1 border-t border-white/10">
-                  <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-                    Points de connexion détectés :
-                  </span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {draft.connectionPoints.map((pt, i) => (
-                      <span
-                        key={i}
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/15 px-2.5 py-1 text-xs font-medium text-indigo-100 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]"
-                      >
-                        <Sparkles className="size-3 text-indigo-400 shrink-0" />
-                        <span>{pt}</span>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <p className="text-[11px] text-muted-foreground italic pt-1 border-t border-white/10">
-                  Cliquez sur "Recalculer" pour déterminer les points de
-                  connexion avec votre profil.
-                </p>
-              )}
-
-              {/* Infos additionnelles : Entreprises passées & Éducation */}
-              {(draft.pastCompanies?.length ||
-                draft.education?.length ||
-                draft.companySector) && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-white/10 text-xs">
-                  {draft.pastCompanies && draft.pastCompanies.length > 0 && (
-                    <div>
-                      <span className="text-[10px] text-muted-foreground font-medium block">
-                        Entreprises précédentes :
-                      </span>
-                      <span className="text-foreground font-medium">
-                        {draft.pastCompanies.join(", ")}
-                      </span>
-                    </div>
-                  )}
-                  {draft.education && draft.education.length > 0 && (
-                    <div>
-                      <span className="text-[10px] text-muted-foreground font-medium block">
-                        Établissements & Diplômes :
-                      </span>
-                      <span className="text-foreground font-medium">
-                        {draft.education.join(", ")}
-                      </span>
-                    </div>
-                  )}
-                  {draft.companySector && (
-                    <div className="sm:col-span-2">
-                      <span className="text-[10px] text-muted-foreground font-medium block">
-                        Secteur d'activité :
-                      </span>
-                      <span className="text-foreground font-medium">
-                        {draft.companySector}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
 
             <div className="grid gap-1.5">
@@ -445,45 +316,6 @@ export function ContactSheet({
                       {t}
                     </SelectItem>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid gap-1.5">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <Label className="text-xs shrink-0">
-                  Catégorie réseau (IA / Filtre)
-                </Label>
-                {draft.category && (
-                  <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-semibold border backdrop-blur-md shrink-0 ${getCategoryBadgeStyle(draft.category).fullClass}`}
-                  >
-                    <Sparkles className="size-2 text-current opacity-80" />
-                    <span>{draft.category}</span>
-                  </span>
-                )}
-              </div>
-              <Select
-                value={draft.category || "Autre"}
-                onValueChange={(v) => set({ category: v as CategoryContact })}
-              >
-                <SelectTrigger className="text-xs">
-                  <SelectValue placeholder="Sélectionner une catégorie..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES_CONTACT.map((cat) => {
-                    const style = getCategoryBadgeStyle(cat);
-                    return (
-                      <SelectItem key={cat} value={cat} className="text-xs">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`size-2 rounded-full shrink-0 ${style.dotClass}`}
-                          />
-                          <span>{cat}</span>
-                        </div>
-                      </SelectItem>
-                    );
-                  })}
                 </SelectContent>
               </Select>
             </div>
@@ -555,7 +387,7 @@ export function ContactSheet({
                 type="email"
                 value={draft.email}
                 onChange={(e) => set({ email: e.target.value })}
-                placeholder="email@exemple.com"
+                placeholder="sophie.durand@entreprise.com"
                 className="text-xs"
               />
             </div>
@@ -579,7 +411,7 @@ export function ContactSheet({
                 onChange={(e) =>
                   set({ linkedin: e.target.value, linkedinUrl: e.target.value })
                 }
-                placeholder="https://www.linkedin.com/in/identifiant"
+                placeholder="https://www.linkedin.com/in/sophie-durand"
                 className="text-xs"
               />
             </div>
@@ -627,10 +459,7 @@ export function ContactSheet({
           </TabsContent>
 
           {/* Onglet Opportunités associées */}
-          <TabsContent
-            value="opportunites"
-            className="mt-4 space-y-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5 sm:p-6 shadow-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]"
-          >
+          <TabsContent value="opportunites" className="mt-4 space-y-4">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -723,10 +552,7 @@ export function ContactSheet({
           </TabsContent>
 
           {/* Onglet Historique */}
-          <TabsContent
-            value="historique"
-            className="mt-4 space-y-3 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5 sm:p-6 shadow-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]"
-          >
+          <TabsContent value="historique" className="mt-4 space-y-3">
             <Button
               variant="outline"
               size="sm"
@@ -828,10 +654,7 @@ export function ContactSheet({
           </TabsContent>
 
           {/* Onglet Relance IA */}
-          <TabsContent
-            value="relance"
-            className="mt-4 space-y-4 rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5 sm:p-6 shadow-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]"
-          >
+          <TabsContent value="relance" className="mt-4 space-y-4">
             <div className="grid gap-1.5">
               <Label className="text-xs">Type de message</Label>
               <Select

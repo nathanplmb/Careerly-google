@@ -8,12 +8,10 @@
     "build": "cross-env NODE_OPTIONS=--max-old-space-size=8192 vite build && node scripts/postbuild.js",
     "build:dev": "cross-env NODE_OPTIONS=--max-old-space-size=8192 vite build --mode development",
     "preview": "vite preview",
-    "start": "node .output/server/index.mjs",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
   "dependencies": {
-    "cross-env": "^10.1.0",
     "@ai-sdk/openai-compatible": "^3.0.23",
     "@google/genai": "^2.19.0",
     "@hookform/resolvers": "^5.2.2",
@@ -87,6 +85,7 @@
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.2.0",
+    "cross-env": "^10.1.0",
     "eslint": "^9.32.0",
     "eslint-config-prettier": "^10.1.1",
     "eslint-plugin-prettier": "^5.2.6",

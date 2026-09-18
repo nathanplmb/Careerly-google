@@ -2,11 +2,8 @@ import fs from "fs";
 import path from "path";
 
 const rootDir = process.cwd();
-console.log("rootDir:", rootDir);
 const distDir = path.join(rootDir, "dist");
-const outputDir = path.join(rootDir, ".output");
-const outputPublicDir = path.join(outputDir, "public");
-const outputServerDir = path.join(outputDir, "server");
+const outputPublicDir = path.join(rootDir, ".output", "public");
 
 if (fs.existsSync(distDir)) {
   fs.rmSync(distDir, { recursive: true, force: true });
@@ -16,29 +13,9 @@ fs.mkdirSync(distDir, { recursive: true });
 // Copy public assets from .output/public to dist if present
 if (fs.existsSync(outputPublicDir)) {
   fs.cpSync(outputPublicDir, distDir, { recursive: true });
-  // Also provide dist/public for node dist/server/index.mjs which references ../public
-  const distPublicDir = path.join(distDir, "public");
-  fs.mkdirSync(distPublicDir, { recursive: true });
-  fs.cpSync(outputPublicDir, distPublicDir, { recursive: true });
 }
 
-// Copy static assets from public/ directory as fallback
-const staticPublicDir = path.join(rootDir, "public");
-if (fs.existsSync(staticPublicDir)) {
-  fs.cpSync(staticPublicDir, distDir, { recursive: true });
-  if (fs.existsSync(outputPublicDir)) {
-    fs.cpSync(staticPublicDir, outputPublicDir, { recursive: true });
-  }
-}
-
-// Copy server bundle from .output/server to dist/server if present
-if (fs.existsSync(outputServerDir)) {
-  const distServerDir = path.join(distDir, "server");
-  fs.mkdirSync(distServerDir, { recursive: true });
-  fs.cpSync(outputServerDir, distServerDir, { recursive: true });
-}
-
-// Ensure dist/index.html and .output/public/index.html exist for deployment artifact uploaders
+// Ensure dist/index.html exists for static preview and deployment artifact uploaders
 const assetsDir = path.join(distDir, "assets");
 let cssFile = "";
 let jsFiles = [];
@@ -46,21 +23,8 @@ let jsFiles = [];
 if (fs.existsSync(assetsDir)) {
   const files = fs.readdirSync(assetsDir);
   cssFile = files.find((f) => f.endsWith(".css")) || "";
-  const mainJs = files.find(
-    (f) =>
-      (f.startsWith("index-") ||
-        f.startsWith("client-") ||
-        f.startsWith("start-")) &&
-      f.endsWith(".js"),
-  );
-  if (mainJs) {
-    jsFiles.push(mainJs);
-  } else {
-    const anyJs = files.filter((f) => f.endsWith(".js"));
-    if (anyJs.length > 0) {
-      jsFiles = anyJs.slice(0, 3);
-    }
-  }
+  const mainJs = files.find((f) => f.startsWith("index-") && f.endsWith(".js"));
+  if (mainJs) jsFiles.push(mainJs);
 }
 
 const htmlContent = `<!DOCTYPE html>
@@ -90,11 +54,4 @@ const htmlContent = `<!DOCTYPE html>
 </html>`;
 
 fs.writeFileSync(path.join(distDir, "index.html"), htmlContent);
-
-if (fs.existsSync(outputPublicDir)) {
-  fs.writeFileSync(path.join(outputPublicDir, "index.html"), htmlContent);
-}
-
-console.log(
-  "Postbuild complete: dist and .output artifacts generated successfully!",
-);
+console.log("Postbuild complete: dist/index.html generated successfully!");

@@ -10,7 +10,6 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
-import { ContactImportProvider } from "@/context/ContactImportContext";
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
@@ -40,21 +39,14 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({
-  error,
-  reset,
-}: {
-  error: unknown;
-  reset: () => void;
-}) {
-  const errObj = error instanceof Error ? error : new Error(String(error));
-  console.error(errObj);
+function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+  console.error(error);
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(errObj, { boundary: "tanstack_root_error_component" });
+    reportLovableError(error, { boundary: "tanstack_root_error_component" });
 
     // Auto-reload on stale chunk / module import error
-    const msg = errObj?.message || "";
+    const msg = error?.message || "";
     if (
       msg.includes("Importing a module script failed") ||
       msg.includes("Failed to fetch dynamically imported module") ||
@@ -68,7 +60,7 @@ function ErrorComponent({
         window.location.reload();
       }
     }
-  }, [errObj]);
+  }, [error]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
@@ -84,9 +76,9 @@ function ErrorComponent({
           pas pu être chargé.
         </p>
 
-        {errObj?.message && (
+        {error?.message && (
           <div className="p-3 text-left rounded-lg bg-red-500/10 border border-red-500/20 text-[11px] font-mono text-red-300 break-words max-h-32 overflow-y-auto">
-            {errObj.message}
+            {error.message}
           </div>
         )}
 
@@ -157,7 +149,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       ],
       scripts: [
         {
-          children: `try{if(typeof window!=="undefined"){window.process=window.process||{env:{NODE_ENV:"production",TSS_ROUTER_BASEPATH:""}};window.global=window.global||window;}}catch(e){}`,
+          children: `try{if(typeof window!=="undefined"){window.process=window.process||{env:{NODE_ENV:"development",TSS_ROUTER_BASEPATH:""}};window.global=window.global||window;}}catch(e){}`,
         },
       ],
     }),
@@ -174,7 +166,7 @@ function RootShell({ children }: { children: ReactNode }) {
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{if(typeof window!=="undefined"){window.process=window.process||{env:{NODE_ENV:"production",TSS_ROUTER_BASEPATH:""}};window.global=window.global||window;}}catch(e){}`,
+            __html: `try{if(typeof window!=="undefined"){window.process=window.process||{env:{NODE_ENV:"development",TSS_ROUTER_BASEPATH:""}};window.global=window.global||window;}}catch(e){}`,
           }}
         />
         <HeadContent />
@@ -265,11 +257,9 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ContactImportProvider>
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-        <Toaster />
-      </ContactImportProvider>
+      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+      <Outlet />
+      <Toaster />
     </QueryClientProvider>
   );
 }

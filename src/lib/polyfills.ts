@@ -47,17 +47,16 @@ export function initPolyfills(): void {
 
   // Polyfill window.process and global for client-side environments (Safari / WebKit)
   const gAny = globalScope as Record<string, any>;
-  const defaultEnv = import.meta.env?.MODE || "production";
   if (!gAny["process"]) {
     gAny["process"] = {
-      env: { NODE_ENV: defaultEnv, TSS_ROUTER_BASEPATH: "" },
+      env: { NODE_ENV: "development", TSS_ROUTER_BASEPATH: "" },
     };
   } else {
     const proc = gAny["process"] as { env?: Record<string, string> };
     if (!proc["env"]) {
-      proc["env"] = { NODE_ENV: defaultEnv, TSS_ROUTER_BASEPATH: "" };
+      proc["env"] = { NODE_ENV: "development", TSS_ROUTER_BASEPATH: "" };
     } else {
-      proc["env"]["NODE_ENV"] = proc["env"]["NODE_ENV"] || defaultEnv;
+      proc["env"]["NODE_ENV"] = proc["env"]["NODE_ENV"] || "development";
       proc["env"]["TSS_ROUTER_BASEPATH"] =
         proc["env"]["TSS_ROUTER_BASEPATH"] || "";
     }

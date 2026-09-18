@@ -16,55 +16,21 @@ import {
   saveEntreprisesLocal,
   shouldKeepEntrepriseAfterOpportunityDeleted,
   syncEntrepriseFromOpportunity,
-  syncEntrepriseFromContact,
   type Entreprise,
 } from "@/lib/entreprises";
 import type { Candidature } from "@/lib/candidatures";
 import type { Contact } from "@/lib/contacts";
-
-// Shared in-memory cache and listeners for instant tab switching
-let memoryCacheEntreprises: Entreprise[] | null = null;
-let hasLoadedCloudEntreprises = false;
-const entrepriseListeners = new Set<(items: Entreprise[]) => void>();
-
-function notifyEntrepriseChange(newItems: Entreprise[]) {
-  memoryCacheEntreprises = newItems;
-  saveEntreprisesLocal(newItems);
-  entrepriseListeners.forEach((listener) => listener(newItems));
-}
 
 export function useEntreprises() {
   const { user, loading: authLoading } = useSession();
   const userId = user?.id;
   const isCloudUser = Boolean(userId);
 
-  const [entreprises, setEntreprises] = useState<Entreprise[]>(() => {
-    if (memoryCacheEntreprises !== null) return memoryCacheEntreprises;
-    if (typeof window !== "undefined") {
-      const local = loadEntreprisesLocal();
-      memoryCacheEntreprises = local;
-      return local;
-    }
-    return [];
-  });
-  const [loading, setLoading] = useState(
-    () =>
-      memoryCacheEntreprises === null || memoryCacheEntreprises.length === 0,
-  );
+  const [entreprises, setEntreprises] = useState<Entreprise[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const entreprisesRef = useRef<Entreprise[]>([]);
   entreprisesRef.current = entreprises;
-
-  useEffect(() => {
-    const handleSync = (items: Entreprise[]) => {
-      setEntreprises(items);
-      setLoading(false);
-    };
-    entrepriseListeners.add(handleSync);
-    return () => {
-      entrepriseListeners.delete(handleSync);
-    };
-  }, []);
 
   // Chargement initial (Cloud ou Local)
   useEffect(() => {
@@ -72,34 +38,29 @@ export function useEntreprises() {
     let cancelled = false;
 
     if (!isCloudUser || !userId) {
-      const local = memoryCacheEntreprises ?? loadEntreprisesLocal();
-      notifyEntrepriseChange(local);
+      setEntreprises(loadEntreprisesLocal());
       setLoading(false);
       return;
     }
 
-    if (hasLoadedCloudEntreprises && memoryCacheEntreprises) {
-      setLoading(false);
-      return;
-    }
-
+    setLoading(true);
     (async () => {
       try {
         const cloud = await fetchEntreprises(userId);
         if (!cancelled) {
-          hasLoadedCloudEntreprises = true;
           if (cloud.length > 0) {
-            notifyEntrepriseChange(cloud);
+            setEntreprises(cloud);
+            saveEntreprisesLocal(cloud);
           } else {
-            const local = memoryCacheEntreprises ?? loadEntreprisesLocal();
-            notifyEntrepriseChange(local);
+            // Repli local ou migration initiale
+            const local = loadEntreprisesLocal();
+            setEntreprises(local);
           }
         }
       } catch (err) {
         console.warn("Échec récupération entreprises cloud, repli local:", err);
         if (!cancelled) {
-          const local = memoryCacheEntreprises ?? loadEntreprisesLocal();
-          notifyEntrepriseChange(local);
+          setEntreprises(loadEntreprisesLocal());
         }
       } finally {
         if (!cancelled) {
@@ -175,11 +136,11 @@ export function useEntreprises() {
     (e: Entreprise, contacts: Contact[]): Contact[] => {
       return contacts.filter((ct) => {
         if (ct.candidatureId && ct.candidatureId === e.id) return true;
-        if ((ct as unknown as { companyId?: string }).companyId === e.id)
-          return true;
         if (ct.entreprise) {
-          const match = findMatchingEntreprise({ nom: ct.entreprise }, [e]);
-          if (match) return true;
+          return (
+            normalizeCompanyName(ct.entreprise) === e.normalizedName ||
+            ct.entreprise.trim().toLowerCase() === e.nom.trim().toLowerCase()
+          );
         }
         return false;
       });
@@ -189,7 +150,7 @@ export function useEntreprises() {
 
   /**
    * Synchronisation automatique intelligente :
-   * - Pour chaque opportunité ET chaque contact réseau, s'assure qu'une entreprise existe et est enrichie.
+   * - Pour chaque opportunité, s'assure qu'une entreprise existe et est enrichie.
    * - Rattache `companyId` si absent.
    * - Ne supprime jamais les données manuelles utilisateur.
    */
@@ -206,7 +167,6 @@ export function useEntreprises() {
       const toUpsert: Entreprise[] = [];
       let anyChanged = false;
 
-      // 1. Synchronisation à partir des opportunités
       for (const opp of candidatures) {
         const oppNom = opp.companyName || opp.company || opp.entreprise || "";
         if (!oppNom.trim()) continue;
@@ -234,29 +194,6 @@ export function useEntreprises() {
             ...opp,
             companyId: entreprise.id,
           });
-        }
-      }
-
-      // 2. Synchronisation à partir des contacts (LinkedIn ou manuels)
-      for (const ct of contacts) {
-        const compName = ct.entreprise?.trim();
-        if (!compName) continue;
-
-        const res = syncEntrepriseFromContact(ct, currentList);
-        if (!res) continue;
-
-        const { entreprise, isNew, hasChanged } = res;
-
-        if (isNew) {
-          currentList = [entreprise, ...currentList];
-          anyChanged = true;
-          toUpsert.push(entreprise);
-        } else if (hasChanged) {
-          currentList = currentList.map((item) =>
-            item.id === entreprise.id ? entreprise : item,
-          );
-          anyChanged = true;
-          toUpsert.push(entreprise);
         }
       }
 

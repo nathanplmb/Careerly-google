@@ -379,15 +379,15 @@ export function CandidatureSheet({
 
                 {/* Contrat */}
                 {form.contractType && (
-                  <span className="inline-flex items-center gap-1 bg-white/10 text-slate-200 font-extrabold text-[10px] px-2.5 py-0.5 rounded-lg backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
-                    <Briefcase className="size-3 text-slate-300" />
+                  <span className="inline-flex items-center gap-1 bg-[#0d0f17] border border-slate-800 text-slate-300 font-bold text-[10px] px-2 py-0.5 rounded-md">
+                    <Briefcase className="size-3 text-slate-400" />
                     {form.contractType}
                   </span>
                 )}
 
                 {/* Localisation */}
                 {form.lieu && (
-                  <span className="inline-flex items-center gap-1 bg-white/10 text-slate-300 font-bold text-[10px] px-2.5 py-0.5 rounded-lg backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+                  <span className="inline-flex items-center gap-1 bg-[#0d0f17] border border-slate-800 text-slate-300 font-bold text-[10px] px-2 py-0.5 rounded-md">
                     <MapPin className="size-3 text-slate-400" />
                     {form.lieu}
                   </span>
@@ -395,7 +395,7 @@ export function CandidatureSheet({
 
                 {/* Rémunération */}
                 {form.salary && (
-                  <span className="inline-flex items-center gap-1 bg-emerald-500/15 text-emerald-300 font-extrabold text-[10px] px-2.5 py-0.5 rounded-lg backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">
+                  <span className="inline-flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-extrabold text-[10px] px-2 py-0.5 rounded-md">
                     <Euro className="size-3 text-emerald-400" />
                     {form.salary}
                   </span>
@@ -403,7 +403,7 @@ export function CandidatureSheet({
 
                 {/* Durée */}
                 {form.duration && (
-                  <span className="inline-flex items-center gap-1 bg-white/10 text-slate-300 font-bold text-[10px] px-2.5 py-0.5 rounded-lg backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+                  <span className="inline-flex items-center gap-1 bg-[#0d0f17] border border-slate-800 text-slate-300 font-bold text-[10px] px-2 py-0.5 rounded-md">
                     <Clock className="size-3 text-slate-400" />
                     {form.duration}
                   </span>
@@ -411,7 +411,7 @@ export function CandidatureSheet({
 
                 {/* Date de début */}
                 {form.startDate && (
-                  <span className="inline-flex items-center gap-1 bg-white/10 text-slate-300 font-semibold text-[10px] px-2.5 py-0.5 rounded-lg backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+                  <span className="inline-flex items-center gap-1 bg-[#0d0f17] border border-slate-800 text-slate-300 font-semibold text-[10px] px-2 py-0.5 rounded-md">
                     <Calendar className="size-3 text-slate-400" />
                     Début : {form.startDate}
                   </span>
@@ -419,7 +419,7 @@ export function CandidatureSheet({
 
                 {/* Deadline de candidature */}
                 {(form.dateLimite || form.applicationDeadline) && (
-                  <span className="inline-flex items-center gap-1 bg-rose-500/15 text-rose-300 font-extrabold font-mono text-[10px] px-2.5 py-0.5 rounded-lg backdrop-blur-md shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">
+                  <span className="inline-flex items-center gap-1 bg-rose-500/10 border border-rose-500/20 text-rose-300 font-extrabold font-mono text-[10px] px-2 py-0.5 rounded-md">
                     <Calendar className="size-3 text-rose-400" />
                     DL :{" "}
                     {formatDate(
@@ -665,29 +665,29 @@ export function CandidatureSheet({
               className="flex-1 flex flex-col min-h-0"
             >
               {/* BARRE D'ONGLETS STYLISÉE NACORA */}
-              <div className="px-4 lg:px-8 py-2.5 bg-black/20 backdrop-blur-xl shrink-0">
+              <div className="border-b border-slate-800/80 px-4 lg:px-8 py-2.5 bg-[#0E111B] shrink-0">
                 <TabsList className="w-full justify-start h-10 p-0 bg-transparent gap-2 overflow-x-auto">
                   <TabsTrigger
                     value="offre"
-                    className="rounded-xl px-4 py-2 text-xs font-extrabold transition-all text-slate-300 data-[state=active]:bg-white/18 data-[state=active]:text-white data-[state=active]:shadow-md backdrop-blur-md cursor-pointer"
+                    className="rounded-xl px-4 py-2 text-xs font-extrabold transition-all text-slate-300 data-[state=active]:bg-white/15 data-[state=active]:text-white data-[state=active]:border data-[state=active]:border-white/20 data-[state=active]:shadow-sm backdrop-blur-md cursor-pointer"
                   >
                     Offre & Missions
                   </TabsTrigger>
                   <TabsTrigger
                     value="profil"
-                    className="rounded-xl px-4 py-2 text-xs font-extrabold transition-all text-slate-300 data-[state=active]:bg-white/18 data-[state=active]:text-white data-[state=active]:shadow-md backdrop-blur-md cursor-pointer"
+                    className="rounded-xl px-4 py-2 text-xs font-extrabold transition-all text-slate-300 data-[state=active]:bg-white/15 data-[state=active]:text-white data-[state=active]:border data-[state=active]:border-white/20 data-[state=active]:shadow-sm backdrop-blur-md cursor-pointer"
                   >
                     Profil & Recrutement
                   </TabsTrigger>
                   <TabsTrigger
                     value="entreprise"
-                    className="rounded-xl px-4 py-2 text-xs font-extrabold transition-all text-slate-300 data-[state=active]:bg-white/18 data-[state=active]:text-white data-[state=active]:shadow-md backdrop-blur-md cursor-pointer"
+                    className="rounded-xl px-4 py-2 text-xs font-extrabold transition-all text-slate-300 data-[state=active]:bg-white/15 data-[state=active]:text-white data-[state=active]:border data-[state=active]:border-white/20 data-[state=active]:shadow-sm backdrop-blur-md cursor-pointer"
                   >
                     Entreprise
                   </TabsTrigger>
                   <TabsTrigger
                     value="workflow"
-                    className="rounded-xl px-4 py-2 text-xs font-extrabold transition-all text-slate-300 data-[state=active]:bg-white/18 data-[state=active]:text-white data-[state=active]:shadow-md backdrop-blur-md cursor-pointer flex items-center gap-1.5"
+                    className="rounded-xl px-4 py-2 text-xs font-extrabold transition-all text-slate-300 data-[state=active]:bg-white/15 data-[state=active]:text-white data-[state=active]:border data-[state=active]:border-white/20 data-[state=active]:shadow-sm backdrop-blur-md cursor-pointer flex items-center gap-1.5"
                   >
                     <GitFork className="size-3.5" />
                     <span>Workflow & Suivi</span>
@@ -707,13 +707,13 @@ export function CandidatureSheet({
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                       {/* COLONNE GAUCHE (8/12) : MISSIONS PRINCIPALES */}
                       <div className="lg:col-span-8 space-y-6">
-                        <div className="rounded-2xl bg-white/5 backdrop-blur-xl p-5 lg:p-6 space-y-4 shadow-md">
-                          <div className="flex items-center justify-between border-b border-white/5 pb-3">
+                        <div className="rounded-2xl border border-slate-800 bg-[#10131F] p-5 lg:p-6 space-y-4 shadow-md">
+                          <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
                             <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-100 flex items-center gap-2">
                               <CheckCircle2 className="size-4 text-emerald-400" />{" "}
                               Missions Principales
                             </h3>
-                            <Badge className="bg-white/12 text-slate-200 border-none font-mono text-[11px] font-semibold px-2.5 py-0.5 rounded-lg shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+                            <Badge className="bg-white/10 text-slate-200 border-white/10 font-mono text-[11px] font-semibold px-2.5 py-0.5 rounded-lg">
                               {form.missionsList?.length || 0} missions
                               extraites
                             </Badge>
@@ -724,9 +724,9 @@ export function CandidatureSheet({
                               {form.missionsList.map((m, idx) => (
                                 <div
                                   key={idx}
-                                  className="flex items-start gap-3 p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-all shadow-sm"
+                                  className="flex items-start gap-3 p-4 rounded-xl border border-slate-800/90 bg-[#080A11] hover:border-slate-700/80 transition-all shadow-sm"
                                 >
-                                  <div className="flex items-center justify-center size-6 rounded-lg bg-white/12 text-slate-200 font-mono text-[11px] font-bold shrink-0 mt-0.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
+                                  <div className="flex items-center justify-center size-6 rounded-lg bg-white/10 border border-white/15 text-slate-200 font-mono text-[11px] font-bold shrink-0 mt-0.5">
                                     {String(idx + 1).padStart(2, "0")}
                                   </div>
                                   <p className="text-xs lg:text-sm text-slate-100 font-medium leading-relaxed flex-1">
@@ -746,8 +746,8 @@ export function CandidatureSheet({
                       {/* COLONNE DROITE (4/12) : CONTACTS & NOTES & AVANTAGES */}
                       <div className="lg:col-span-4 space-y-6">
                         {/* CONTACT RH */}
-                        <div className="rounded-2xl bg-white/5 backdrop-blur-xl p-5 space-y-3 shadow-md">
-                          <div className="flex items-center gap-2 border-b border-white/5 pb-2">
+                        <div className="rounded-2xl border border-slate-800 bg-[#10131F] p-5 space-y-3 shadow-md">
+                          <div className="flex items-center gap-2 border-b border-slate-800/80 pb-2">
                             <Users className="size-4 text-sky-400" />
                             <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-200 block">
                               Contact RH & Recruteur
@@ -755,7 +755,7 @@ export function CandidatureSheet({
                           </div>
                           <div className="space-y-2.5">
                             <div className="flex items-center gap-2.5 text-slate-200">
-                              <div className="p-1.5 rounded-lg bg-white/10">
+                              <div className="p-1.5 rounded-lg bg-slate-900 border border-slate-800">
                                 <User className="size-4 text-sky-400" />
                               </div>
                               <span className="font-bold text-white text-sm">
@@ -764,7 +764,7 @@ export function CandidatureSheet({
                             </div>
                             {form.contactEmail && (
                               <div className="flex items-center gap-2.5 text-slate-300">
-                                <div className="p-1.5 rounded-lg bg-white/10">
+                                <div className="p-1.5 rounded-lg bg-slate-900 border border-slate-800">
                                   <Mail className="size-4 text-slate-400" />
                                 </div>
                                 <a
@@ -777,7 +777,7 @@ export function CandidatureSheet({
                             )}
                             {form.contactPhone && (
                               <div className="flex items-center gap-2.5 text-slate-300">
-                                <div className="p-1.5 rounded-lg bg-white/10">
+                                <div className="p-1.5 rounded-lg bg-slate-900 border border-slate-800">
                                   <PhoneCall className="size-4 text-slate-400" />
                                 </div>
                                 <span className="text-xs font-semibold text-slate-200">
@@ -789,21 +789,21 @@ export function CandidatureSheet({
                         </div>
 
                         {/* AVANTAGES */}
-                        <div className="rounded-2xl bg-white/5 backdrop-blur-xl p-5 shadow-md">
+                        <div className="rounded-2xl border border-slate-800 bg-[#10131F] p-5 shadow-md">
                           <TagListEditor
                             label="Avantages & Environnement"
                             items={form.benefits || []}
                             onChange={(items) => set({ benefits: items })}
                             placeholder="Ajouter un avantage (ex: Télétravail 2j, Mutuelle...)"
-                            badgeClassName="bg-emerald-500/20 text-emerald-200 font-bold"
+                            badgeClassName="bg-emerald-500/20 text-emerald-200 border-emerald-500/40 font-bold"
                             emptyText="Aucun avantage spécifié."
                             isEditing={false}
                           />
                         </div>
 
                         {/* NOTES PRIVÉES */}
-                        <div className="rounded-2xl bg-white/5 backdrop-blur-xl p-5 space-y-3.5 shadow-md">
-                          <div className="flex items-center gap-2 border-b border-white/5 pb-2">
+                        <div className="rounded-2xl border border-slate-800 bg-[#10131F] p-5 space-y-3.5 shadow-md">
+                          <div className="flex items-center gap-2 border-b border-slate-800/80 pb-2">
                             <FileText className="size-4 text-amber-400" />
                             <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-200 block">
                               Notes Personnelles & Privées
@@ -1166,13 +1166,13 @@ export function CandidatureSheet({
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                     {/* COLONNE GAUCHE PROFIL */}
                     <div className="space-y-5">
-                      <div className="rounded-2xl bg-white/5 backdrop-blur-xl p-4 lg:p-5 space-y-5 shadow-md">
+                      <div className="rounded-2xl border border-slate-800 bg-[#10131F] p-4 lg:p-5 space-y-5">
                         <TagListEditor
                           label="Compétences indispensables / requises"
                           items={form.requiredSkills || []}
                           onChange={(items) => set({ requiredSkills: items })}
                           placeholder="ex: React, TypeScript, Tailwind..."
-                          badgeClassName="bg-rose-500/20 text-rose-200 font-semibold text-xs"
+                          badgeClassName="bg-primary/20 text-foreground border-primary/30 font-semibold text-xs"
                           emptyText="Aucune compétence obligatoire identifiée."
                           isEditing={isEditing}
                         />
@@ -1182,19 +1182,19 @@ export function CandidatureSheet({
                           items={form.preferredSkills || []}
                           onChange={(items) => set({ preferredSkills: items })}
                           placeholder="ex: Next.js, GraphQL, Docker..."
-                          badgeClassName="bg-sky-500/20 text-sky-200 font-bold text-xs"
+                          badgeClassName="bg-indigo-500/10 text-indigo-300 border-indigo-500/20 font-bold text-xs"
                           emptyText="Aucune compétence secondaire."
                           isEditing={isEditing}
                         />
                       </div>
 
-                      <div className="rounded-2xl bg-white/5 backdrop-blur-xl p-4 lg:p-5 space-y-5 shadow-md">
+                      <div className="rounded-2xl border border-slate-800 bg-[#10131F] p-4 lg:p-5 space-y-5">
                         <TagListEditor
                           label="Qualités humaines & Soft skills"
                           items={form.qualities || []}
                           onChange={(items) => set({ qualities: items })}
                           placeholder="ex: Autonomie, Esprit d'équipe..."
-                          badgeClassName="bg-amber-500/25 text-amber-100 font-bold text-xs"
+                          badgeClassName="bg-amber-500/25 text-amber-100 border-amber-500/50 font-bold text-xs"
                           emptyText="Aucune qualité listée."
                           isEditing={isEditing}
                         />
@@ -1203,20 +1203,20 @@ export function CandidatureSheet({
 
                     {/* COLONNE DROITE PROFIL */}
                     <div className="space-y-5">
-                      <div className="rounded-2xl bg-white/5 backdrop-blur-xl p-4 lg:p-5 space-y-5 shadow-md">
+                      <div className="rounded-2xl border border-slate-800 bg-[#10131F] p-4 lg:p-5 space-y-5">
                         <TagListEditor
                           label="Outils, Logiciels & Plateformes"
                           items={form.tools || []}
                           onChange={(items) => set({ tools: items })}
                           placeholder="ex: Figma, Git, Jira, Notion..."
-                          badgeClassName="bg-blue-500/25 text-blue-100 font-bold text-xs"
+                          badgeClassName="bg-sky-500/25 text-sky-100 border-sky-500/50 font-bold text-xs"
                           emptyText="Aucun outil spécifique."
                           isEditing={isEditing}
                         />
 
                         {!isEditing ? (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-white/5">
-                            <div className="p-3 rounded-xl bg-white/5 space-y-1">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-slate-800">
+                            <div className="p-3 rounded-xl bg-[#080A11] border border-slate-800 space-y-1">
                               <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-300 block">
                                 Formation & Diplômes
                               </span>
@@ -1226,7 +1226,7 @@ export function CandidatureSheet({
                                   "Non spécifié"}
                               </span>
                             </div>
-                            <div className="p-3 rounded-xl bg-white/5 space-y-1">
+                            <div className="p-3 rounded-xl bg-[#080A11] border border-slate-800 space-y-1">
                               <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-300 block">
                                 Expérience requise
                               </span>
@@ -1236,7 +1236,7 @@ export function CandidatureSheet({
                             </div>
                           </div>
                         ) : (
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-white/5">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-slate-800">
                             <div className="grid gap-1">
                               <Label
                                 htmlFor="eduReqInput"
@@ -1288,7 +1288,7 @@ export function CandidatureSheet({
                         )}
                       </div>
 
-                      <div className="rounded-2xl bg-white/5 backdrop-blur-xl p-4 lg:p-5 space-y-5 shadow-md">
+                      <div className="rounded-2xl border border-slate-800 bg-[#10131F] p-4 lg:p-5 space-y-5">
                         <LanguagesEditor
                           requiredLanguages={form.requiredLanguages || []}
                           preferredLanguages={form.preferredLanguages || []}
@@ -1316,7 +1316,7 @@ export function CandidatureSheet({
                             set({ applicationRequirements: items })
                           }
                           placeholder="ex: CV, Lettre de motivation..."
-                          badgeClassName="bg-slate-800/80 text-slate-100 font-semibold"
+                          badgeClassName="bg-slate-800 text-slate-100 border-slate-700 font-semibold"
                           emptyText="Non renseigné."
                           isEditing={isEditing}
                         />
@@ -1332,7 +1332,7 @@ export function CandidatureSheet({
                 >
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                     {/* GAUCHE ENTREPRISE */}
-                    <div className="rounded-2xl bg-white/5 backdrop-blur-xl p-4 lg:p-5 space-y-4 shadow-md">
+                    <div className="rounded-2xl border border-slate-800 bg-[#10131F] p-4 lg:p-5 space-y-4">
                       <h3 className="text-xs font-extrabold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                         <Building2 className="size-4 text-primary" /> Identité &
                         Présentation
@@ -1340,7 +1340,7 @@ export function CandidatureSheet({
 
                       {!isEditing ? (
                         <div className="space-y-4">
-                          <div className="p-4 rounded-xl bg-white/5 space-y-1.5">
+                          <div className="p-4 rounded-xl bg-[#080A11] border border-slate-800 space-y-1.5">
                             <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-300 block">
                               Présentation de l'entreprise
                             </span>
@@ -1351,7 +1351,7 @@ export function CandidatureSheet({
                           </div>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div className="p-3 rounded-xl bg-white/5 space-y-1">
+                            <div className="p-3 rounded-xl bg-[#080A11] border border-slate-800 space-y-1">
                               <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-300 block">
                                 Groupe / Maison mère
                               </span>
@@ -1362,7 +1362,7 @@ export function CandidatureSheet({
                               </span>
                             </div>
 
-                            <div className="p-3 rounded-xl bg-white/5 space-y-1">
+                            <div className="p-3 rounded-xl bg-[#080A11] border border-slate-800 space-y-1">
                               <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-300 block">
                                 Secteur d'activité
                               </span>
@@ -1485,7 +1485,7 @@ export function CandidatureSheet({
                     </div>
 
                     {/* DROITE ENTREPRISE */}
-                    <div className="rounded-2xl bg-white/5 backdrop-blur-xl p-4 lg:p-5 space-y-5 shadow-md">
+                    <div className="rounded-2xl border border-slate-800 bg-[#10131F] p-4 lg:p-5 space-y-5">
                       <MetricsEditor
                         metrics={form.companyMetrics || []}
                         onChange={(metrics) => set({ companyMetrics: metrics })}
@@ -1497,7 +1497,7 @@ export function CandidatureSheet({
                         items={form.companyContext || []}
                         onChange={(items) => set({ companyContext: items })}
                         placeholder="ex: Levée de fonds de 5M€..."
-                        badgeClassName="bg-primary/20 text-foreground font-semibold"
+                        badgeClassName="bg-primary/20 text-foreground border-primary/30 font-semibold"
                         emptyText="Aucun fait de contexte détecté."
                         isEditing={isEditing}
                       />
@@ -1507,7 +1507,7 @@ export function CandidatureSheet({
                         items={form.companyPartners || []}
                         onChange={(items) => set({ companyPartners: items })}
                         placeholder="ex: Google, L'Oréal..."
-                        badgeClassName="bg-slate-800 text-slate-100 font-medium"
+                        badgeClassName="bg-slate-800 text-slate-100 border-slate-700 font-medium"
                         emptyText="Aucun partenaire cité."
                         isEditing={isEditing}
                       />
@@ -1526,7 +1526,7 @@ export function CandidatureSheet({
                   />
 
                   {/* PRÉPARATION DE CANDIDATURE */}
-                  <div className="p-4 lg:p-5 rounded-2xl bg-white/5 backdrop-blur-xl space-y-4 shadow-md">
+                  <div className="p-4 lg:p-5 rounded-2xl bg-[#10131F] border border-slate-800 space-y-4">
                     <div className="flex items-center justify-between">
                       <h4 className="text-xs font-extrabold uppercase tracking-wider text-primary">
                         Préparation d'Entretiens & Arguments Stratégiques
@@ -1582,7 +1582,7 @@ export function CandidatureSheet({
           </div>
 
           {/* BARRE D'ACTIONS INFÉRIEURE PERSISTANTE (PLEINE LARGEUR) */}
-          <div className="flex items-center justify-between gap-3 px-6 lg:px-8 py-3.5 bg-black/30 backdrop-blur-xl shrink-0">
+          <div className="flex items-center justify-between gap-3 px-6 lg:px-8 py-3.5 border-t border-slate-800/80 bg-[#0E111B] shrink-0">
             {!isEditing ? (
               /* ACTIONS MODE CONSULTATION */
               <>

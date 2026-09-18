@@ -1,7 +1,6 @@
-import { memo, useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { toast } from "sonner";
-
 import {
   Bell,
   Building2,
@@ -30,7 +29,6 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Logo } from "@/components/Logo";
-import { useContactImport } from "@/context/ContactImportContext";
 import {
   Tooltip,
   TooltipContent,
@@ -91,7 +89,7 @@ const ASSISTANT: Item = {
 
 const bientot = () => toast("Bientôt disponible dans NACORA.");
 
-const NavRow = memo(function NavRow({
+function NavRow({
   item,
   active,
   isCollapsed,
@@ -105,9 +103,7 @@ const NavRow = memo(function NavRow({
       <item.icon
         className={cn(
           "size-4 shrink-0 transition-all duration-200",
-          active
-            ? "text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.5)]"
-            : "text-zinc-400 group-hover:text-zinc-100",
+          active ? "text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.5)]" : "text-zinc-400 group-hover:text-zinc-100",
         )}
       />
       {!isCollapsed && (
@@ -160,7 +156,7 @@ const NavRow = memo(function NavRow({
   }
 
   return buttonOrLink;
-});
+}
 
 export function AppShell({
   title,
@@ -183,27 +179,24 @@ export function AppShell({
   searchValue?: string;
   children: ReactNode;
 }) {
-  const pathname = useRouterState({
-    select: (s) => s.location.pathname,
+  const { pathname, search } = useRouterState({
+    select: (s) => ({
+      pathname: s.location.pathname,
+      search: s.location.search as Record<string, string> | undefined,
+    }),
   });
-  const searchPersona = useRouterState({
-    select: (s) =>
-      (s.location.search as Record<string, string> | undefined)?.persona,
-  });
-
-  const importState = useContactImport();
 
   const isItemActive = (item: Item) => {
     if (!item.to) return false;
     if (item.to === "/assistant") {
       if (item.search?.persona) {
         return (
-          pathname === "/assistant" && searchPersona === item.search.persona
+          pathname === "/assistant" && search?.persona === item.search.persona
         );
       }
       return (
         pathname === "/assistant" &&
-        (!searchPersona || searchPersona === "general_advisor")
+        (!search?.persona || search.persona === "general_advisor")
       );
     }
     return item.to === pathname;
@@ -214,6 +207,7 @@ export function AppShell({
   const [menuOpen, setMenuOpen] = useState(false);
 
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isHoveredExpanded, setIsHoveredExpanded] = useState(false);
   const [isHighContrast, setIsHighContrast] = useState(false);
 
   useEffect(() => {
@@ -258,7 +252,7 @@ export function AppShell({
     window.dispatchEvent(new Event("storage"));
   };
 
-  const isVisualCollapsed = isCollapsed;
+  const isVisualCollapsed = isCollapsed && !isHoveredExpanded;
 
   const toggleSidebar = () => {
     const next = !isCollapsed;
@@ -281,18 +275,7 @@ export function AppShell({
 
   return (
     <TooltipProvider>
-      <div className="relative min-h-screen bg-background text-foreground overflow-x-clip">
-        {/* Soft, Accelerated Ambient Glow Orbs with zero blur overhead */}
-        <div
-          className="pointer-events-none fixed inset-0 z-0 overflow-hidden opacity-40 will-change-transform"
-          aria-hidden="true"
-        >
-          <div className="absolute -top-32 left-[12%] h-[500px] w-[550px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(79,70,229,0.12)_0%,transparent_70%)]" />
-          <div className="absolute top-[22%] -right-24 h-[560px] w-[560px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(216,26,69,0.08)_0%,transparent_70%)]" />
-          <div className="absolute top-[58%] left-[4%] h-[520px] w-[520px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(14,165,233,0.08)_0%,transparent_70%)]" />
-          <div className="absolute -bottom-28 right-[22%] h-[480px] w-[480px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(147,51,234,0.08)_0%,transparent_70%)]" />
-        </div>
-
+      <div className="min-h-screen bg-background text-foreground">
         {/* Menu Mobile Slide-over */}
         <div
           className={cn(
@@ -306,13 +289,13 @@ export function AppShell({
             aria-label="Fermer le menu"
             onClick={() => setMenuOpen(false)}
             className={cn(
-              "absolute inset-0 bg-black/65 backdrop-blur-sm transition-opacity duration-200",
+              "absolute inset-0 bg-black/60 transition-opacity duration-200",
               menuOpen ? "opacity-100" : "opacity-0",
             )}
           />
           <aside
             className={cn(
-              "absolute inset-y-0 left-0 flex w-[85%] max-w-[300px] flex-col border-r border-white/12 bg-[#0c0f1d]/95 backdrop-blur-xl p-4 transition-transform duration-200 ease-out shadow-[0_24px_60px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.2)]",
+              "absolute inset-y-0 left-0 flex w-[85%] max-w-[300px] flex-col border-r border-sidebar-border bg-sidebar p-4 transition-transform duration-250 ease-out",
               menuOpen ? "translate-x-0" : "-translate-x-full",
             )}
           >
@@ -322,7 +305,7 @@ export function AppShell({
                 type="button"
                 aria-label="Fermer le menu"
                 onClick={() => setMenuOpen(false)}
-                className="grid size-9 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
+                className="grid size-9 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-foreground"
               >
                 <X className="size-5" />
               </button>
@@ -344,7 +327,7 @@ export function AppShell({
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-white/10">
+              <div className="pt-2 border-t border-sidebar-border/60">
                 <p className="mb-2 flex items-center justify-between px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                   <span>NACORA AI</span>
                   <span className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
@@ -363,7 +346,7 @@ export function AppShell({
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-white/10 flex flex-col gap-1">
+              <div className="pt-2 border-t border-sidebar-border/60 flex flex-col gap-1">
                 <NavRow
                   item={{
                     label: "Paramètres",
@@ -383,8 +366,10 @@ export function AppShell({
 
         {/* Sidebar Desktop */}
         <aside
+          onMouseEnter={() => setIsHoveredExpanded(true)}
+          onMouseLeave={() => setIsHoveredExpanded(false)}
           className={cn(
-            "fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-white/12 bg-[#0c0f1d]/90 backdrop-blur-xl md:flex transition-[width] duration-200 shadow-[4px_0_35px_rgba(0,0,0,0.45),inset_-1px_0_0_rgba(255,255,255,0.06)]",
+            "fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-white/10 bg-sidebar/80 backdrop-blur-2xl md:flex transition-all duration-250 shadow-[4px_0_30px_rgba(0,0,0,0.3)]",
             isVisualCollapsed ? "w-[72px]" : "w-[254px]",
           )}
         >
@@ -439,7 +424,9 @@ export function AppShell({
 
             <div
               className={
-                isVisualCollapsed ? "pt-2" : "pt-2 border-t border-white/10"
+                isVisualCollapsed
+                  ? "pt-2"
+                  : "pt-2 border-t border-white/10"
               }
             >
               {!isVisualCollapsed && (
@@ -499,11 +486,11 @@ export function AppShell({
         {/* Contenu Principal */}
         <div
           className={cn(
-            "relative z-10 flex flex-col min-h-screen transition-all duration-250",
+            "flex flex-col min-h-screen transition-all duration-250",
             isCollapsed ? "md:pl-[72px]" : "md:pl-[254px]",
           )}
         >
-          <header className="sticky top-0 z-30 border-b border-white/12 bg-[#060812]/85 backdrop-blur-xl shadow-[0_10px_35px_-5px_rgba(0,0,0,0.4),inset_0_-1px_0_0_rgba(255,255,255,0.06)]">
+          <header className="sticky top-0 z-30 border-b border-white/10 bg-background/70 backdrop-blur-2xl shadow-[0_4px_30px_rgba(0,0,0,0.25)]">
             <div className="mx-auto flex h-auto max-w-[1360px] flex-wrap items-center justify-between gap-3 px-4 py-2.5 sm:px-6 md:h-[64px] md:flex-nowrap md:py-0">
               {/* Header Mobile Top */}
               <div className="flex w-full items-center gap-2.5 md:hidden">
@@ -511,20 +498,11 @@ export function AppShell({
                   type="button"
                   onClick={() => setMenuOpen(true)}
                   aria-label="Ouvrir le menu"
-                  className="press grid size-10 shrink-0 place-items-center rounded-xl border border-white/14 bg-white/6 text-foreground backdrop-blur-xl"
+                  className="press grid size-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-foreground backdrop-blur-md"
                 >
                   <Menu className="size-4.5" />
                 </button>
                 <Logo />
-                {importState.isImporting && (
-                  <div className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-500/15 border border-indigo-500/30 px-2 py-1 text-[10px] font-semibold text-indigo-300">
-                    <Sparkles className="size-3 text-indigo-400 animate-spin" />
-                    <span>
-                      {importState.current}/{importState.total} (
-                      {importState.percentage}%)
-                    </span>
-                  </div>
-                )}
                 <div className="ml-auto flex items-center gap-1.5">
                   <button
                     type="button"
@@ -534,7 +512,7 @@ export function AppShell({
                       "grid size-10 shrink-0 place-items-center rounded-xl border transition-all",
                       isHighContrast
                         ? "border-primary bg-primary/15 text-primary"
-                        : "border-white/12 bg-white/6 text-muted-foreground",
+                        : "border-white/10 bg-white/5 text-muted-foreground",
                     )}
                   >
                     {isHighContrast ? (
@@ -547,7 +525,7 @@ export function AppShell({
                     type="button"
                     onClick={bientot}
                     aria-label="Notifications"
-                    className="relative grid size-10 shrink-0 place-items-center rounded-xl border border-white/12 bg-white/6 text-muted-foreground transition-all hover:text-foreground"
+                    className="relative grid size-10 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-muted-foreground transition-all hover:text-foreground"
                   >
                     <Bell className="size-4.5" />
                     <span className="absolute right-2 top-2 size-2 rounded-full bg-primary shadow-[0_0_8px_rgba(216,26,69,0.8)]" />
@@ -566,31 +544,15 @@ export function AppShell({
                       : setLocal(e.target.value)
                   }
                   placeholder="Rechercher une offre, une entreprise, un contact…"
-                  className="h-10 w-full rounded-2xl border border-white/14 bg-white/6 dark:bg-white/6 pl-10 pr-12 text-sm text-foreground outline-none backdrop-blur-2xl shadow-[inset_0_1px_3px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.12)] transition-all placeholder:text-muted-foreground/60 focus:border-primary/60 focus:bg-white/10 focus:ring-2 focus:ring-primary/25"
+                  className="h-10 w-full rounded-2xl border border-white/10 bg-white/5 dark:bg-white/5 pl-10 pr-12 text-sm text-foreground outline-none backdrop-blur-md shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] transition-all placeholder:text-muted-foreground/60 focus:border-primary/50 focus:bg-white/8 focus:ring-2 focus:ring-primary/20"
                 />
-                <kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-lg border border-white/12 bg-white/10 px-2 py-0.5 text-[10px] font-mono text-muted-foreground sm:block backdrop-blur-md">
+                <kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-lg border border-white/10 bg-white/10 px-2 py-0.5 text-[10px] font-mono text-muted-foreground sm:block backdrop-blur-md">
                   ⌘K
                 </kbd>
               </div>
 
               {/* Actions Desktop Header */}
               <div className="hidden md:flex items-center gap-2.5 shrink-0">
-                {importState.isImporting && (
-                  <div
-                    className="inline-flex items-center gap-2 rounded-xl bg-indigo-500/15 border border-indigo-500/30 px-3 py-1.5 text-xs text-indigo-300 backdrop-blur-xl animate-pulse shadow-sm"
-                    title={
-                      importState.statusLabel ||
-                      "Import et classification IA des contacts en cours..."
-                    }
-                  >
-                    <Sparkles className="size-3.5 text-indigo-400 animate-spin" />
-                    <span className="font-semibold text-[11px]">
-                      Import IA : {importState.current}/{importState.total} (
-                      {importState.percentage}%)
-                    </span>
-                  </div>
-                )}
-
                 <button
                   type="button"
                   onClick={toggleHighContrast}
@@ -600,7 +562,7 @@ export function AppShell({
                     "grid size-9.5 shrink-0 place-items-center rounded-xl border transition-all cursor-pointer backdrop-blur-md",
                     isHighContrast
                       ? "border-primary bg-primary/15 text-primary"
-                      : "border-white/12 bg-white/6 text-muted-foreground hover:text-foreground hover:bg-white/12",
+                      : "border-white/10 bg-white/5 text-muted-foreground hover:text-foreground hover:bg-white/10",
                   )}
                 >
                   {isHighContrast ? (
@@ -614,7 +576,7 @@ export function AppShell({
                   type="button"
                   onClick={bientot}
                   aria-label="Notifications"
-                  className="relative grid size-9.5 shrink-0 place-items-center rounded-xl border border-white/12 bg-white/6 text-muted-foreground transition-all hover:text-foreground hover:bg-white/12 backdrop-blur-md cursor-pointer"
+                  className="relative grid size-9.5 shrink-0 place-items-center rounded-xl border border-white/10 bg-white/5 text-muted-foreground transition-all hover:text-foreground hover:bg-white/10 backdrop-blur-md cursor-pointer"
                 >
                   <Bell className="size-4" />
                   <span className="absolute right-2 top-2 size-2 rounded-full bg-primary shadow-[0_0_8px_rgba(216,26,69,0.8)]" />
@@ -624,7 +586,7 @@ export function AppShell({
                   <button
                     type="button"
                     onClick={onAdd}
-                    className="press inline-flex h-9.5 items-center gap-2 rounded-xl bg-gradient-to-b from-[#EC0040] to-[#D81A45] px-4 text-xs font-semibold text-white border border-white/30 shadow-[0_6px_20px_rgba(216,26,69,0.45),inset_0_1px_1px_rgba(255,255,255,0.45)] hover:brightness-110 active:brightness-95 transition-all cursor-pointer"
+                    className="press inline-flex h-9.5 items-center gap-2 rounded-xl bg-gradient-to-b from-[#EC0040] to-[#D81A45] px-4 text-xs font-semibold text-white border border-white/25 shadow-[0_4px_16px_rgba(216,26,69,0.4),inset_0_1px_0_rgba(255,255,255,0.3)] hover:brightness-110 active:brightness-95 transition-all cursor-pointer"
                   >
                     <Plus className="size-4" /> Nouvelle Opportunité
                   </button>
@@ -673,7 +635,7 @@ export function AppShell({
         {pathname !== "/assistant" && (
           <Link
             to="/assistant"
-            className="fixed bottom-20 right-4 z-30 flex items-center gap-2.5 rounded-full border border-white/20 bg-card/80 backdrop-blur-3xl px-4 py-2.5 text-xs font-semibold text-foreground shadow-[0_12px_36px_rgba(0,0,0,0.55),0_0_24px_rgba(216,26,69,0.3),inset_0_1px_1px_0_rgba(255,255,255,0.4)] transition-all hover:scale-105 hover:border-primary/60 active:scale-95 md:bottom-6 md:right-6"
+            className="fixed bottom-20 right-4 z-30 flex items-center gap-2.5 rounded-full border border-white/20 bg-card/85 backdrop-blur-2xl px-4 py-2.5 text-xs font-semibold text-foreground shadow-[0_10px_30px_rgba(0,0,0,0.5),0_0_20px_rgba(216,26,69,0.25),inset_0_1px_0_rgba(255,255,255,0.3)] transition-all hover:scale-105 hover:border-primary/50 active:scale-95 md:bottom-6 md:right-6"
             title="Ouvrir l'assistant IA Gemini"
           >
             <span className="flex size-2 rounded-full bg-primary animate-pulse" />
@@ -683,7 +645,7 @@ export function AppShell({
         )}
 
         {/* Barre inférieure mobile Dock Liquid Glass */}
-        <nav className="fixed inset-x-3 bottom-3 z-40 rounded-3xl border border-white/16 bg-[#0c0f1d]/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.7),inset_0_1px_1px_rgba(255,255,255,0.25)] md:hidden">
+        <nav className="fixed inset-x-3 bottom-3 z-40 rounded-3xl border border-white/15 bg-card/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-3xl shadow-[0_16px_40px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.2)] md:hidden">
           <div className="flex items-center justify-around px-2 py-1.5">
             <MobileTab
               to="/opportunites"

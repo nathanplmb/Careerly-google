@@ -11,107 +11,6 @@ export const TYPES_CONTACT = [
 ] as const;
 export type TypeContact = (typeof TYPES_CONTACT)[number];
 
-export const CATEGORIES_CONTACT = [
-  "Recruteur / RH",
-  "Alumni",
-  "Étudiant / en recherche",
-  "Professionnel du secteur ciblé",
-  "Professionnel hors secteur ciblé",
-  "Autre",
-] as const;
-export type CategoryContact = (typeof CATEGORIES_CONTACT)[number];
-
-export function getCategoryBadgeStyle(category?: string): {
-  bgClass: string;
-  textClass: string;
-  borderClass: string;
-  fullClass: string;
-  dotClass: string;
-} {
-  if (!category) {
-    return {
-      bgClass: "bg-zinc-500/10",
-      textClass: "text-zinc-400",
-      borderClass: "border-zinc-500/20",
-      fullClass: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20",
-      dotClass: "bg-zinc-400",
-    };
-  }
-
-  const catLower = category.toLowerCase().trim();
-
-  // Recruteur / RH : vert doux (plus stratégique)
-  if (catLower.includes("recruteur") || catLower.includes("rh")) {
-    return {
-      bgClass: "bg-emerald-500/15",
-      textClass: "text-emerald-300",
-      borderClass: "border-emerald-500/30",
-      fullClass: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
-      dotClass: "bg-emerald-400",
-    };
-  }
-
-  // Alumni : bleu doux
-  if (catLower.includes("alumni") || catLower.includes("ancien")) {
-    return {
-      bgClass: "bg-sky-500/15",
-      textClass: "text-sky-300",
-      borderClass: "border-sky-500/30",
-      fullClass: "bg-sky-500/15 text-sky-300 border-sky-500/30",
-      dotClass: "bg-sky-400",
-    };
-  }
-
-  // Étudiant / en recherche : violet/lavande doux
-  if (
-    catLower.includes("étudiant") ||
-    catLower.includes("etudiant") ||
-    catLower.includes("recherche")
-  ) {
-    return {
-      bgClass: "bg-purple-500/15",
-      textClass: "text-purple-300",
-      borderClass: "border-purple-500/30",
-      fullClass: "bg-purple-500/15 text-purple-300 border-purple-500/30",
-      dotClass: "bg-purple-400",
-    };
-  }
-
-  // Professionnel hors secteur ciblé : gris/neutre en verre
-  if (
-    catLower.includes("hors secteur") ||
-    (catLower.includes("hors") && catLower.includes("ciblé"))
-  ) {
-    return {
-      bgClass: "bg-slate-500/15",
-      textClass: "text-slate-300",
-      borderClass: "border-slate-500/30",
-      fullClass: "bg-slate-500/15 text-slate-300 border-slate-500/30",
-      dotClass: "bg-slate-400",
-    };
-  }
-
-  // Professionnel du secteur ciblé : ambre/doré doux
-  if (catLower.includes("secteur ciblé") || catLower.includes("ciblé")) {
-    return {
-      bgClass: "bg-amber-500/15",
-      textClass: "text-amber-300",
-      borderClass: "border-amber-500/30",
-      fullClass: "bg-amber-500/15 text-amber-300 border-amber-500/30",
-      dotClass: "bg-amber-400",
-    };
-  }
-
-  // Autre / non catégorisable : gris plus clair, discret
-  return {
-    bgClass: "bg-zinc-500/10",
-    textClass: "text-zinc-400",
-    borderClass: "border-zinc-500/20",
-    fullClass: "bg-zinc-500/10 text-zinc-400 border-zinc-500/20",
-    dotClass: "bg-zinc-400",
-  };
-}
-
 export const SOURCES_CONTACT = [
   "manual",
   "phone",
@@ -150,7 +49,6 @@ export type Contact = {
   id: string;
   // Nom et identité
   nom: string; // Nom d'affichage / complet
-  prenom?: string;
   firstName?: string;
   lastName?: string;
   fullName?: string;
@@ -172,19 +70,7 @@ export type Contact = {
 
   // Classification & Tags
   type: TypeContact;
-  category?: CategoryContact;
-  categoryConfidence?: number; // 0-100
-  normalizedFunction?: string;
-  normalizedLevel?: string;
-  aiEnriched?: boolean;
   tags?: string[];
-
-  // Parcours, Formation & Pertinence
-  pastCompanies?: string[]; // Entreprises antérieures
-  education?: string[]; // Établissements & diplômes
-  companySector?: string; // Secteur d'activité de l'entreprise
-  connectionPoints?: string[]; // Puces/tags de points de connexion détectés avec l'utilisateur
-  relevanceScore?: number; // Score de pertinence calculé (0 à 100)
 
   // Opportunités associées (relation 1-to-N)
   candidatureId: string; // Rétrocompatibilité
@@ -269,11 +155,8 @@ export function getContactInitials(c: Partial<Contact>): string {
   const name = getContactFullName(c);
   if (!name || name === "Sans nom") return "??";
   const words = name.trim().split(/\s+/).filter(Boolean);
-  const first = words[0];
-  const last = words[words.length - 1];
-  if (!first) return "??";
-  if (words.length === 1 || !last) return first.slice(0, 2).toUpperCase();
-  return (first.charAt(0) + last.charAt(0)).toUpperCase();
+  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
+  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
 }
 
 export function getContactCompany(c: Partial<Contact>): string {
@@ -397,17 +280,6 @@ export function findMatchingContact(
   return null;
 }
 
-export function getInitials(c: Partial<Contact>): string {
-  const name = getContactFullName(c);
-  if (!name) return "??";
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  const first = parts[0];
-  const last = parts[parts.length - 1];
-  if (!first) return "??";
-  if (parts.length === 1 || !last) return first.slice(0, 2).toUpperCase();
-  return (first.charAt(0) + last.charAt(0)).toUpperCase();
-}
-
 // ---------------------------------------------------------------------------
 // Règle d'or : DONNÉE MANUELLE > DONNÉE IMPORTÉE > DONNÉE DÉDUITE
 // Enrichit un contact existant sans JAMAIS écraser de données non vides.
@@ -454,42 +326,6 @@ export function enrichContactWithoutLoss(
     merged.location = incoming.location;
   if (!merged.avatarUrl && incoming.avatarUrl)
     merged.avatarUrl = incoming.avatarUrl;
-
-  // Categorisation & IA
-  if (!merged.category && incoming.category)
-    merged.category = incoming.category;
-  if (incoming.categoryConfidence !== undefined)
-    merged.categoryConfidence = incoming.categoryConfidence;
-  if (!merged.normalizedFunction && incoming.normalizedFunction)
-    merged.normalizedFunction = incoming.normalizedFunction;
-  if (!merged.normalizedLevel && incoming.normalizedLevel)
-    merged.normalizedLevel = incoming.normalizedLevel;
-  if (incoming.aiEnriched) merged.aiEnriched = true;
-
-  if (incoming.pastCompanies?.length) {
-    merged.pastCompanies = Array.from(
-      new Set([...(merged.pastCompanies || []), ...incoming.pastCompanies]),
-    );
-  }
-  if (incoming.education?.length) {
-    merged.education = Array.from(
-      new Set([...(merged.education || []), ...incoming.education]),
-    );
-  }
-  if (!merged.companySector && incoming.companySector) {
-    merged.companySector = incoming.companySector;
-  }
-  if (incoming.relevanceScore !== undefined) {
-    merged.relevanceScore = incoming.relevanceScore;
-  }
-  if (incoming.connectionPoints?.length) {
-    merged.connectionPoints = Array.from(
-      new Set([
-        ...(merged.connectionPoints || []),
-        ...incoming.connectionPoints,
-      ]),
-    );
-  }
 
   // Notes : ajout sans écrasement
   if (incoming.notes && incoming.notes.trim()) {
@@ -732,116 +568,43 @@ export function parseLinkedInCsv(rawCsv: string): Partial<Contact>[] {
   const rows = parseCsvRows(rawCsv);
   if (rows.length < 2) return contacts;
 
-  // Repérage dynamique de la ligne d'en-tête (en cas de commentaires/notes au début du fichier)
-  let headerRowIndex = -1;
-  let idxFirstName = -1;
-  let idxLastName = -1;
-  let idxUrl = -1;
-  let idxEmail = -1;
-  let idxCompany = -1;
-  let idxPosition = -1;
+  // Repérage des colonnes d'en-tête
+  const headerRow = rows[0].map((h) =>
+    h
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim(),
+  );
 
-  for (let r = 0; r < Math.min(rows.length, 15); r++) {
+  const idxFirstName = headerRow.findIndex(
+    (h) => h.includes("first") || h.includes("prenom"),
+  );
+  const idxLastName = headerRow.findIndex(
+    (h) => h.includes("last") || (h.includes("nom") && !h.includes("prenom")),
+  );
+  const idxUrl = headerRow.findIndex(
+    (h) => h.includes("url") || h.includes("profil") || h.includes("linkedin"),
+  );
+  const idxEmail = headerRow.findIndex(
+    (h) => h.includes("email") || h.includes("mail") || h.includes("courriel"),
+  );
+  const idxCompany = headerRow.findIndex(
+    (h) =>
+      h.includes("company") ||
+      h.includes("entreprise") ||
+      h.includes("societe"),
+  );
+  const idxPosition = headerRow.findIndex(
+    (h) =>
+      h.includes("position") ||
+      h.includes("poste") ||
+      h.includes("titre") ||
+      h.includes("job"),
+  );
+
+  for (let r = 1; r < rows.length; r++) {
     const row = rows[r];
-    if (!row) continue;
-    const candidateRow = row.map((h) =>
-      (h || "")
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .trim(),
-    );
-
-    const fn = candidateRow.findIndex(
-      (h) => h.includes("first") || h.includes("prenom"),
-    );
-    const ln = candidateRow.findIndex(
-      (h) => h.includes("last") || (h.includes("nom") && !h.includes("prenom")),
-    );
-    const comp = candidateRow.findIndex(
-      (h) =>
-        h.includes("company") ||
-        h.includes("entreprise") ||
-        h.includes("societe") ||
-        h.includes("organization"),
-    );
-    const pos = candidateRow.findIndex(
-      (h) =>
-        h.includes("position") ||
-        h.includes("poste") ||
-        h.includes("titre") ||
-        h.includes("job") ||
-        h.includes("title"),
-    );
-
-    // Si au moins deux colonnes clés sont trouvées, c'est la ligne d'en-tête
-    let matchesCount = 0;
-    if (fn !== -1) matchesCount++;
-    if (ln !== -1) matchesCount++;
-    if (comp !== -1) matchesCount++;
-    if (pos !== -1) matchesCount++;
-
-    if (matchesCount >= 2) {
-      headerRowIndex = r;
-      idxFirstName = fn;
-      idxLastName = ln;
-      idxCompany = comp;
-      idxPosition = pos;
-      idxUrl = candidateRow.findIndex(
-        (h) =>
-          h.includes("url") || h.includes("profil") || h.includes("linkedin"),
-      );
-      idxEmail = candidateRow.findIndex(
-        (h) =>
-          h.includes("email") || h.includes("mail") || h.includes("courriel"),
-      );
-      break;
-    }
-  }
-
-  // Si aucune ligne d'en-tête explicite n'est trouvée, utiliser la ligne 0 par défaut
-  if (headerRowIndex === -1 && rows.length > 0) {
-    headerRowIndex = 0;
-    const firstRow = rows[0];
-    const headerRow = (firstRow || []).map((h) =>
-      (h || "")
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .trim(),
-    );
-    idxFirstName = headerRow.findIndex(
-      (h) => h.includes("first") || h.includes("prenom"),
-    );
-    idxLastName = headerRow.findIndex(
-      (h) => h.includes("last") || (h.includes("nom") && !h.includes("prenom")),
-    );
-    idxUrl = headerRow.findIndex(
-      (h) =>
-        h.includes("url") || h.includes("profil") || h.includes("linkedin"),
-    );
-    idxEmail = headerRow.findIndex(
-      (h) =>
-        h.includes("email") || h.includes("mail") || h.includes("courriel"),
-    );
-    idxCompany = headerRow.findIndex(
-      (h) =>
-        h.includes("company") ||
-        h.includes("entreprise") ||
-        h.includes("societe"),
-    );
-    idxPosition = headerRow.findIndex(
-      (h) =>
-        h.includes("position") ||
-        h.includes("poste") ||
-        h.includes("titre") ||
-        h.includes("job"),
-    );
-  }
-
-  for (let r = headerRowIndex + 1; r < rows.length; r++) {
-    const row = rows[r];
-    if (!row) continue;
     const firstName = idxFirstName !== -1 ? row[idxFirstName] || "" : "";
     const lastName = idxLastName !== -1 ? row[idxLastName] || "" : "";
     const url = idxUrl !== -1 ? row[idxUrl] || "" : "";
@@ -1008,188 +771,4 @@ export function saveContactsLocal(items: Contact[]): void {
   } catch {
     // ignorer
   }
-}
-
-export type UserScoringContext = {
-  school?: string; // ex: "IUT Clermont Auvergne", "Montluçon", "B.U.T. Techniques de Commercialisation"
-  targetSectors?: string[]; // ex: ["finance", "fintech", "gestion de patrimoine", "banque"]
-};
-
-/**
- * PONDÉRATION DU SCORE DE PERTINENCE NACORA (0 à 100%)
- *
- * 1. ÉTABLISSEMENT / FORMATION COMMUNE (Poids max : 30 pts)
- *    - Même établissement/école (ex: IUT Clermont Auvergne / Montluçon) : +25 pts
- *    - Même diplôme/spécialité (ex: Tech de Co / B.U.T. Techniques de Commercialisation) : +5 pts
- *
- * 2. CATÉGORIE DU CONTACT (Poids max : 30 pts)
- *    - Recruteur / RH : +30 pts (contacts prioritaires pour le recrutement)
- *    - Alumni : +25 pts (contacts réseau à fort taux de réponse)
- *    - Professionnel du secteur ciblé : +20 pts
- *    - Étudiant / en recherche : +10 pts
- *    - Professionnel hors secteur ciblé : +5 pts
- *    - Autre : 0 pt
- *
- * 3. CORRESPONDANCE SECTEUR CIBLÉ (Poids max : 20 pts)
- *    - Secteur correspondant à la finance / fintech / gestion de patrimoine / banque / conseil : +20 pts
- *
- * 4. RACCORDEMENT OPPORTUNITÉ KANBAN (Poids max : 20 pts)
- *    - Entreprise actuelle du contact correspondant à une opportunité active du Kanban : +20 pts
- *    - Entreprise passée du contact correspondant à une opportunité active du Kanban : +10 pts
- *
- * 5. CONTACT DÉJÀ "CHAUD" / ÉCHANGES EXISTANTS (Bonus max : 10 pts)
- *    - Au moins une interaction enregistrée dans l'historique : +10 pts
- *
- * SCORE FINAL = Math.min(100, Total des points)
- */
-export function computeContactRelevance(
-  contact: Contact,
-  candidatures: { entreprise: string; status?: string }[] = [],
-  userCtx?: UserScoringContext,
-): { score: number; connectionPoints: string[] } {
-  let score = 0;
-  const connectionPoints: string[] = [];
-
-  const rawSchool = (userCtx?.school || "IUT Clermont Auvergne").toLowerCase();
-  const defaultTargetSectors = [
-    "finance",
-    "fintech",
-    "gestion de patrimoine",
-    "banque",
-    "conseil",
-    "assurance",
-    "investissement",
-    "private equity",
-    "m&a",
-    "commercialisation",
-  ];
-  const targetSectors = userCtx?.targetSectors?.length
-    ? userCtx.targetSectors.map((s) => s.toLowerCase())
-    : defaultTargetSectors;
-
-  // 1. ÉTABLISSEMENT / FORMATION (Max 30 pts)
-  const contactEduStr = (contact.education || []).join(" ").toLowerCase();
-  const contactNotesStr = (contact.notes || "").toLowerCase();
-  const combinedEduText = `${contactEduStr} ${contactNotesStr} ${contact.category === "Alumni" ? "alumni" : ""}`;
-
-  const isSameSchool =
-    combinedEduText.includes("iut clermont") ||
-    combinedEduText.includes("montluçon") ||
-    combinedEduText.includes("montlucon") ||
-    (rawSchool.length > 3 && combinedEduText.includes(rawSchool));
-
-  const isSameFormation =
-    combinedEduText.includes("techniques de commercialisation") ||
-    combinedEduText.includes("tech de co") ||
-    combinedEduText.includes("b.u.t") ||
-    combinedEduText.includes("but tc");
-
-  if (isSameSchool) {
-    score += 25;
-    connectionPoints.push(
-      "Même établissement : IUT Clermont Auvergne (Montluçon)",
-    );
-    if (isSameFormation) {
-      score += 5;
-      connectionPoints.push("Même formation : Tech de Co (B.U.T.)");
-    }
-  } else if (isSameFormation) {
-    score += 15;
-    connectionPoints.push(
-      "Formation similaire : Techniques de Commercialisation",
-    );
-  } else if (contact.category === "Alumni") {
-    score += 20;
-    connectionPoints.push("Alumni de ta formation");
-  }
-
-  // 2. CATÉGORIE DU CONTACT (Max 30 pts)
-  switch (contact.category) {
-    case "Recruteur / RH":
-      score += 30;
-      connectionPoints.push("Contact stratégique : Recruteur / RH");
-      break;
-    case "Alumni":
-      if (!isSameSchool) {
-        score += 25;
-      }
-      break;
-    case "Professionnel du secteur ciblé":
-      score += 20;
-      break;
-    case "Étudiant / en recherche":
-      score += 10;
-      break;
-    case "Professionnel hors secteur ciblé":
-      score += 5;
-      break;
-    default:
-      break;
-  }
-
-  // 3. SECTEUR D'ACTIVITÉ CIBLÉ (Max 20 pts)
-  const contactSector = (contact.companySector || "").toLowerCase();
-  const contactRole = (contact.poste || "").toLowerCase();
-
-  const isTargetSector = targetSectors.some(
-    (sec) => contactSector.includes(sec) || contactRole.includes(sec),
-  );
-
-  if (isTargetSector) {
-    score += 20;
-    const sectorLabel =
-      contact.companySector || "Finance / Fintech / Gestion de patrimoine";
-    connectionPoints.push(`Secteur ciblé : ${sectorLabel}`);
-  }
-
-  // 4. RACCORDEMENT AVEC ENTREPRISES DU KANBAN (Max 20 pts)
-  const currentCompany = (contact.entreprise || "").trim();
-  const pastCompanies = contact.pastCompanies || [];
-
-  const matchedKanbanCurrent = candidatures.find(
-    (c) =>
-      c.entreprise &&
-      currentCompany &&
-      (c.entreprise.toLowerCase().includes(currentCompany.toLowerCase()) ||
-        currentCompany.toLowerCase().includes(c.entreprise.toLowerCase())),
-  );
-
-  if (matchedKanbanCurrent) {
-    score += 20;
-    connectionPoints.push(
-      `Poste chez ${matchedKanbanCurrent.entreprise} (Opportunité dans ton Kanban)`,
-    );
-  } else {
-    const matchedKanbanPast = candidatures.find(
-      (c) =>
-        c.entreprise &&
-        pastCompanies.some(
-          (past) =>
-            past.toLowerCase().includes(c.entreprise.toLowerCase()) ||
-            c.entreprise.toLowerCase().includes(past.toLowerCase()),
-        ),
-    );
-    if (matchedKanbanPast) {
-      score += 10;
-      connectionPoints.push(
-        `Ex-collaborateur de ${matchedKanbanPast.entreprise} (Entreprise visée)`,
-      );
-    }
-  }
-
-  // 5. CONTACT DÉJÀ "CHAUD" (Bonus Max 10 pts)
-  if (contact.historique && contact.historique.length > 0) {
-    score += 10;
-    connectionPoints.push(
-      `${contact.historique.length} échange(s) déjà enregistré(s)`,
-    );
-  }
-
-  const finalScore = Math.min(100, Math.max(0, score));
-  const uniquePoints = Array.from(new Set(connectionPoints));
-
-  return {
-    score: finalScore,
-    connectionPoints: uniquePoints,
-  };
 }

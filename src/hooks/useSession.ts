@@ -20,117 +20,94 @@ export interface NormalizedUser {
   created_at: string;
 }
 
-// Shared global session state to avoid multiple concurrent auth listeners and redundant re-renders
-let cachedFirebaseUser: FirebaseUser | null = null;
-let cachedSession: Session | null = null;
-let cachedLocalUser: ReturnType<typeof getCompteActif> | null = null;
-let cachedLoading = true;
-let isAuthInitialized = false;
-const sessionListeners = new Set<() => void>();
-
-function notifySessionListeners() {
-  sessionListeners.forEach((listener) => listener());
-}
-
-function initGlobalAuth() {
-  if (isAuthInitialized || typeof window === "undefined") return;
-  isAuthInitialized = true;
-  cachedLocalUser = getCompteActif();
-
-  if (isFirebaseConfigured()) {
-    onAuthStateChanged(firebaseAuth, (fUser) => {
-      cachedFirebaseUser = fUser;
-      cachedLoading = false;
-      notifySessionListeners();
-    });
-  }
-
-  window.addEventListener("careerly_auth_change", () => {
-    cachedLocalUser = getCompteActif();
-    notifySessionListeners();
-  });
-
-  if (isSupabaseConfigured()) {
-    try {
-      supabase.auth.onAuthStateChange((_e, s) => {
-        cachedSession = s;
-        cachedLoading = false;
-        notifySessionListeners();
-      });
-
-      supabase.auth
-        .getSession()
-        .then(({ data }) => {
-          cachedSession = data?.session ?? null;
-          cachedLoading = false;
-          notifySessionListeners();
-        })
-        .catch(() => {
-          cachedLoading = false;
-          notifySessionListeners();
-        });
-    } catch {
-      cachedLoading = false;
-      notifySessionListeners();
-    }
-  } else if (!isFirebaseConfigured()) {
-    cachedLoading = false;
-    notifySessionListeners();
-  }
-}
-
 export function useSession() {
-  const [, setTick] = useState(0);
+  const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [localUser, setLocalUser] = useState<ReturnType<
+    typeof getCompteActif
+  > | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    initGlobalAuth();
-    const update = () => setTick((t) => t + 1);
-    sessionListeners.add(update);
+    setLocalUser(getCompteActif());
+    let unsubsFirebase: (() => void) | undefined;
+    if (isFirebaseConfigured()) {
+      unsubsFirebase = onAuthStateChanged(firebaseAuth, (fUser) => {
+        setFirebaseUser(fUser);
+        setLoading(false);
+      });
+    }
+
+    let unsubscribeSupabase: (() => void) | undefined;
+    const handleLocalAuth = () => {
+      setLocalUser(getCompteActif());
+    };
+    window.addEventListener("careerly_auth_change", handleLocalAuth);
+
+    if (isSupabaseConfigured()) {
+      try {
+        const res = supabase.auth.onAuthStateChange((_e, s) => {
+          setSession(s);
+          setLoading(false);
+        });
+        unsubscribeSupabase = res?.data?.subscription?.unsubscribe;
+
+        supabase.auth
+          .getSession()
+          .then(({ data }) => {
+            setSession(data?.session ?? null);
+            setLoading(false);
+          })
+          .catch(() => {
+            setLoading(false);
+          });
+      } catch {
+        setLoading(false);
+      }
+    } else if (!isFirebaseConfigured()) {
+      setLoading(false);
+    }
+
     return () => {
-      sessionListeners.delete(update);
+      unsubsFirebase?.();
+      unsubscribeSupabase?.();
+      window.removeEventListener("careerly_auth_change", handleLocalAuth);
     };
   }, []);
 
-  // Compute normalized user from cached state
   const computedUser = useMemo((): NormalizedUser | SupabaseUser | null => {
-    if (cachedFirebaseUser) {
+    if (firebaseUser) {
       return {
-        id: cachedFirebaseUser.uid,
-        email: cachedFirebaseUser.email ?? "",
+        id: firebaseUser.uid,
+        email: firebaseUser.email ?? "",
         user_metadata: {
           full_name:
-            cachedFirebaseUser.displayName ||
-            cachedFirebaseUser.email?.split("@")[0] ||
+            firebaseUser.displayName ||
+            firebaseUser.email?.split("@")[0] ||
             "Membre",
-          avatar_url: cachedFirebaseUser.photoURL ?? undefined,
+          avatar_url: firebaseUser.photoURL ?? undefined,
         },
         app_metadata: { provider: "firebase" },
         aud: "authenticated",
         created_at:
-          cachedFirebaseUser.metadata.creationTime ?? new Date().toISOString(),
+          firebaseUser.metadata.creationTime ?? new Date().toISOString(),
       };
     }
-    if (cachedSession?.user) return cachedSession.user;
-    if (cachedLocalUser) {
+    if (session?.user) return session.user;
+    if (localUser) {
       return {
-        id: cachedLocalUser.id,
-        email: cachedLocalUser.email,
+        id: localUser.id,
+        email: localUser.email,
         user_metadata: {
-          full_name:
-            `${cachedLocalUser.prenom ?? ""} ${cachedLocalUser.nom ?? ""}`.trim(),
+          full_name: `${localUser.prenom ?? ""} ${localUser.nom ?? ""}`.trim(),
         },
         app_metadata: {},
         aud: "authenticated",
-        created_at: cachedLocalUser.creeLe,
+        created_at: localUser.creeLe,
       };
     }
     return null;
-  }, [cachedFirebaseUser, cachedSession?.user, cachedLocalUser]);
+  }, [firebaseUser, session?.user, localUser]);
 
-  return {
-    session: cachedSession,
-    user: computedUser,
-    firebaseUser: cachedFirebaseUser,
-    loading: cachedLoading,
-  };
+  return { session, user: computedUser, firebaseUser, loading };
 }

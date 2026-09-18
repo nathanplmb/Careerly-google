@@ -30,8 +30,6 @@ export type Profil = {
   prenom: string;
   nom: string;
   titre?: string;
-  posteCible?: string;
-  metierCible?: string;
   formation: string;
   ecole: string;
   niveau: string;

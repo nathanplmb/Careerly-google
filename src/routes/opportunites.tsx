@@ -309,7 +309,7 @@ function OpportunitesPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Filtrer par entreprise, poste, lieu…"
-                  className="h-9.5 w-full rounded-xl bg-white/5 dark:bg-white/5 pl-9 pr-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:bg-white/10 focus:ring-2 focus:ring-primary/20 backdrop-blur-md transition-all shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)]"
+                  className="h-9.5 w-full rounded-xl border border-white/10 bg-white/5 dark:bg-white/5 pl-9 pr-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary/50 focus:bg-white/8 focus:ring-2 focus:ring-primary/20 backdrop-blur-md transition-all shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"
                 />
               </div>
 
@@ -319,20 +319,11 @@ function OpportunitesPage() {
                   <select
                     value={contractFilter}
                     onChange={(e) => setContractFilter(e.target.value)}
-                    className="h-9.5 rounded-xl bg-white/5 dark:bg-white/5 px-3 text-xs font-normal text-foreground focus:outline-none backdrop-blur-md cursor-pointer transition-all shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)]"
+                    className="h-9.5 rounded-xl border border-white/10 bg-white/5 dark:bg-white/5 px-3 text-xs font-normal text-foreground focus:outline-none focus:border-primary/50 backdrop-blur-md cursor-pointer transition-all shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)]"
                   >
-                    <option
-                      value="all"
-                      className="bg-[#12141C] text-foreground"
-                    >
-                      Tous les contrats
-                    </option>
+                    <option value="all" className="bg-[#12141C] text-foreground">Tous les contrats</option>
                     {availableContractTypes.map((ct) => (
-                      <option
-                        key={ct}
-                        value={ct}
-                        className="bg-[#12141C] text-foreground"
-                      >
+                      <option key={ct} value={ct} className="bg-[#12141C] text-foreground">
                         {ct}
                       </option>
                     ))}
@@ -344,7 +335,7 @@ function OpportunitesPage() {
                 <button
                   type="button"
                   onClick={resetFilters}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline px-2.5 py-1.5 rounded-xl bg-primary/15 cursor-pointer transition-all shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline px-2 py-1 rounded-lg bg-primary/10 border border-primary/20 cursor-pointer transition-all"
                 >
                   <RotateCcw className="size-3" /> Réinitialiser
                 </button>
@@ -354,13 +345,13 @@ function OpportunitesPage() {
             {/* Commutateurs de vue : Filtres statut + Toggle Kanban/Liste */}
             <div className="flex items-center gap-2.5">
               {/* Filtres Rapides (Tout / Retards) - Liquid Glass Segmented Control */}
-              <div className="flex items-center gap-1 rounded-xl bg-black/25 dark:bg-black/30 backdrop-blur-xl p-1 select-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
+              <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-black/25 dark:bg-black/30 backdrop-blur-xl p-1 select-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
                 <button
                   type="button"
                   onClick={() => setViewMode("all")}
                   className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all cursor-pointer ${
                     viewMode === "all"
-                      ? "bg-white/15 dark:bg-white/15 text-foreground font-semibold shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]"
+                      ? "bg-white/15 dark:bg-white/12 text-foreground font-semibold shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] border border-white/15"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -382,7 +373,7 @@ function OpportunitesPage() {
                   onClick={() => setViewMode("overdue")}
                   className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all cursor-pointer ${
                     viewMode === "overdue"
-                      ? "bg-destructive text-destructive-foreground font-semibold shadow-[0_2px_10px_rgba(240,68,56,0.4),inset_0_1px_0_rgba(255,255,255,0.3)]"
+                      ? "bg-destructive text-destructive-foreground font-semibold shadow-[0_2px_10px_rgba(240,68,56,0.4),inset_0_1px_0_rgba(255,255,255,0.3)] border border-destructive/40"
                       : overdueItems.length > 0
                         ? "text-destructive hover:bg-destructive/10"
                         : "text-muted-foreground hover:text-foreground"
@@ -405,14 +396,14 @@ function OpportunitesPage() {
               </div>
 
               {/* Toggle Kanban vs Liste - Liquid Glass Segmented Control */}
-              <div className="flex items-center gap-0.5 rounded-xl bg-black/25 dark:bg-black/30 backdrop-blur-xl p-1 select-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
+              <div className="flex items-center gap-0.5 rounded-xl border border-white/10 bg-black/25 dark:bg-black/30 backdrop-blur-xl p-1 select-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
                 <button
                   type="button"
                   onClick={() => setDisplayLayout("kanban")}
                   title="Vue Kanban"
                   className={`grid size-7.5 place-items-center rounded-lg transition-all cursor-pointer ${
                     displayLayout === "kanban"
-                      ? "bg-white/15 dark:bg-white/15 text-foreground font-semibold shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]"
+                      ? "bg-white/15 dark:bg-white/12 text-foreground font-semibold shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] border border-white/15"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -424,7 +415,7 @@ function OpportunitesPage() {
                   title="Vue Liste"
                   className={`grid size-7.5 place-items-center rounded-lg transition-all cursor-pointer ${
                     displayLayout === "list"
-                      ? "bg-white/15 dark:bg-white/15 text-foreground font-semibold shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]"
+                      ? "bg-white/15 dark:bg-white/12 text-foreground font-semibold shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.2)] border border-white/15"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -545,14 +536,14 @@ function OpportunitesPage() {
                     }
                     setDraggedId(null);
                   }}
-                  className={`flex min-h-[500px] flex-col rounded-2xl backdrop-blur-2xl transition-all duration-200 ${
+                  className={`flex min-h-[500px] flex-col rounded-2xl backdrop-blur-2xl transition-all duration-200 shadow-lg ${
                     isColumnHovered
-                      ? "bg-white/[0.12] ring-2 ring-primary/50 border border-primary/40 shadow-[0_16px_48px_rgba(0,0,0,0.5),0_0_32px_rgba(216,26,69,0.25)]"
-                      : "glass-panel border-white/12 shadow-[0_12px_40px_-6px_rgba(0,0,0,0.45),inset_0_1px_1px_0_rgba(255,255,255,0.2)]"
+                      ? "bg-white/10 ring-2 ring-primary/40 shadow-[0_0_32px_rgba(216,26,69,0.25)]"
+                      : "bg-white/5 dark:bg-card/30 border border-white/10"
                   }`}
                 >
                   {/* EN-TÊTE DE LA COLONNE KANBAN */}
-                  <header className="flex shrink-0 items-center justify-between px-4 py-3.5 border-b border-white/10 bg-white/[0.04] backdrop-blur-md rounded-t-2xl">
+                  <header className="flex shrink-0 items-center justify-between px-4 py-3.5 bg-white/5 backdrop-blur-md rounded-t-2xl">
                     <div className="flex items-center gap-2.5">
                       <span
                         className="size-2.5 shrink-0 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.4)]"
@@ -562,7 +553,7 @@ function OpportunitesPage() {
                         {statut}
                       </h2>
                     </div>
-                    <span className="rounded-full bg-white/10 border border-white/12 px-2.5 py-0.5 text-[11px] font-mono font-semibold text-slate-300 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.15)]">
+                    <span className="rounded-full bg-white/10 px-2.5 py-0.5 text-[11px] font-mono font-semibold text-slate-300 backdrop-blur-md">
                       {liste.length}
                     </span>
                   </header>
@@ -571,10 +562,10 @@ function OpportunitesPage() {
                   <div className="flex-1 overflow-y-auto p-3 space-y-3">
                     {liste.length === 0 ? (
                       <div
-                        className={`flex h-full min-h-[140px] flex-col items-center justify-center rounded-xl p-4 text-center text-xs transition-all border border-dashed ${
+                        className={`flex h-full min-h-[140px] flex-col items-center justify-center rounded-xl p-4 text-center text-xs transition-all ${
                           isColumnHovered
-                            ? "bg-primary/15 border-primary/40 text-primary font-medium"
-                            : "bg-white/[0.03] border-white/10 text-muted-foreground/60"
+                            ? "bg-primary/15 text-primary font-medium"
+                            : "bg-white/5 text-muted-foreground/60"
                         }`}
                       >
                         {isColumnHovered ? (
@@ -781,9 +772,7 @@ function OpportunitesPage() {
                         </td>
                         <td className="px-5 py-3.5">
                           <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
-                            <span className="font-medium text-foreground">
-                              {c.contractType || "—"}
-                            </span>
+                            <span className="font-medium text-foreground">{c.contractType || "—"}</span>
                             <span className="text-[11px] text-muted-foreground/70">
                               {c.lieu || "Non spécifié"}
                             </span>

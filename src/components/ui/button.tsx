@@ -21,7 +21,8 @@ const buttonVariants = cva(
           "bg-secondary/70 backdrop-blur-md text-secondary-foreground hover:bg-secondary/90 border border-white/10 shadow-xs hover:-translate-y-0.5",
         bordeaux:
           "bg-[#780328]/35 text-[#FEC9D5] border border-[#780328]/60 backdrop-blur-md hover:bg-[#780328]/50 shadow-xs hover:-translate-y-0.5",
-        soft: "bg-primary/15 text-primary hover:bg-primary/25 border border-primary/25 backdrop-blur-md shadow-xs hover:-translate-y-0.5",
+        soft:
+          "bg-primary/15 text-primary hover:bg-primary/25 border border-primary/25 backdrop-blur-md shadow-xs hover:-translate-y-0.5",
         ghost:
           "text-muted-foreground hover:bg-white/8 dark:hover:bg-white/8 hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline px-0 py-0 h-auto font-medium",

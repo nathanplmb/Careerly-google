@@ -87,9 +87,7 @@ export function PipelineOverview({ items }: PipelineOverviewProps) {
                 {st.label}
               </span>
             </div>
-            <span className="text-foreground font-semibold px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[11px]">
-              {st.count}
-            </span>
+            <span className="text-foreground font-semibold px-2 py-0.5 rounded-md bg-white/5 border border-white/5 text-[11px]">{st.count}</span>
           </div>
         ))}
       </div>

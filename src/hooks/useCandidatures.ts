@@ -348,8 +348,7 @@ async function migrateExistingOpportunities(
 }
 
 // Cache mémoire partagé et ensemble d'écouteurs pour garantir la cohérence instantanée inter-pages
-let hasMigratedInitial = false;
-let hasSyncedInitialCloud = false;
+let hasHydrated = false;
 let memoryCache: Candidature[] | null = null;
 const listeners = new Set<(items: Candidature[]) => void>();
 
@@ -419,16 +418,19 @@ export function useCandidatures() {
   const isCloudUser = Boolean(userId);
 
   // Pour le premier rendu d'hydratation SSR : toujours [] pour correspondre fidèlement au HTML du serveur.
-  // Les données sont chargées et synchronisées côté client dans le useEffect ci-dessous.
-  const [items, setItems] = useState<Candidature[]>([]);
-  const [ready, setReady] = useState(false);
+  // Lors des navigations suivantes côté client (hasHydrated = true) : données instantanées depuis le cache mémoire.
+  const [items, setItems] = useState<Candidature[]>(() => {
+    if (!hasHydrated) return [];
+    if (memoryCache !== null) return memoryCache;
+    return loadCandidatures(userId);
+  });
+  const [ready, setReady] = useState(() => hasHydrated);
   const [syncing, setSyncing] = useState(false);
 
   // Synchronisation des écouteurs cross-composants
   useEffect(() => {
     const handleSync = (updatedItems: Candidature[]) => {
       setItems(updatedItems);
-      setReady(true);
     };
     listeners.add(handleSync);
     return () => {
@@ -438,11 +440,14 @@ export function useCandidatures() {
 
   // Hydratation client initiale
   useEffect(() => {
-    const initial =
-      memoryCache !== null ? memoryCache : loadCandidatures(userId);
-    memoryCache = initial;
-    setItems(initial);
-    setReady(true);
+    if (!hasHydrated) {
+      hasHydrated = true;
+      const initial =
+        memoryCache !== null ? memoryCache : loadCandidatures(userId);
+      memoryCache = initial;
+      setItems(initial);
+      setReady(true);
+    }
   }, [userId]);
 
   useEffect(() => {
@@ -450,11 +455,9 @@ export function useCandidatures() {
     let cancelled = false;
 
     if (!isCloudUser || !userId) {
-      if (hasMigratedInitial && memoryCache) {
-        setReady(true);
-        return;
-      }
-      hasMigratedInitial = true;
+      console.info(
+        "[OPPORTUNITY LOAD LOCAL] Mode hors ligne / non authentifié",
+      );
       const localItems = memoryCache ?? loadCandidatures();
       void migrateExistingOpportunities(localItems).then((migrated) => {
         if (!cancelled) {
@@ -465,15 +468,10 @@ export function useCandidatures() {
       return;
     }
 
-    if (hasSyncedInitialCloud && memoryCache) {
-      setReady(true);
-      return;
-    }
-
     setSyncing(true);
     (async () => {
       try {
-        hasSyncedInitialCloud = true;
+        console.info("[OPPORTUNITY LOAD SYNC START]", { userId });
         const cloud = await fetchCandidatures(userId);
         if (!cancelled) {
           const currentLocal = memoryCache ?? loadCandidatures(userId);
@@ -483,6 +481,9 @@ export function useCandidatures() {
             userId,
           );
           const migrated = await migrateExistingOpportunities(merged, userId);
+          console.info("[OPPORTUNITY LOAD SYNC APPLIED]", {
+            count: migrated.length,
+          });
           notifyCandidatureChange(migrated, userId);
         }
       } catch (err) {
