@@ -47,16 +47,17 @@ export function initPolyfills(): void {
 
   // Polyfill window.process and global for client-side environments (Safari / WebKit)
   const gAny = globalScope as Record<string, any>;
+  const defaultEnv = import.meta.env?.MODE || "production";
   if (!gAny["process"]) {
     gAny["process"] = {
-      env: { NODE_ENV: "development", TSS_ROUTER_BASEPATH: "" },
+      env: { NODE_ENV: defaultEnv, TSS_ROUTER_BASEPATH: "" },
     };
   } else {
     const proc = gAny["process"] as { env?: Record<string, string> };
     if (!proc["env"]) {
-      proc["env"] = { NODE_ENV: "development", TSS_ROUTER_BASEPATH: "" };
+      proc["env"] = { NODE_ENV: defaultEnv, TSS_ROUTER_BASEPATH: "" };
     } else {
-      proc["env"]["NODE_ENV"] = proc["env"]["NODE_ENV"] || "development";
+      proc["env"]["NODE_ENV"] = proc["env"]["NODE_ENV"] || defaultEnv;
       proc["env"]["TSS_ROUTER_BASEPATH"] =
         proc["env"]["TSS_ROUTER_BASEPATH"] || "";
     }
@@ -113,67 +114,6 @@ export function initPolyfills(): void {
     if (!proto["values"]) {
       proto["values"] = proto[asyncIterSymbol];
     }
-  }
-
-  // Gracefully handle dynamic module import failures (e.g. preview iframe cache, network lag)
-  if (typeof window !== "undefined") {
-    window.addEventListener("vite:preloadError", (event: Event) => {
-      event.preventDefault();
-      console.warn(
-        "[Vite Preload] Handled chunk load error gracefully:",
-        event,
-      );
-      const key = "chunk_preload_reload";
-      const now = Date.now();
-      const last = Number(sessionStorage.getItem(key) || "0");
-      if (!last || now - last > 15000) {
-        sessionStorage.setItem(key, String(now));
-        window.location.reload();
-      }
-    });
-
-    window.addEventListener(
-      "unhandledrejection",
-      (event: PromiseRejectionEvent) => {
-        const msg =
-          event.reason instanceof Error
-            ? event.reason.message
-            : typeof event.reason === "string"
-              ? event.reason
-              : "";
-        if (
-          msg.includes("Importing a module script failed") ||
-          msg.includes("Failed to fetch dynamically imported module") ||
-          msg.includes("error loading dynamically imported module") ||
-          msg.includes("Unable to preload CSS")
-        ) {
-          event.preventDefault();
-          console.warn("[Module Import] Handled dynamic chunk failure:", msg);
-          const key = "chunk_preload_reload";
-          const now = Date.now();
-          const last = Number(sessionStorage.getItem(key) || "0");
-          if (!last || now - last > 15000) {
-            sessionStorage.setItem(key, String(now));
-            window.location.reload();
-          }
-        }
-      },
-    );
-
-    window.addEventListener("error", (event: ErrorEvent) => {
-      const msg = event.message || "";
-      if (
-        msg.includes("Importing a module script failed") ||
-        msg.includes("Failed to fetch dynamically imported module") ||
-        msg.includes("error loading dynamically imported module")
-      ) {
-        event.preventDefault();
-        console.warn(
-          "[Module Script Error] Suppressed unhandled script error:",
-          msg,
-        );
-      }
-    });
   }
 }
 

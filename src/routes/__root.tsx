@@ -157,7 +157,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       ],
       scripts: [
         {
-          children: `try{if(typeof window!=="undefined"){window.process=window.process||{env:{NODE_ENV:"development",TSS_ROUTER_BASEPATH:""}};window.global=window.global||window;}}catch(e){}`,
+          children: `try{if(typeof window!=="undefined"){window.process=window.process||{env:{NODE_ENV:"production",TSS_ROUTER_BASEPATH:""}};window.global=window.global||window;}}catch(e){}`,
         },
       ],
     }),
@@ -174,7 +174,7 @@ function RootShell({ children }: { children: ReactNode }) {
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{if(typeof window!=="undefined"){window.process=window.process||{env:{NODE_ENV:"development",TSS_ROUTER_BASEPATH:""}};window.global=window.global||window;}}catch(e){}`,
+            __html: `try{if(typeof window!=="undefined"){window.process=window.process||{env:{NODE_ENV:"production",TSS_ROUTER_BASEPATH:""}};window.global=window.global||window;}}catch(e){}`,
           }}
         />
         <HeadContent />
