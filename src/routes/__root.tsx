@@ -219,13 +219,21 @@ function RootComponent() {
     };
 
     const handlePreloadError = (e: Event) => {
+      e.preventDefault();
       console.warn("Preload error detected, reloading page...", e);
       handleChunkError("Failed to fetch dynamically imported module");
     };
 
     const handleWindowError = (event: ErrorEvent) => {
-      if (event.message) {
-        handleChunkError(event.message);
+      const msg = event.message || "";
+      if (
+        msg.includes("Importing a module script failed") ||
+        msg.includes("Failed to fetch dynamically imported module") ||
+        msg.includes("error loading dynamically imported module") ||
+        msg.includes("Unable to preload CSS")
+      ) {
+        event.preventDefault();
+        handleChunkError(msg);
       }
     };
 
@@ -237,7 +245,13 @@ function RootComponent() {
           : typeof reason === "string"
             ? reason
             : "";
-      if (msg) {
+      if (
+        msg.includes("Importing a module script failed") ||
+        msg.includes("Failed to fetch dynamically imported module") ||
+        msg.includes("error loading dynamically imported module") ||
+        msg.includes("Unable to preload CSS")
+      ) {
+        event.preventDefault();
         handleChunkError(msg);
       }
     };

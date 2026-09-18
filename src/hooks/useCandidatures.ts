@@ -349,6 +349,8 @@ async function migrateExistingOpportunities(
 
 // Cache mémoire partagé et ensemble d'écouteurs pour garantir la cohérence instantanée inter-pages
 let hasHydrated = false;
+let hasMigratedInitial = false;
+let hasSyncedInitialCloud = false;
 let memoryCache: Candidature[] | null = null;
 const listeners = new Set<(items: Candidature[]) => void>();
 
@@ -455,9 +457,11 @@ export function useCandidatures() {
     let cancelled = false;
 
     if (!isCloudUser || !userId) {
-      console.info(
-        "[OPPORTUNITY LOAD LOCAL] Mode hors ligne / non authentifié",
-      );
+      if (hasMigratedInitial && memoryCache) {
+        setReady(true);
+        return;
+      }
+      hasMigratedInitial = true;
       const localItems = memoryCache ?? loadCandidatures();
       void migrateExistingOpportunities(localItems).then((migrated) => {
         if (!cancelled) {
@@ -468,10 +472,15 @@ export function useCandidatures() {
       return;
     }
 
+    if (hasSyncedInitialCloud && memoryCache) {
+      setReady(true);
+      return;
+    }
+
     setSyncing(true);
     (async () => {
       try {
-        console.info("[OPPORTUNITY LOAD SYNC START]", { userId });
+        hasSyncedInitialCloud = true;
         const cloud = await fetchCandidatures(userId);
         if (!cancelled) {
           const currentLocal = memoryCache ?? loadCandidatures(userId);
@@ -481,9 +490,6 @@ export function useCandidatures() {
             userId,
           );
           const migrated = await migrateExistingOpportunities(merged, userId);
-          console.info("[OPPORTUNITY LOAD SYNC APPLIED]", {
-            count: migrated.length,
-          });
           notifyCandidatureChange(migrated, userId);
         }
       } catch (err) {

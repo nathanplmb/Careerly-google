@@ -114,6 +114,67 @@ export function initPolyfills(): void {
       proto["values"] = proto[asyncIterSymbol];
     }
   }
+
+  // Gracefully handle dynamic module import failures (e.g. preview iframe cache, network lag)
+  if (typeof window !== "undefined") {
+    window.addEventListener("vite:preloadError", (event: Event) => {
+      event.preventDefault();
+      console.warn(
+        "[Vite Preload] Handled chunk load error gracefully:",
+        event,
+      );
+      const key = "chunk_preload_reload";
+      const now = Date.now();
+      const last = Number(sessionStorage.getItem(key) || "0");
+      if (!last || now - last > 15000) {
+        sessionStorage.setItem(key, String(now));
+        window.location.reload();
+      }
+    });
+
+    window.addEventListener(
+      "unhandledrejection",
+      (event: PromiseRejectionEvent) => {
+        const msg =
+          event.reason instanceof Error
+            ? event.reason.message
+            : typeof event.reason === "string"
+              ? event.reason
+              : "";
+        if (
+          msg.includes("Importing a module script failed") ||
+          msg.includes("Failed to fetch dynamically imported module") ||
+          msg.includes("error loading dynamically imported module") ||
+          msg.includes("Unable to preload CSS")
+        ) {
+          event.preventDefault();
+          console.warn("[Module Import] Handled dynamic chunk failure:", msg);
+          const key = "chunk_preload_reload";
+          const now = Date.now();
+          const last = Number(sessionStorage.getItem(key) || "0");
+          if (!last || now - last > 15000) {
+            sessionStorage.setItem(key, String(now));
+            window.location.reload();
+          }
+        }
+      },
+    );
+
+    window.addEventListener("error", (event: ErrorEvent) => {
+      const msg = event.message || "";
+      if (
+        msg.includes("Importing a module script failed") ||
+        msg.includes("Failed to fetch dynamically imported module") ||
+        msg.includes("error loading dynamically imported module")
+      ) {
+        event.preventDefault();
+        console.warn(
+          "[Module Script Error] Suppressed unhandled script error:",
+          msg,
+        );
+      }
+    });
+  }
 }
 
 // Auto-run immediately when this module is evaluated

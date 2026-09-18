@@ -1,4 +1,4 @@
-import { Ft as setCompteActif, Mt as saveCandidatures, Nt as saveContactsLocal, Pt as saveProfilLocal, _t as loadProfil, at as getCompteActif, gt as loadContactsLocal, ht as loadCandidatures } from "./profil-cloud-BKSU-WDL.mjs";
+import { Ft as setCompteActif, Mt as saveCandidatures, Nt as saveContactsLocal, Pt as saveProfilLocal, _t as loadProfil, at as getCompteActif, gt as loadContactsLocal, ht as loadCandidatures } from "./profil-cloud-Z6f0Jbed.mjs";
 //#region node_modules/.nitro/vite/services/ssr/assets/sync-transfert-B0rsBAb3.js
 /**
 * Génère un code de transfert complet et autonome (pour transférer tout le compte entre Preview et Vercel en 1 clic)

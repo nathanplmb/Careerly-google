@@ -22,16 +22,49 @@ import {
 import type { Candidature } from "@/lib/candidatures";
 import type { Contact } from "@/lib/contacts";
 
+// Shared in-memory cache and listeners for instant tab switching
+let memoryCacheEntreprises: Entreprise[] | null = null;
+let hasLoadedCloudEntreprises = false;
+const entrepriseListeners = new Set<(items: Entreprise[]) => void>();
+
+function notifyEntrepriseChange(newItems: Entreprise[]) {
+  memoryCacheEntreprises = newItems;
+  saveEntreprisesLocal(newItems);
+  entrepriseListeners.forEach((listener) => listener(newItems));
+}
+
 export function useEntreprises() {
   const { user, loading: authLoading } = useSession();
   const userId = user?.id;
   const isCloudUser = Boolean(userId);
 
-  const [entreprises, setEntreprises] = useState<Entreprise[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [entreprises, setEntreprises] = useState<Entreprise[]>(() => {
+    if (memoryCacheEntreprises !== null) return memoryCacheEntreprises;
+    if (typeof window !== "undefined") {
+      const local = loadEntreprisesLocal();
+      memoryCacheEntreprises = local;
+      return local;
+    }
+    return [];
+  });
+  const [loading, setLoading] = useState(
+    () =>
+      memoryCacheEntreprises === null || memoryCacheEntreprises.length === 0,
+  );
 
   const entreprisesRef = useRef<Entreprise[]>([]);
   entreprisesRef.current = entreprises;
+
+  useEffect(() => {
+    const handleSync = (items: Entreprise[]) => {
+      setEntreprises(items);
+      setLoading(false);
+    };
+    entrepriseListeners.add(handleSync);
+    return () => {
+      entrepriseListeners.delete(handleSync);
+    };
+  }, []);
 
   // Chargement initial (Cloud ou Local)
   useEffect(() => {
@@ -39,29 +72,34 @@ export function useEntreprises() {
     let cancelled = false;
 
     if (!isCloudUser || !userId) {
-      setEntreprises(loadEntreprisesLocal());
+      const local = memoryCacheEntreprises ?? loadEntreprisesLocal();
+      notifyEntrepriseChange(local);
       setLoading(false);
       return;
     }
 
-    setLoading(true);
+    if (hasLoadedCloudEntreprises && memoryCacheEntreprises) {
+      setLoading(false);
+      return;
+    }
+
     (async () => {
       try {
         const cloud = await fetchEntreprises(userId);
         if (!cancelled) {
+          hasLoadedCloudEntreprises = true;
           if (cloud.length > 0) {
-            setEntreprises(cloud);
-            saveEntreprisesLocal(cloud);
+            notifyEntrepriseChange(cloud);
           } else {
-            // Repli local ou migration initiale
-            const local = loadEntreprisesLocal();
-            setEntreprises(local);
+            const local = memoryCacheEntreprises ?? loadEntreprisesLocal();
+            notifyEntrepriseChange(local);
           }
         }
       } catch (err) {
         console.warn("Échec récupération entreprises cloud, repli local:", err);
         if (!cancelled) {
-          setEntreprises(loadEntreprisesLocal());
+          const local = memoryCacheEntreprises ?? loadEntreprisesLocal();
+          notifyEntrepriseChange(local);
         }
       } finally {
         if (!cancelled) {

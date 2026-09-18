@@ -3,6 +3,7 @@ import {
   useContext,
   useState,
   useCallback,
+  useMemo,
   type ReactNode,
 } from "react";
 import { toast } from "sonner";
@@ -191,18 +192,29 @@ export function ContactImportProvider({ children }: { children: ReactNode }) {
 
   const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
 
+  const value = useMemo(
+    () => ({
+      isImporting,
+      current,
+      total,
+      percentage,
+      statusLabel,
+      startBackgroundImport,
+      cancelImport,
+    }),
+    [
+      isImporting,
+      current,
+      total,
+      percentage,
+      statusLabel,
+      startBackgroundImport,
+      cancelImport,
+    ],
+  );
+
   return (
-    <ContactImportContext.Provider
-      value={{
-        isImporting,
-        current,
-        total,
-        percentage,
-        statusLabel,
-        startBackgroundImport,
-        cancelImport,
-      }}
-    >
+    <ContactImportContext.Provider value={value}>
       {children}
     </ContactImportContext.Provider>
   );

@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 
 const rootDir = process.cwd();
-console.log('rootDir:', rootDir);
+console.log("rootDir:", rootDir);
 const distDir = path.join(rootDir, "dist");
 const outputDir = path.join(rootDir, ".output");
 const outputPublicDir = path.join(outputDir, "public");

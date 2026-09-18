@@ -1,1 +1,0 @@
-import{t as e}from"./jsx-dev-runtime-DNWPJsQO.js";import{ot as t}from"./index-CQh3c94d.js";var n=e(),r=`/app/applet/src/routes/candidatures.tsx?tsr-split=component`,i=()=>(0,n.jsxDEV)(t,{to:`/opportunites`,replace:!0},void 0,!1,{fileName:r,lineNumber:2,columnNumber:30},void 0);export{i as component};

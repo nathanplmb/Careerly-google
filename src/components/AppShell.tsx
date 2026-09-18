@@ -1,6 +1,7 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { memo, useEffect, useState, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { toast } from "sonner";
+
 import {
   Bell,
   Building2,
@@ -90,7 +91,7 @@ const ASSISTANT: Item = {
 
 const bientot = () => toast("Bientôt disponible dans NACORA.");
 
-function NavRow({
+const NavRow = memo(function NavRow({
   item,
   active,
   isCollapsed,
@@ -159,7 +160,7 @@ function NavRow({
   }
 
   return buttonOrLink;
-}
+});
 
 export function AppShell({
   title,
@@ -182,11 +183,12 @@ export function AppShell({
   searchValue?: string;
   children: ReactNode;
 }) {
-  const { pathname, search } = useRouterState({
-    select: (s) => ({
-      pathname: s.location.pathname,
-      search: s.location.search as Record<string, string> | undefined,
-    }),
+  const pathname = useRouterState({
+    select: (s) => s.location.pathname,
+  });
+  const searchPersona = useRouterState({
+    select: (s) =>
+      (s.location.search as Record<string, string> | undefined)?.persona,
   });
 
   const importState = useContactImport();
@@ -196,12 +198,12 @@ export function AppShell({
     if (item.to === "/assistant") {
       if (item.search?.persona) {
         return (
-          pathname === "/assistant" && search?.persona === item.search.persona
+          pathname === "/assistant" && searchPersona === item.search.persona
         );
       }
       return (
         pathname === "/assistant" &&
-        (!search?.persona || search.persona === "general_advisor")
+        (!searchPersona || searchPersona === "general_advisor")
       );
     }
     return item.to === pathname;
@@ -212,7 +214,6 @@ export function AppShell({
   const [menuOpen, setMenuOpen] = useState(false);
 
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isHoveredExpanded, setIsHoveredExpanded] = useState(false);
   const [isHighContrast, setIsHighContrast] = useState(false);
 
   useEffect(() => {
@@ -257,7 +258,7 @@ export function AppShell({
     window.dispatchEvent(new Event("storage"));
   };
 
-  const isVisualCollapsed = isCollapsed && !isHoveredExpanded;
+  const isVisualCollapsed = isCollapsed;
 
   const toggleSidebar = () => {
     const next = !isCollapsed;
@@ -281,15 +282,15 @@ export function AppShell({
   return (
     <TooltipProvider>
       <div className="relative min-h-screen bg-background text-foreground overflow-x-clip">
-        {/* Soft, Desaturated Liquid Background Orbs for subtle ambient refraction */}
+        {/* Soft, Accelerated Ambient Glow Orbs with zero blur overhead */}
         <div
-          className="pointer-events-none fixed inset-0 z-0 overflow-hidden saturate-50 opacity-50"
+          className="pointer-events-none fixed inset-0 z-0 overflow-hidden opacity-40 will-change-transform"
           aria-hidden="true"
         >
-          <div className="absolute -top-32 left-[12%] h-[500px] w-[550px] rounded-full bg-gradient-to-br from-slate-600/10 via-indigo-600/8 to-transparent blur-[140px]" />
-          <div className="absolute top-[22%] -right-24 h-[560px] w-[560px] rounded-full bg-gradient-to-br from-rose-700/6 via-pink-800/4 to-transparent blur-[150px]" />
-          <div className="absolute top-[58%] left-[4%] h-[520px] w-[520px] rounded-full bg-gradient-to-tr from-slate-500/8 via-cyan-700/5 to-transparent blur-[140px]" />
-          <div className="absolute -bottom-28 right-[22%] h-[480px] w-[480px] rounded-full bg-gradient-to-tl from-purple-800/6 via-slate-700/5 to-transparent blur-[140px]" />
+          <div className="absolute -top-32 left-[12%] h-[500px] w-[550px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(79,70,229,0.12)_0%,transparent_70%)]" />
+          <div className="absolute top-[22%] -right-24 h-[560px] w-[560px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(216,26,69,0.08)_0%,transparent_70%)]" />
+          <div className="absolute top-[58%] left-[4%] h-[520px] w-[520px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(14,165,233,0.08)_0%,transparent_70%)]" />
+          <div className="absolute -bottom-28 right-[22%] h-[480px] w-[480px] rounded-full bg-[radial-gradient(ellipse_at_center,rgba(147,51,234,0.08)_0%,transparent_70%)]" />
         </div>
 
         {/* Menu Mobile Slide-over */}
@@ -311,7 +312,7 @@ export function AppShell({
           />
           <aside
             className={cn(
-              "absolute inset-y-0 left-0 flex w-[85%] max-w-[300px] flex-col border-r border-white/12 bg-[#0c0f1d]/90 backdrop-blur-3xl p-4 transition-transform duration-250 ease-out shadow-[0_24px_60px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.2)]",
+              "absolute inset-y-0 left-0 flex w-[85%] max-w-[300px] flex-col border-r border-white/12 bg-[#0c0f1d]/95 backdrop-blur-xl p-4 transition-transform duration-200 ease-out shadow-[0_24px_60px_rgba(0,0,0,0.8),inset_0_1px_1px_rgba(255,255,255,0.2)]",
               menuOpen ? "translate-x-0" : "-translate-x-full",
             )}
           >
@@ -382,10 +383,8 @@ export function AppShell({
 
         {/* Sidebar Desktop */}
         <aside
-          onMouseEnter={() => setIsHoveredExpanded(true)}
-          onMouseLeave={() => setIsHoveredExpanded(false)}
           className={cn(
-            "fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-white/12 bg-sidebar/75 backdrop-blur-3xl md:flex transition-all duration-250 shadow-[4px_0_35px_rgba(0,0,0,0.45),inset_-1px_0_0_rgba(255,255,255,0.06)]",
+            "fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-white/12 bg-[#0c0f1d]/90 backdrop-blur-xl md:flex transition-[width] duration-200 shadow-[4px_0_35px_rgba(0,0,0,0.45),inset_-1px_0_0_rgba(255,255,255,0.06)]",
             isVisualCollapsed ? "w-[72px]" : "w-[254px]",
           )}
         >
@@ -504,7 +503,7 @@ export function AppShell({
             isCollapsed ? "md:pl-[72px]" : "md:pl-[254px]",
           )}
         >
-          <header className="sticky top-0 z-30 border-b border-white/12 bg-background/65 backdrop-blur-3xl shadow-[0_10px_35px_-5px_rgba(0,0,0,0.4),inset_0_-1px_0_0_rgba(255,255,255,0.06)]">
+          <header className="sticky top-0 z-30 border-b border-white/12 bg-[#060812]/85 backdrop-blur-xl shadow-[0_10px_35px_-5px_rgba(0,0,0,0.4),inset_0_-1px_0_0_rgba(255,255,255,0.06)]">
             <div className="mx-auto flex h-auto max-w-[1360px] flex-wrap items-center justify-between gap-3 px-4 py-2.5 sm:px-6 md:h-[64px] md:flex-nowrap md:py-0">
               {/* Header Mobile Top */}
               <div className="flex w-full items-center gap-2.5 md:hidden">
