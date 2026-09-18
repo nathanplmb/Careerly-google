@@ -27,366 +27,366 @@ var public_assets_data_default = {
 	"/favicon.png": {
 		"type": "image/png",
 		"etag": "\"cd6-/12PFoxiRs8X1QZjAfZ8kAMtL+0\"",
-		"mtime": "2026-09-18T20:33:58.546Z",
+		"mtime": "2026-09-18T20:38:56.413Z",
 		"size": 3286,
 		"path": "../public/favicon.png"
+	},
+	"/nacora-logo.png": {
+		"type": "image/png",
+		"etag": "\"7d9a-Y6CfjNPKY5xA8HfmFS3r1CohliY\"",
+		"mtime": "2026-09-18T20:38:56.413Z",
+		"size": 32154,
+		"path": "../public/nacora-logo.png"
 	},
 	"/nacora-mark.png": {
 		"type": "image/png",
 		"etag": "\"3c3c-b/GZKNsE2FKfkHwmFjBMW0K8izo\"",
-		"mtime": "2026-09-18T20:33:58.547Z",
+		"mtime": "2026-09-18T20:38:56.413Z",
 		"size": 15420,
 		"path": "../public/nacora-mark.png"
 	},
 	"/nacora-mark.svg": {
 		"type": "image/svg+xml",
 		"etag": "\"108-Ia4oEl78ws/Pbpc0QIMJ9ST51VM\"",
-		"mtime": "2026-09-18T20:33:58.547Z",
+		"mtime": "2026-09-18T20:38:56.413Z",
 		"size": 264,
 		"path": "../public/nacora-mark.svg"
 	},
 	"/robots.txt": {
 		"type": "text/plain; charset=utf-8",
 		"etag": "\"a0-CKGXSIe7TSsqDTmGm/nY1t/o5d0\"",
-		"mtime": "2026-09-18T20:33:58.547Z",
+		"mtime": "2026-09-18T20:38:56.413Z",
 		"size": 160,
 		"path": "../public/robots.txt"
 	},
-	"/assets/AppShell-CDL0_vr6.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"1c212-CI5N1Q8K9AAEEYuGmQBxIHe+OBI\"",
-		"mtime": "2026-09-18T20:33:56.473Z",
-		"size": 115218,
-		"path": "../public/assets/AppShell-CDL0_vr6.js"
+	"/nacora-logo.svg": {
+		"type": "image/svg+xml",
+		"etag": "\"44a-ghzGy4XBbvygD/ABBXuD5ljDnto\"",
+		"mtime": "2026-09-18T20:38:56.413Z",
+		"size": 1098,
+		"path": "../public/nacora-logo.svg"
+	},
+	"/branding/nacora-official-logo.svg": {
+		"type": "image/svg+xml",
+		"etag": "\"44a-ghzGy4XBbvygD/ABBXuD5ljDnto\"",
+		"mtime": "2026-09-18T20:38:56.413Z",
+		"size": 1098,
+		"path": "../public/branding/nacora-official-logo.svg"
+	},
+	"/branding/nacora-official-mark.svg": {
+		"type": "image/svg+xml",
+		"etag": "\"108-Ia4oEl78ws/Pbpc0QIMJ9ST51VM\"",
+		"mtime": "2026-09-18T20:38:56.413Z",
+		"size": 264,
+		"path": "../public/branding/nacora-official-mark.svg"
+	},
+	"/branding/nacora-official-logo.png": {
+		"type": "image/png",
+		"etag": "\"7d9a-Y6CfjNPKY5xA8HfmFS3r1CohliY\"",
+		"mtime": "2026-09-18T20:38:56.413Z",
+		"size": 32154,
+		"path": "../public/branding/nacora-official-logo.png"
 	},
 	"/assets/Combination-ePPL-dQJ.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"3f99-7Ml6tnFYcVrQO0UkgeXiSP86NSA\"",
-		"mtime": "2026-09-18T20:33:56.473Z",
+		"mtime": "2026-09-18T20:38:54.487Z",
 		"size": 16281,
 		"path": "../public/assets/Combination-ePPL-dQJ.js"
+	},
+	"/branding/nacora-official-mark.png": {
+		"type": "image/png",
+		"etag": "\"3c3c-b/GZKNsE2FKfkHwmFjBMW0K8izo\"",
+		"mtime": "2026-09-18T20:38:56.413Z",
+		"size": 15420,
+		"path": "../public/branding/nacora-official-mark.png"
 	},
 	"/assets/_._lovable.oauth.consent-7rEiOhh8.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"230-fpFDAig76eUEmXnDFoLKwhOUot8\"",
-		"mtime": "2026-09-18T20:33:56.474Z",
+		"mtime": "2026-09-18T20:38:54.487Z",
 		"size": 560,
 		"path": "../public/assets/_._lovable.oauth.consent-7rEiOhh8.js"
 	},
-	"/assets/_._lovable.oauth.consent-BW7KKV2R.js": {
+	"/assets/AppShell-CDL0_vr6.js": {
 		"type": "text/javascript; charset=utf-8",
-		"etag": "\"835-m+V3wg5PyGiTrdHjCPS1pN6EGLg\"",
-		"mtime": "2026-09-18T20:33:56.474Z",
-		"size": 2101,
-		"path": "../public/assets/_._lovable.oauth.consent-BW7KKV2R.js"
-	},
-	"/assets/badge-BbwFnKOf.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"93c-rL9VJGHcVkpobHnQcVPKkXfZ2dw\"",
-		"mtime": "2026-09-18T20:33:56.474Z",
-		"size": 2364,
-		"path": "../public/assets/badge-BbwFnKOf.js"
-	},
-	"/assets/biometric-BRejXCfS.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"7e3-V7hQuszxBQGt1fPQxgzCsgTQLhA\"",
-		"mtime": "2026-09-18T20:33:56.474Z",
-		"size": 2019,
-		"path": "../public/assets/biometric-BRejXCfS.js"
+		"etag": "\"1c212-CI5N1Q8K9AAEEYuGmQBxIHe+OBI\"",
+		"mtime": "2026-09-18T20:38:54.487Z",
+		"size": 115218,
+		"path": "../public/assets/AppShell-CDL0_vr6.js"
 	},
 	"/assets/assistant-2YupVtra.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"34f58-DZhHlfMV2gEh8tGH+s4xHpoCmnU\"",
-		"mtime": "2026-09-18T20:33:56.474Z",
+		"mtime": "2026-09-18T20:38:54.487Z",
 		"size": 216920,
 		"path": "../public/assets/assistant-2YupVtra.js"
+	},
+	"/assets/badge-BbwFnKOf.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"93c-rL9VJGHcVkpobHnQcVPKkXfZ2dw\"",
+		"mtime": "2026-09-18T20:38:54.488Z",
+		"size": 2364,
+		"path": "../public/assets/badge-BbwFnKOf.js"
+	},
+	"/assets/_._lovable.oauth.consent-BW7KKV2R.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"835-m+V3wg5PyGiTrdHjCPS1pN6EGLg\"",
+		"mtime": "2026-09-18T20:38:54.487Z",
+		"size": 2101,
+		"path": "../public/assets/_._lovable.oauth.consent-BW7KKV2R.js"
+	},
+	"/assets/biometric-BRejXCfS.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"7e3-V7hQuszxBQGt1fPQxgzCsgTQLhA\"",
+		"mtime": "2026-09-18T20:38:54.488Z",
+		"size": 2019,
+		"path": "../public/assets/biometric-BRejXCfS.js"
+	},
+	"/assets/auth-Bck3Jz6x.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"29081-kcjGyUL0D3gEnZkvj4hB3e7SXtw\"",
+		"mtime": "2026-09-18T20:38:54.487Z",
+		"size": 168065,
+		"path": "../public/assets/auth-Bck3Jz6x.js"
 	},
 	"/assets/calendar-clock-w7hPlL0X.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"16e-8SWzg2JzKykvwj3TqXXj8NnGrQc\"",
-		"mtime": "2026-09-18T20:33:56.475Z",
+		"mtime": "2026-09-18T20:38:54.488Z",
 		"size": 366,
 		"path": "../public/assets/calendar-clock-w7hPlL0X.js"
 	},
 	"/assets/calendrier-Drkt-bGp.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"2526-QDBQRGDoCIvVxzHAxqmnmduIs4I\"",
-		"mtime": "2026-09-18T20:33:56.475Z",
+		"mtime": "2026-09-18T20:38:54.488Z",
 		"size": 9510,
 		"path": "../public/assets/calendrier-Drkt-bGp.js"
-	},
-	"/assets/button-Xm6GcO2Y.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"44240-oPVjKMjO1/OjH93bcVdYAMHr5lE\"",
-		"mtime": "2026-09-18T20:33:56.475Z",
-		"size": 279104,
-		"path": "../public/assets/button-Xm6GcO2Y.js"
 	},
 	"/assets/candidatures-BGSDzIMw.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"12d-ARO4z8rAkdfSMXThbuXrjFRvtIE\"",
-		"mtime": "2026-09-18T20:33:56.475Z",
+		"mtime": "2026-09-18T20:38:54.488Z",
 		"size": 301,
 		"path": "../public/assets/candidatures-BGSDzIMw.js"
 	},
 	"/assets/compass-BTE2Cofq.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"ef-MdZLR/EQ0NVizjzuSBM8xcY8KOU\"",
-		"mtime": "2026-09-18T20:33:56.475Z",
+		"mtime": "2026-09-18T20:38:54.488Z",
 		"size": 239,
 		"path": "../public/assets/compass-BTE2Cofq.js"
-	},
-	"/nacora-logo.svg": {
-		"type": "image/svg+xml",
-		"etag": "\"44a-ghzGy4XBbvygD/ABBXuD5ljDnto\"",
-		"mtime": "2026-09-18T20:33:58.547Z",
-		"size": 1098,
-		"path": "../public/nacora-logo.svg"
-	},
-	"/assets/documents-Cc94FoYV.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"1041-brhjFj0sRlDcHxXRaSdQkkLTgvo\"",
-		"mtime": "2026-09-18T20:33:56.475Z",
-		"size": 4161,
-		"path": "../public/assets/documents-Cc94FoYV.js"
 	},
 	"/assets/cv-fichier-vTZsJrca.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"109d-YvV92/oDSbAZBtHMzUuRqb6aSeg\"",
-		"mtime": "2026-09-18T20:33:56.475Z",
+		"mtime": "2026-09-18T20:38:54.488Z",
 		"size": 4253,
 		"path": "../public/assets/cv-fichier-vTZsJrca.js"
 	},
-	"/assets/dist-qJfsWvs8.js": {
+	"/assets/button-Xm6GcO2Y.js": {
 		"type": "text/javascript; charset=utf-8",
-		"etag": "\"108b-GixQe2Gr/ERy5mYDjK9aMyVKDmQ\"",
-		"mtime": "2026-09-18T20:33:56.475Z",
-		"size": 4235,
-		"path": "../public/assets/dist-qJfsWvs8.js"
-	},
-	"/assets/download-BIlSi-Xb.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"dc-9DCk3jGayHerIxHrQ88Hbl+ezFM\"",
-		"mtime": "2026-09-18T20:33:56.475Z",
-		"size": 220,
-		"path": "../public/assets/download-BIlSi-Xb.js"
-	},
-	"/assets/dist-6OCywl8X.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"1cca-m78ZxObo6cKysMLTyDXu86sKqOg\"",
-		"mtime": "2026-09-18T20:33:56.475Z",
-		"size": 7370,
-		"path": "../public/assets/dist-6OCywl8X.js"
-	},
-	"/assets/auth-Bck3Jz6x.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"29081-kcjGyUL0D3gEnZkvj4hB3e7SXtw\"",
-		"mtime": "2026-09-18T20:33:56.474Z",
-		"size": 168065,
-		"path": "../public/assets/auth-Bck3Jz6x.js"
-	},
-	"/nacora-logo.png": {
-		"type": "image/png",
-		"etag": "\"7d9a-Y6CfjNPKY5xA8HfmFS3r1CohliY\"",
-		"mtime": "2026-09-18T20:33:58.547Z",
-		"size": 32154,
-		"path": "../public/nacora-logo.png"
+		"etag": "\"44240-oPVjKMjO1/OjH93bcVdYAMHr5lE\"",
+		"mtime": "2026-09-18T20:38:54.488Z",
+		"size": 279104,
+		"path": "../public/assets/button-Xm6GcO2Y.js"
 	},
 	"/assets/Logo-BNSUxnj7.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"a18ea-IJXSzD6d9g9aQW0Zs4jV2yhIBHc\"",
-		"mtime": "2026-09-18T20:33:56.474Z",
+		"mtime": "2026-09-18T20:38:54.487Z",
 		"size": 661738,
 		"path": "../public/assets/Logo-BNSUxnj7.js"
+	},
+	"/assets/dist-6OCywl8X.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"1cca-m78ZxObo6cKysMLTyDXu86sKqOg\"",
+		"mtime": "2026-09-18T20:38:54.488Z",
+		"size": 7370,
+		"path": "../public/assets/dist-6OCywl8X.js"
+	},
+	"/assets/dist-qJfsWvs8.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"108b-GixQe2Gr/ERy5mYDjK9aMyVKDmQ\"",
+		"mtime": "2026-09-18T20:38:54.488Z",
+		"size": 4235,
+		"path": "../public/assets/dist-qJfsWvs8.js"
+	},
+	"/assets/documents-Cc94FoYV.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"1041-brhjFj0sRlDcHxXRaSdQkkLTgvo\"",
+		"mtime": "2026-09-18T20:38:54.488Z",
+		"size": 4161,
+		"path": "../public/assets/documents-Cc94FoYV.js"
+	},
+	"/assets/download-BIlSi-Xb.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"dc-9DCk3jGayHerIxHrQ88Hbl+ezFM\"",
+		"mtime": "2026-09-18T20:38:54.488Z",
+		"size": 220,
+		"path": "../public/assets/download-BIlSi-Xb.js"
 	},
 	"/assets/entreprises-Bq5wA78_.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"a2be-JoZGS5zRg3Zx32gcQ9e3Eve88tg\"",
-		"mtime": "2026-09-18T20:33:56.475Z",
+		"mtime": "2026-09-18T20:38:54.488Z",
 		"size": 41662,
 		"path": "../public/assets/entreprises-Bq5wA78_.js"
 	},
 	"/assets/globe-CeAg7wD9.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"e6-LsqmmMxt3FdMqe97jRuyoVEMMYU\"",
-		"mtime": "2026-09-18T20:33:56.475Z",
+		"mtime": "2026-09-18T20:38:54.488Z",
 		"size": 230,
 		"path": "../public/assets/globe-CeAg7wD9.js"
 	},
 	"/assets/graduation-cap-CzBiy2EX.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"140-lq7prJ2axh+W1NrK8dk7HRHwX5A\"",
-		"mtime": "2026-09-18T20:33:56.475Z",
+		"mtime": "2026-09-18T20:38:54.488Z",
 		"size": 320,
 		"path": "../public/assets/graduation-cap-CzBiy2EX.js"
 	},
 	"/assets/heart-Dkdz7Pqq.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"f6-ds24MSk1oEkG5FK0ff61opFu3Go\"",
-		"mtime": "2026-09-18T20:33:56.475Z",
+		"mtime": "2026-09-18T20:38:54.488Z",
 		"size": 246,
 		"path": "../public/assets/heart-Dkdz7Pqq.js"
 	},
 	"/assets/import-DAzT1I3P.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"7b25-SEBqs5yj+/xOZJHQlYvkpaMiRHQ\"",
-		"mtime": "2026-09-18T20:33:56.475Z",
+		"mtime": "2026-09-18T20:38:54.489Z",
 		"size": 31525,
 		"path": "../public/assets/import-DAzT1I3P.js"
 	},
 	"/assets/jsx-dev-runtime-BoQDevNy.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"6305-DS3YeLPJ3TNZxTuV/EML2IIDx+I\"",
-		"mtime": "2026-09-18T20:33:56.476Z",
+		"mtime": "2026-09-18T20:38:54.489Z",
 		"size": 25349,
 		"path": "../public/assets/jsx-dev-runtime-BoQDevNy.js"
+	},
+	"/assets/layers-DPmPOZR9.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"199-3+6fj2Y7XEIWHgXK/kfyRXf9veM\"",
+		"mtime": "2026-09-18T20:38:54.489Z",
+		"size": 409,
+		"path": "../public/assets/layers-DPmPOZR9.js"
 	},
 	"/assets/log-out-lyETnVAO.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"18c-n+fneqp/X4xos9PtG93bre1/Q/E\"",
-		"mtime": "2026-09-18T20:33:56.476Z",
+		"mtime": "2026-09-18T20:38:54.489Z",
 		"size": 396,
 		"path": "../public/assets/log-out-lyETnVAO.js"
 	},
 	"/assets/opportunites-CsyCzbw8.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"70d3-k+nqCh1xJz1G6GgPYEwcEIs/0DI\"",
-		"mtime": "2026-09-18T20:33:56.476Z",
+		"mtime": "2026-09-18T20:38:54.489Z",
 		"size": 28883,
 		"path": "../public/assets/opportunites-CsyCzbw8.js"
 	},
 	"/assets/mammoth.browser-D9DJTbPw.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"781a7-VUenozPpTAte/VICcbi11x6rSb8\"",
-		"mtime": "2026-09-18T20:33:56.476Z",
+		"mtime": "2026-09-18T20:38:54.489Z",
 		"size": 491943,
 		"path": "../public/assets/mammoth.browser-D9DJTbPw.js"
-	},
-	"/assets/parametres-DVq807bj.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"2d8f-EtI0CHNPpuBgtLa9N5flOLAmII8\"",
-		"mtime": "2026-09-18T20:33:56.476Z",
-		"size": 11663,
-		"path": "../public/assets/parametres-DVq807bj.js"
 	},
 	"/assets/preload-helper-Czpn1I53.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"4ac-sE+5KsaRXTMfwOfrOATQajMSGV4\"",
-		"mtime": "2026-09-18T20:33:56.476Z",
+		"mtime": "2026-09-18T20:38:54.489Z",
 		"size": 1196,
 		"path": "../public/assets/preload-helper-Czpn1I53.js"
 	},
-	"/assets/pdfjs-DMUsHNVm.js": {
+	"/assets/parametres-DVq807bj.js": {
 		"type": "text/javascript; charset=utf-8",
-		"etag": "\"4a8df-fROfXxXXtZNszpgJimWi3n4ZWNs\"",
-		"mtime": "2026-09-18T20:33:56.476Z",
-		"size": 305375,
-		"path": "../public/assets/pdfjs-DMUsHNVm.js"
+		"etag": "\"2d8f-EtI0CHNPpuBgtLa9N5flOLAmII8\"",
+		"mtime": "2026-09-18T20:38:54.489Z",
+		"size": 11663,
+		"path": "../public/assets/parametres-DVq807bj.js"
 	},
 	"/assets/rolldown-runtime-Dd_uD5pT.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"452-sZl5y+VnYZJIxKNwHO0DTqczPH0\"",
-		"mtime": "2026-09-18T20:33:56.476Z",
+		"mtime": "2026-09-18T20:38:54.490Z",
 		"size": 1106,
 		"path": "../public/assets/rolldown-runtime-Dd_uD5pT.js"
 	},
 	"/assets/rotate-ccw-D0-h81xH.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"bc-T0smtI2ZnEcIRv/2WpUMEe+MkA0\"",
-		"mtime": "2026-09-18T20:33:56.476Z",
+		"mtime": "2026-09-18T20:38:54.490Z",
 		"size": 188,
 		"path": "../public/assets/rotate-ccw-D0-h81xH.js"
 	},
 	"/assets/routes-BfecsTXw.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"131-uZiu3Y7cNrrgbM88MQOeVNKM5tA\"",
-		"mtime": "2026-09-18T20:33:56.476Z",
+		"mtime": "2026-09-18T20:38:54.490Z",
 		"size": 305,
 		"path": "../public/assets/routes-BfecsTXw.js"
-	},
-	"/assets/select-BAwHcQkT.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"5e0a-1WlpOQTTeMculwC0BQWQdH6DqwM\"",
-		"mtime": "2026-09-18T20:33:56.477Z",
-		"size": 24074,
-		"path": "../public/assets/select-BAwHcQkT.js"
-	},
-	"/assets/styles-BF9-aGg_.css": {
-		"type": "text/css; charset=utf-8",
-		"etag": "\"3433f-JqDpqRzFMVmvOpKdD5kCw5OzqEs\"",
-		"mtime": "2026-09-18T20:33:56.477Z",
-		"size": 213823,
-		"path": "../public/assets/styles-BF9-aGg_.css"
-	},
-	"/assets/layers-DPmPOZR9.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"199-3+6fj2Y7XEIWHgXK/kfyRXf9veM\"",
-		"mtime": "2026-09-18T20:33:56.476Z",
-		"size": 409,
-		"path": "../public/assets/layers-DPmPOZR9.js"
-	},
-	"/branding/nacora-official-logo.png": {
-		"type": "image/png",
-		"etag": "\"7d9a-Y6CfjNPKY5xA8HfmFS3r1CohliY\"",
-		"mtime": "2026-09-18T20:33:58.546Z",
-		"size": 32154,
-		"path": "../public/branding/nacora-official-logo.png"
-	},
-	"/assets/useRouter-vVLsUonb.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"2cb-lzs2gxmcWtCdxSuWZWybQC++C8w\"",
-		"mtime": "2026-09-18T20:33:56.477Z",
-		"size": 715,
-		"path": "../public/assets/useRouter-vVLsUonb.js"
-	},
-	"/assets/sync-transfert-CDgi-riN.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"686-KI+9o0It++JZR1EPa1HDew/ahbI\"",
-		"mtime": "2026-09-18T20:33:56.477Z",
-		"size": 1670,
-		"path": "../public/assets/sync-transfert-CDgi-riN.js"
-	},
-	"/assets/xlsx-CJPd3IZK.js": {
-		"type": "text/javascript; charset=utf-8",
-		"etag": "\"6789c-RUGpsyG2e2O8PfVq9TmMGyUC3k0\"",
-		"mtime": "2026-09-18T20:33:56.477Z",
-		"size": 424092,
-		"path": "../public/assets/xlsx-CJPd3IZK.js"
 	},
 	"/assets/profil-DpX_-46C.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"37998-lfPvjzgmQ5x/VYeyRWiihx8gHKs\"",
-		"mtime": "2026-09-18T20:33:56.476Z",
+		"mtime": "2026-09-18T20:38:54.490Z",
 		"size": 227736,
 		"path": "../public/assets/profil-DpX_-46C.js"
+	},
+	"/assets/pdfjs-DMUsHNVm.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"4a8df-fROfXxXXtZNszpgJimWi3n4ZWNs\"",
+		"mtime": "2026-09-18T20:38:54.489Z",
+		"size": 305375,
+		"path": "../public/assets/pdfjs-DMUsHNVm.js"
+	},
+	"/assets/styles-BF9-aGg_.css": {
+		"type": "text/css; charset=utf-8",
+		"etag": "\"3433f-JqDpqRzFMVmvOpKdD5kCw5OzqEs\"",
+		"mtime": "2026-09-18T20:38:54.490Z",
+		"size": 213823,
+		"path": "../public/assets/styles-BF9-aGg_.css"
+	},
+	"/assets/select-BAwHcQkT.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"5e0a-1WlpOQTTeMculwC0BQWQdH6DqwM\"",
+		"mtime": "2026-09-18T20:38:54.490Z",
+		"size": 24074,
+		"path": "../public/assets/select-BAwHcQkT.js"
+	},
+	"/assets/sync-transfert-CDgi-riN.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"686-KI+9o0It++JZR1EPa1HDew/ahbI\"",
+		"mtime": "2026-09-18T20:38:54.490Z",
+		"size": 1670,
+		"path": "../public/assets/sync-transfert-CDgi-riN.js"
 	},
 	"/assets/index-wzWMGGy2.js": {
 		"type": "text/javascript; charset=utf-8",
 		"etag": "\"c6823-2IEMS92PqXsT6T1lSVZPR52F2/g\"",
-		"mtime": "2026-09-18T20:33:56.473Z",
+		"mtime": "2026-09-18T20:38:54.486Z",
 		"size": 813091,
 		"path": "../public/assets/index-wzWMGGy2.js"
 	},
-	"/branding/nacora-official-logo.svg": {
-		"type": "image/svg+xml",
-		"etag": "\"44a-ghzGy4XBbvygD/ABBXuD5ljDnto\"",
-		"mtime": "2026-09-18T20:33:58.547Z",
-		"size": 1098,
-		"path": "../public/branding/nacora-official-logo.svg"
+	"/assets/useRouter-vVLsUonb.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"2cb-lzs2gxmcWtCdxSuWZWybQC++C8w\"",
+		"mtime": "2026-09-18T20:38:54.490Z",
+		"size": 715,
+		"path": "../public/assets/useRouter-vVLsUonb.js"
 	},
-	"/branding/nacora-official-mark.png": {
-		"type": "image/png",
-		"etag": "\"3c3c-b/GZKNsE2FKfkHwmFjBMW0K8izo\"",
-		"mtime": "2026-09-18T20:33:58.546Z",
-		"size": 15420,
-		"path": "../public/branding/nacora-official-mark.png"
-	},
-	"/branding/nacora-official-mark.svg": {
-		"type": "image/svg+xml",
-		"etag": "\"108-Ia4oEl78ws/Pbpc0QIMJ9ST51VM\"",
-		"mtime": "2026-09-18T20:33:58.547Z",
-		"size": 264,
-		"path": "../public/branding/nacora-official-mark.svg"
+	"/assets/xlsx-CJPd3IZK.js": {
+		"type": "text/javascript; charset=utf-8",
+		"etag": "\"6789c-RUGpsyG2e2O8PfVq9TmMGyUC3k0\"",
+		"mtime": "2026-09-18T20:38:54.490Z",
+		"size": 424092,
+		"path": "../public/assets/xlsx-CJPd3IZK.js"
 	}
 };
 //#endregion
