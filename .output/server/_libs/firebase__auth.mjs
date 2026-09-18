@@ -1,5 +1,5 @@
 import { A as pingServer, C as getUA, D as isMobileCordova, E as isCloudflareWorker, M as querystringDecode, O as isReactNative, S as getModularInstance, T as isCloudWorkstation, _ as createSubscribe, a as getApp, b as getDefaultEmulatorHost, c as registerVersion, d as Component, f as Deferred, h as base64Decode, i as _registerComponent, j as querystring, l as LogLevel, m as FirebaseError, n as _getProvider, p as ErrorFactory, r as _isFirebaseServerApp, t as SDK_VERSION, u as Logger, v as deepEqual, w as isBrowserExtension, y as extractQuerystring } from "./@firebase/app+[...].mjs";
-//#region node_modules/@firebase/auth/dist/node-esm/totp-C24pd8aS.js
+//#region node_modules/@firebase/auth/dist/node-esm/totp-BU9AvxK8.js
 /**
 * @license
 * Copyright 2021 Google LLC
@@ -1349,7 +1349,9 @@ var PersistenceUserManager = class PersistenceUserManager {
 		this.fullUserKey = _persistenceKeyName(this.userKey, config.apiKey, name);
 		this.fullPersistenceKey = _persistenceKeyName("persistence", config.apiKey, name);
 		this.boundEventHandler = auth._onStorageEvent.bind(auth);
-		this.persistence._addListener(this.fullUserKey, this.boundEventHandler);
+		try {
+			this.persistence._addListener(this.fullUserKey, this.boundEventHandler);
+		} catch {}
 	}
 	setCurrentUser(user) {
 		return this.persistence._set(this.fullUserKey, user.toJSON());
@@ -1378,12 +1380,18 @@ var PersistenceUserManager = class PersistenceUserManager {
 		if (currentUser) return this.setCurrentUser(currentUser);
 	}
 	delete() {
-		this.persistence._removeListener(this.fullUserKey, this.boundEventHandler);
+		try {
+			this.persistence._removeListener(this.fullUserKey, this.boundEventHandler);
+		} catch {}
 	}
 	static async create(auth, persistenceHierarchy, userKey = "authUser") {
 		if (!persistenceHierarchy.length) return new PersistenceUserManager(_getInstance(inMemoryPersistence), auth, userKey);
 		const availablePersistences = (await Promise.all(persistenceHierarchy.map(async (persistence) => {
-			if (await persistence._isAvailable()) return persistence;
+			try {
+				if (await persistence._isAvailable()) return persistence;
+			} catch {
+				return;
+			}
 		}))).filter((persistence) => persistence);
 		let selectedPersistence = availablePersistences[0] || _getInstance(inMemoryPersistence);
 		const key = _persistenceKeyName(userKey, auth.config.apiKey, auth.name);
@@ -1735,13 +1743,24 @@ var AuthImpl = class {
 		if (popupRedirectResolver) this._popupRedirectResolver = _getInstance(popupRedirectResolver);
 		this._initializationPromise = this.queue(async () => {
 			if (this._deleted) return;
-			this.persistenceManager = await PersistenceUserManager.create(this, persistenceHierarchy);
-			this._resolvePersistenceManagerAvailable?.();
+			try {
+				this.persistenceManager = await PersistenceUserManager.create(this, persistenceHierarchy);
+			} catch (e) {
+				_logWarn(`Failed to initialize persistence: ${e}`);
+				this.persistenceManager = await PersistenceUserManager.create(this, []);
+			} finally {
+				this._resolvePersistenceManagerAvailable?.();
+			}
 			if (this._deleted) return;
 			if (this._popupRedirectResolver?._shouldInitProactively) try {
 				await this._popupRedirectResolver._initialize(this);
 			} catch (e) {}
-			await this.initializeCurrentUser(popupRedirectResolver);
+			try {
+				await this.initializeCurrentUser(popupRedirectResolver);
+			} catch (e) {
+				_logWarn(`Failed to initialize current user: ${e}`);
+				await this.directlySetCurrentUser(null).catch(() => {});
+			}
 			this.lastNotifiedUid = this.currentUser?.uid || null;
 			if (this._deleted) return;
 			this._isInitialized = true;
@@ -1989,6 +2008,11 @@ var AuthImpl = class {
 		promise.then(() => {
 			if (isUnsubscribed) return;
 			cb(this.currentUser);
+		}).catch((err) => {
+			if (isUnsubscribed) return;
+			if (typeof nextOrObserver !== "function" && nextOrObserver.error) nextOrObserver.error(err);
+			else if (error) error(err);
+			else throw err;
 		});
 		if (typeof nextOrObserver === "function") {
 			const unsubscribe = subscription.addObserver(nextOrObserver, error, completed);
@@ -2013,8 +2037,15 @@ var AuthImpl = class {
 		if (this.currentUser && this.currentUser !== user) this._currentUser._stopProactiveRefresh();
 		if (user && this.isProactiveRefreshEnabled) user._startProactiveRefresh();
 		this.currentUser = user;
-		if (user) await this.assertedPersistence.setCurrentUser(user);
-		else await this.assertedPersistence.removeCurrentUser();
+		if (this.persistenceManager) try {
+			if (user) await this.persistenceManager.setCurrentUser(user);
+			else await this.persistenceManager.removeCurrentUser();
+		} catch (e) {
+			const originalMessage = e?.message || String(e);
+			const error = _errorWithCustomMessage(this, "internal-error", `An internal AuthError has occurred: ${originalMessage}`);
+			error.customData = { originalError: e };
+			throw error;
+		}
 	}
 	queue(action) {
 		this.operations = this.operations.then(action, action);
@@ -4133,7 +4164,8 @@ async function updateProfile$1(auth, request) {
 *
 * @public
 */
-async function updateProfile(user, { displayName, photoURL: photoUrl }) {
+async function updateProfile(user, profile) {
+	const { displayName, photoURL: photoUrl } = profile;
 	if (displayName === void 0 && photoUrl === void 0) return;
 	const userInternal = getModularInstance(user);
 	const profileRequest = {
@@ -4298,7 +4330,7 @@ function finalizeEnrollTotpMfa(auth, request) {
 	return _performApiRequest(auth, "POST", "/v2/accounts/mfaEnrollment:finalize", _addTidIfNecessary(auth, request));
 }
 var name = "@firebase/auth";
-var version = "1.13.5";
+var version = "1.13.6";
 /**
 * @license
 * Copyright 2020 Google LLC

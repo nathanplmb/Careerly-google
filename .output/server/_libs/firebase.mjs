@@ -18,6 +18,6 @@ import "./@firebase/firestore+[...].mjs";
 * See the License for the specific language governing permissions and
 * limitations under the License.
 */
-registerVersion("firebase", "12.18.0", "app");
+registerVersion("firebase", "12.19.0", "app");
 //#endregion
 export {};

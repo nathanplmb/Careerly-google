@@ -6865,8 +6865,8 @@ var require_pdf = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 								this.compose();
 								return;
 							}
-							let x = 0, i;
-							for (i = 0; i < glyphsLength; ++i) {
+							let x = 0, i = 0;
+							for (; i < glyphsLength; ++i) {
 								const glyph = glyphs[i];
 								if (typeof glyph === "number") {
 									x += spacingDir * glyph * fontSize / 1e3;

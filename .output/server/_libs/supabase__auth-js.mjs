@@ -1,6 +1,6 @@
 import { __rest } from "tslib";
 //#region node_modules/@supabase/auth-js/dist/module/lib/version.js
-var version = "2.112.4";
+var version = "2.116.0";
 //#endregion
 //#region node_modules/@supabase/auth-js/dist/module/lib/constants.js
 /** Current session will be checked for refresh at this interval. */
@@ -873,6 +873,9 @@ function validateUUID(str) {
 }
 function assertPasskeyExperimentalEnabled(experimental) {
 	if (!experimental.passkey) throw new Error("@supabase/auth-js: the passkey API is experimental and disabled by default. Enable it by passing `auth: { experimental: { passkey: true } }` to createClient (or to the GoTrueClient constructor).");
+}
+function assertRecoveryCodesExperimentalEnabled(experimental) {
+	if (!experimental.recoveryCodes) throw new Error("@supabase/auth-js: the MFA recovery codes API is experimental and disabled by default. Enable it by passing `auth: { experimental: { recoveryCodes: true } }` to createClient (or to the GoTrueClient constructor).");
 }
 function userNotAvailableProxy() {
 	return new Proxy({}, {
@@ -3091,7 +3094,7 @@ var WebAuthnApi = class {
 			if (!factor) {
 				await this.client.mfa.listFactors().then((factors) => {
 					var _a;
-					return (_a = factors.data) === null || _a === void 0 ? void 0 : _a.all.find((v) => v.factor_type === "webauthn" && v.friendly_name === friendlyName && v.status !== "unverified");
+					return (_a = factors.data) === null || _a === void 0 ? void 0 : _a.all.find((v) => v.factor_type === "webauthn" && v.friendly_name === friendlyName && v.status === "unverified");
 				}).then((factor) => factor ? this.client.mfa.unenroll({ factorId: factor === null || factor === void 0 ? void 0 : factor.id }) : void 0);
 				return {
 					data: null,
@@ -3320,7 +3323,14 @@ var GoTrueClient = class GoTrueClient {
 			listFactors: this._listFactors.bind(this),
 			challengeAndVerify: this._challengeAndVerify.bind(this),
 			getAuthenticatorAssuranceLevel: this._getAuthenticatorAssuranceLevel.bind(this),
-			webauthn: new WebAuthnApi(this)
+			webauthn: new WebAuthnApi(this),
+			recoveryCodes: {
+				getStatus: this._getRecoveryCodesStatus.bind(this),
+				generate: this._generateRecoveryCodes.bind(this),
+				verify: this._verifyRecoveryCode.bind(this),
+				regenerate: this._regenerateRecoveryCodes.bind(this),
+				unenroll: this._unenrollRecoveryCodes.bind(this)
+			}
 		};
 		this.oauth = {
 			getAuthorizationDetails: this._getAuthorizationDetails.bind(this),
@@ -6606,6 +6616,7 @@ var GoTrueClient = class GoTrueClient {
 			} catch (err) {
 				await ((_b = this.stateChangeEmitters.get(id)) === null || _b === void 0 ? void 0 : _b.callback("INITIAL_SESSION", null));
 				this._debug("INITIAL_SESSION", "callback id", id, "error", err);
+				if (isAuthRefreshDiscardedError(err)) return;
 				if (isAuthSessionMissingError(err) || isAuthRetryableFetchError(err) || isAuthApiError(err) && (err.code === "refresh_token_not_found" || err.code === "refresh_token_already_used" || err.code === "session_expired")) console.warn(err);
 				else console.error(err);
 			}
@@ -7696,11 +7707,12 @@ var GoTrueClient = class GoTrueClient {
 			all: [],
 			phone: [],
 			totp: [],
-			webauthn: []
+			webauthn: [],
+			recovery_code: []
 		};
 		for (const factor of (_a = user === null || user === void 0 ? void 0 : user.factors) !== null && _a !== void 0 ? _a : []) {
 			data.all.push(factor);
-			if (factor.status === "verified") data[factor.factor_type].push(factor);
+			if (factor.status === "verified" && factor.factor_type in data && Array.isArray(data[factor.factor_type])) data[factor.factor_type].push(factor);
 		}
 		return {
 			data,
@@ -7766,6 +7778,185 @@ var GoTrueClient = class GoTrueClient {
 			},
 			error: null
 		};
+	}
+	/**
+	* {@link AuthMFARecoveryCodesApi#getStatus}
+	*/
+	async _getRecoveryCodesStatus() {
+		assertRecoveryCodesExperimentalEnabled(this.experimental);
+		try {
+			return await this._useSession(async (result) => {
+				var _a;
+				const { data: sessionData, error: sessionError } = result;
+				if (sessionError) return this._returnResult({
+					data: null,
+					error: sessionError
+				});
+				const { data, error } = await _request(this.fetch, "GET", `${this.url}/factors/recovery-codes`, {
+					headers: this.headers,
+					jwt: (_a = sessionData === null || sessionData === void 0 ? void 0 : sessionData.session) === null || _a === void 0 ? void 0 : _a.access_token
+				});
+				if (error) return this._returnResult({
+					data: null,
+					error
+				});
+				return this._returnResult({
+					data,
+					error: null
+				});
+			});
+		} catch (error) {
+			if (isAuthError(error)) return this._returnResult({
+				data: null,
+				error
+			});
+			throw error;
+		}
+	}
+	/**
+	* {@link AuthMFARecoveryCodesApi#generate}
+	*/
+	async _generateRecoveryCodes(params) {
+		assertRecoveryCodesExperimentalEnabled(this.experimental);
+		try {
+			return await this._useSession(async (result) => {
+				var _a;
+				const { data: sessionData, error: sessionError } = result;
+				if (sessionError) return this._returnResult({
+					data: null,
+					error: sessionError
+				});
+				const { data, error } = await _request(this.fetch, "POST", `${this.url}/factors/recovery-codes`, {
+					body: (params === null || params === void 0 ? void 0 : params.friendlyName) ? { friendly_name: params.friendlyName } : void 0,
+					headers: this.headers,
+					jwt: (_a = sessionData === null || sessionData === void 0 ? void 0 : sessionData.session) === null || _a === void 0 ? void 0 : _a.access_token
+				});
+				if (error) return this._returnResult({
+					data: null,
+					error
+				});
+				return this._returnResult({
+					data,
+					error: null
+				});
+			});
+		} catch (error) {
+			if (isAuthError(error)) return this._returnResult({
+				data: null,
+				error
+			});
+			throw error;
+		}
+	}
+	/**
+	* {@link AuthMFARecoveryCodesApi#verify}
+	*/
+	async _verifyRecoveryCode(params) {
+		assertRecoveryCodesExperimentalEnabled(this.experimental);
+		const run = async () => {
+			try {
+				return await this._useSession(async (result) => {
+					var _a;
+					const { data: sessionData, error: sessionError } = result;
+					if (sessionError) return this._returnResult({
+						data: null,
+						error: sessionError
+					});
+					const { data, error } = await _request(this.fetch, "POST", `${this.url}/factors/recovery-codes/verify`, {
+						body: { code: params.code },
+						headers: this.headers,
+						jwt: (_a = sessionData === null || sessionData === void 0 ? void 0 : sessionData.session) === null || _a === void 0 ? void 0 : _a.access_token
+					});
+					if (error) return this._returnResult({
+						data: null,
+						error
+					});
+					const session = Object.assign({ expires_at: expiresAt(data.expires_in) }, data);
+					await this._saveSession(session);
+					await this._notifyAllSubscribers("MFA_CHALLENGE_VERIFIED", session);
+					return this._returnResult({
+						data,
+						error: null
+					});
+				});
+			} catch (error) {
+				if (isAuthError(error)) return this._returnResult({
+					data: null,
+					error
+				});
+				throw error;
+			}
+		};
+		if (this.lock != null) return this._acquireLock(this.lockAcquireTimeout, run);
+		return run();
+	}
+	/**
+	* {@link AuthMFARecoveryCodesApi#regenerate}
+	*/
+	async _regenerateRecoveryCodes() {
+		assertRecoveryCodesExperimentalEnabled(this.experimental);
+		try {
+			return await this._useSession(async (result) => {
+				var _a;
+				const { data: sessionData, error: sessionError } = result;
+				if (sessionError) return this._returnResult({
+					data: null,
+					error: sessionError
+				});
+				const { data, error } = await _request(this.fetch, "POST", `${this.url}/factors/recovery-codes/regenerate`, {
+					headers: this.headers,
+					jwt: (_a = sessionData === null || sessionData === void 0 ? void 0 : sessionData.session) === null || _a === void 0 ? void 0 : _a.access_token
+				});
+				if (error) return this._returnResult({
+					data: null,
+					error
+				});
+				return this._returnResult({
+					data,
+					error: null
+				});
+			});
+		} catch (error) {
+			if (isAuthError(error)) return this._returnResult({
+				data: null,
+				error
+			});
+			throw error;
+		}
+	}
+	/**
+	* {@link AuthMFARecoveryCodesApi#unenroll}
+	*/
+	async _unenrollRecoveryCodes() {
+		assertRecoveryCodesExperimentalEnabled(this.experimental);
+		try {
+			return await this._useSession(async (result) => {
+				var _a;
+				const { data: sessionData, error: sessionError } = result;
+				if (sessionError) return this._returnResult({
+					data: null,
+					error: sessionError
+				});
+				const { data, error } = await _request(this.fetch, "DELETE", `${this.url}/factors/recovery-codes`, {
+					headers: this.headers,
+					jwt: (_a = sessionData === null || sessionData === void 0 ? void 0 : sessionData.session) === null || _a === void 0 ? void 0 : _a.access_token
+				});
+				if (error) return this._returnResult({
+					data: null,
+					error
+				});
+				return this._returnResult({
+					data,
+					error: null
+				});
+			});
+		} catch (error) {
+			if (isAuthError(error)) return this._returnResult({
+				data: null,
+				error
+			});
+			throw error;
+		}
 	}
 	/**
 	* Retrieves details about an OAuth authorization request.

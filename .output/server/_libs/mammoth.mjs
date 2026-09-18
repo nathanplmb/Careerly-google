@@ -728,10 +728,12 @@ var require_mammoth_browser = /* @__PURE__ */ __commonJSMin(((exports, module) =
 							});
 							currentInstrText = [];
 						} else if (type === "end") {
+							if (complexFieldStack.length === 0) return emptyResultWithMessages([warning("Ignoring complex field end character without corresponding start character")]);
 							var complexFieldEnd = complexFieldStack.pop();
 							if (complexFieldEnd.type === "begin") complexFieldEnd = parseCurrentInstrText(complexFieldEnd);
 							if (complexFieldEnd.type === "checkbox") return elementResult(documents.checkbox({ checked: complexFieldEnd.checked }));
 						} else if (type === "separate") {
+							if (complexFieldStack.length === 0) return emptyResultWithMessages([warning("Ignoring complex field separator character without corresponding start character")]);
 							var complexField = parseCurrentInstrText(complexFieldStack.pop());
 							complexFieldStack.push(complexField);
 						}
@@ -2547,7 +2549,7 @@ var require_mammoth_browser = /* @__PURE__ */ __commonJSMin(((exports, module) =
 			29: [function(require, module$29, exports$29) {
 				var RegexTokeniser = require("lop").RegexTokeniser;
 				exports$29.tokenise = tokenise;
-				var stringPrefix = "'((?:\\\\.|[^'])*)";
+				var stringPrefix = "'((?:\\\\(?:.|$)|[^'\\\\])*)";
 				function tokenise(string) {
 					var identifierCharacter = "(?:[a-zA-Z\\-_]|\\\\.)";
 					return new RegexTokeniser([
@@ -5800,8 +5802,8 @@ var require_mammoth_browser = /* @__PURE__ */ __commonJSMin(((exports, module) =
 					var arr = new Arr(_byteLength(b64, validLen, placeHoldersLen));
 					var curByte = 0;
 					var len = placeHoldersLen > 0 ? validLen - 4 : validLen;
-					var i;
-					for (i = 0; i < len; i += 4) {
+					var i = 0;
+					for (; i < len; i += 4) {
 						tmp = revLookup[b64.charCodeAt(i)] << 18 | revLookup[b64.charCodeAt(i + 1)] << 12 | revLookup[b64.charCodeAt(i + 2)] << 6 | revLookup[b64.charCodeAt(i + 3)];
 						arr[curByte++] = tmp >> 16 & 255;
 						arr[curByte++] = tmp >> 8 & 255;
@@ -7949,8 +7951,8 @@ var require_mammoth_browser = /* @__PURE__ */ __commonJSMin(((exports, module) =
 						Promise.prototype.caught = Promise.prototype["catch"] = function(fn) {
 							var len = arguments.length;
 							if (len > 1) {
-								var catchInstances = new Array(len - 1), j = 0, i;
-								for (i = 0; i < len - 1; ++i) {
+								var catchInstances = new Array(len - 1), j = 0, i = 0;
+								for (; i < len - 1; ++i) {
 									var item = arguments[i];
 									if (util.isObject(item)) catchInstances[j++] = item;
 									else return apiRejection("expecting an object but got A catch statement predicate " + util.classString(item));
@@ -9735,8 +9737,8 @@ var require_mammoth_browser = /* @__PURE__ */ __commonJSMin(((exports, module) =
 					function withAppended(target, appendee) {
 						var len = target.length;
 						var ret = new Array(len + 1);
-						var i;
-						for (i = 0; i < len; ++i) ret[i] = target[i];
+						var i = 0;
+						for (; i < len; ++i) ret[i] = target[i];
 						ret[i] = appendee;
 						return ret;
 					}
@@ -19901,8 +19903,8 @@ var require_mammoth_browser = /* @__PURE__ */ __commonJSMin(((exports, module) =
 										if (this.diskWithZip64CentralDirStart = this.reader.readInt(4), this.relativeOffsetEndOfZip64CentralDir = this.reader.readInt(8), this.disksCount = this.reader.readInt(4), 1 < this.disksCount) throw new Error("Multi-volumes zip are not supported");
 									},
 									readLocalFiles: function() {
-										var t, e;
-										for (t = 0; t < this.files.length; t++) e = this.files[t], this.reader.setIndex(e.localHeaderOffset), this.checkSignature(s.LOCAL_FILE_HEADER), e.readLocalPart(this.reader), e.handleUTF8(), e.processAttributes();
+										var t = 0, e;
+										for (; t < this.files.length; t++) e = this.files[t], this.reader.setIndex(e.localHeaderOffset), this.checkSignature(s.LOCAL_FILE_HEADER), e.readLocalPart(this.reader), e.handleUTF8(), e.processAttributes();
 									},
 									readCentralDir: function() {
 										var t;
@@ -20282,8 +20284,8 @@ var require_mammoth_browser = /* @__PURE__ */ __commonJSMin(((exports, module) =
 									var r = a.deflateInit2(this.strm, e.level, e.method, e.windowBits, e.memLevel, e.strategy);
 									if (r !== l) throw new Error(n[r]);
 									if (e.header && a.deflateSetHeader(this.strm, e.header), e.dictionary) {
-										var i;
-										if (i = "string" == typeof e.dictionary ? h.string2buf(e.dictionary) : "[object ArrayBuffer]" === u.call(e.dictionary) ? new Uint8Array(e.dictionary) : e.dictionary, (r = a.deflateSetDictionary(this.strm, i)) !== l) throw new Error(n[r]);
+										var i = "string" == typeof e.dictionary ? h.string2buf(e.dictionary) : "[object ArrayBuffer]" === u.call(e.dictionary) ? new Uint8Array(e.dictionary) : e.dictionary;
+										if ((r = a.deflateSetDictionary(this.strm, i)) !== l) throw new Error(n[r]);
 										this._dict_set = !0;
 									}
 								}
@@ -20384,8 +20386,8 @@ var require_mammoth_browser = /* @__PURE__ */ __commonJSMin(((exports, module) =
 										else for (var s = 0; s < i; s++) t[n + s] = e[r + s];
 									},
 									flattenChunks: function(t) {
-										var e, r, i, n, s, a;
-										for (e = i = 0, r = t.length; e < r; e++) i += t[e].length;
+										var e = i = 0, r = t.length, i, n, s, a;
+										for (; e < r; e++) i += t[e].length;
 										for (a = new Uint8Array(i), e = n = 0, r = t.length; e < r; e++) s = t[e], a.set(s, n), n += s.length;
 										return a;
 									}
@@ -21562,8 +21564,8 @@ while (i === a[++n] && i === a[++n] && i === a[++n] && i === a[++n] && i === a[+
 									}
 								}
 								function W(t) {
-									var e;
-									for (e = 0; e < l; e++) t.dyn_ltree[2 * e] = 0;
+									var e = 0;
+									for (; e < l; e++) t.dyn_ltree[2 * e] = 0;
 									for (e = 0; e < f; e++) t.dyn_dtree[2 * e] = 0;
 									for (e = 0; e < d; e++) t.bl_tree[2 * e] = 0;
 									t.dyn_ltree[2 * m] = 1, t.opt_len = t.static_len = 0, t.last_lit = t.matches = 0;
@@ -23659,8 +23661,8 @@ while (i === a[++n] && i === a[++n] && i === a[++n] && i === a[++n] && i === a[+
 							for (var i = 0, length = getLength(array); i < length; i++) {
 								var item = array[i];
 								if (contains(result, item)) continue;
-								var j;
-								for (j = 1; j < argsLength; j++) if (!contains(arguments[j], item)) break;
+								var j = 1;
+								for (; j < argsLength; j++) if (!contains(arguments[j], item)) break;
 								if (j === argsLength) result.push(item);
 							}
 							return result;

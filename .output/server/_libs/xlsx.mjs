@@ -9988,8 +9988,8 @@ var crypto_CreateXorArray_Method1 = /*#__PURE__*/ (function() {
 var crypto_DecryptData_Method1 = function(password, Data, XorArrayIndex, XorArray, O) {
 	if (!O) O = Data;
 	if (!XorArray) XorArray = crypto_CreateXorArray_Method1(password);
-	var Index, Value;
-	for (Index = 0; Index != Data.length; ++Index) {
+	var Index = 0, Value;
+	for (; Index != Data.length; ++Index) {
 		Value = Data[Index];
 		Value ^= XorArray[XorArrayIndex];
 		Value = (Value >> 5 | Value << 3) & 255;
