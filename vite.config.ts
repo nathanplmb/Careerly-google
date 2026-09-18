@@ -128,6 +128,12 @@ export default defineConfig({
       chunkSizeWarningLimit: 2000,
       rollupOptions: {
         external: ["canvas"],
+        onwarn(warning, warn) {
+          if (warning.code === "MODULE_LEVEL_DIRECTIVE") {
+            return;
+          }
+          warn(warning);
+        },
         output: {
           manualChunks(id) {
             if (id.includes("pdfjs-dist")) {
