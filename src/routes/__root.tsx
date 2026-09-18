@@ -40,14 +40,21 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
-  console.error(error);
+function ErrorComponent({
+  error,
+  reset,
+}: {
+  error: unknown;
+  reset: () => void;
+}) {
+  const errObj = error instanceof Error ? error : new Error(String(error));
+  console.error(errObj);
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    reportLovableError(errObj, { boundary: "tanstack_root_error_component" });
 
     // Auto-reload on stale chunk / module import error
-    const msg = error?.message || "";
+    const msg = errObj?.message || "";
     if (
       msg.includes("Importing a module script failed") ||
       msg.includes("Failed to fetch dynamically imported module") ||
@@ -61,7 +68,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         window.location.reload();
       }
     }
-  }, [error]);
+  }, [errObj]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
@@ -77,9 +84,9 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           pas pu être chargé.
         </p>
 
-        {error?.message && (
+        {errObj?.message && (
           <div className="p-3 text-left rounded-lg bg-red-500/10 border border-red-500/20 text-[11px] font-mono text-red-300 break-words max-h-32 overflow-y-auto">
-            {error.message}
+            {errObj.message}
           </div>
         )}
 
@@ -219,21 +226,13 @@ function RootComponent() {
     };
 
     const handlePreloadError = (e: Event) => {
-      e.preventDefault();
       console.warn("Preload error detected, reloading page...", e);
       handleChunkError("Failed to fetch dynamically imported module");
     };
 
     const handleWindowError = (event: ErrorEvent) => {
-      const msg = event.message || "";
-      if (
-        msg.includes("Importing a module script failed") ||
-        msg.includes("Failed to fetch dynamically imported module") ||
-        msg.includes("error loading dynamically imported module") ||
-        msg.includes("Unable to preload CSS")
-      ) {
-        event.preventDefault();
-        handleChunkError(msg);
+      if (event.message) {
+        handleChunkError(event.message);
       }
     };
 
@@ -245,13 +244,7 @@ function RootComponent() {
           : typeof reason === "string"
             ? reason
             : "";
-      if (
-        msg.includes("Importing a module script failed") ||
-        msg.includes("Failed to fetch dynamically imported module") ||
-        msg.includes("error loading dynamically imported module") ||
-        msg.includes("Unable to preload CSS")
-      ) {
-        event.preventDefault();
+      if (msg) {
         handleChunkError(msg);
       }
     };

@@ -86,7 +86,7 @@ export function normalizeCompanyName(name: string): string {
   s = s.replace(/\s+/g, " ").trim();
 
   if (KNOWN_ALIASES[s]) {
-    return KNOWN_ALIASES[s];
+    return KNOWN_ALIASES[s] || s;
   }
 
   return s;
@@ -119,10 +119,10 @@ export function extractRootDomain(urlOrDomain?: string | null): string | null {
     }
 
     const parts = host.split(".");
-    if (parts.length >= 2) {
+    if (parts.length >= 2 && parts[0]) {
       return parts[0];
     }
-    return host;
+    return host || null;
   } catch {
     return null;
   }

@@ -1023,8 +1023,13 @@ function EntreprisesPage() {
                               setContactSheetOpen(true);
                             }}
                             onOpenOpportunity={(oppId) => {
-                              setSelectedCandidatureId(oppId);
-                              setSheetOpen(true);
+                              const found = candidatures.find(
+                                (c) => c.id === oppId,
+                              );
+                              if (found) {
+                                setEditingOpp(found);
+                                setSheetOpen(true);
+                              }
                             }}
                           />
                         ))}

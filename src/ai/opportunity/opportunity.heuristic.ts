@@ -309,6 +309,8 @@ export function sanitizeCompanyAndMetrics(
   // 1. Détection structurelle type JobTeaser / job boards :
   // Une ligne courte après le lieu/titre, immédiatement suivie de "Grande entreprise", "PME", "Start-up", ou "\d+ k? employés"
   for (let i = 0; i < Math.min(lines.length, 25); i++) {
+    const line = lines[i];
+    if (!line) continue;
     const nextLine = lines[i + 1] || "";
     const nextNextLine = lines[i + 2] || "";
     const isFollowedBySizeCategory =
@@ -319,7 +321,7 @@ export function sanitizeCompanyAndMetrics(
       headcountRegex.test(nextLine) || headcountRegex.test(nextNextLine);
 
     if (isFollowedBySizeCategory || isFollowedByHeadcount) {
-      const candidate = lines[i].replace(/^[#*•\-\s]+/, "").trim();
+      const candidate = line.replace(/^[#*•\-\s]+/, "").trim();
       if (
         !isInvalidCompany(candidate) &&
         !isSuspiciousTitle(candidate) &&
@@ -340,9 +342,11 @@ export function sanitizeCompanyAndMetrics(
 
   // 2. Détection après ancre "Plus d'infos sur l'entreprise" ou "À propos de"
   for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line) continue;
     if (
       /^(?:plus d'infos sur l'entreprise|à propos de l'entreprise|l'entreprise|à propos de)\s*:?$/i.test(
-        lines[i],
+        line,
       )
     ) {
       const candidate = lines[i + 1]?.replace(/^[#*•\-\s]+/, "").trim();
@@ -368,6 +372,7 @@ export function sanitizeCompanyAndMetrics(
   const prefixRegex =
     /(?:nom de l'entreprise|société|societe|employeur)\s*[:\-–]\s*([^\n\r,;:–—]{2,35})/i;
   for (const line of lines) {
+    if (!line) continue;
     const m = line.match(prefixRegex);
     if (m && m[1]) {
       const cand = m[1].trim();
@@ -407,6 +412,7 @@ export function extractMissionsBlock(text: string): string[] {
   let inMissions = false;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+    if (!line) continue;
 
     // Fin du bloc missions si une autre section commence
     if (
@@ -447,6 +453,7 @@ export function extractMissionsBlock(text: string): string[] {
   // Fallback : si aucune ancre de section, chercher les puces significatives
   if (missions.length === 0) {
     for (const line of lines) {
+      if (!line) continue;
       if (/^[•*]\s*(.+)/.test(line)) {
         const bullet = line.replace(/^[•*]\s*/, "").trim();
         if (
@@ -478,6 +485,7 @@ export function extractBenefitsBlock(text: string): string[] {
   let inBenefits = false;
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+    if (!line) continue;
 
     if (
       inBenefits &&
@@ -526,7 +534,7 @@ export function extractCompanyMetrics(
   const hcMatch = text.match(
     /(\d+(?:\s*k|\s*000)?)\s*(employés|salariés|collaborateurs)/i,
   );
-  if (hcMatch) {
+  if (hcMatch && hcMatch[1] && hcMatch[2]) {
     metrics.push({
       label: "Effectif",
       value: `${hcMatch[1].trim()} ${hcMatch[2].toLowerCase()}`,
@@ -537,7 +545,7 @@ export function extractCompanyMetrics(
   const userMatch = text.match(
     /(\d{1,3}(?:\s\d{3})+|\d+\s*000)\s*(utilisateurs|membres|clients|abonn[ée]s|salles\s+partenaires)/i,
   );
-  if (userMatch) {
+  if (userMatch && userMatch[1] && userMatch[2]) {
     metrics.push({
       label: userMatch[2].charAt(0).toUpperCase() + userMatch[2].slice(1),
       value: userMatch[1].trim(),
@@ -548,7 +556,7 @@ export function extractCompanyMetrics(
   const fundMatch = text.match(
     /(\d+(?:[.,]\d+)?\s*(?:M€|k€|millions?\s*d'euros?))\s*(?:de\s+lev[ée]e|lev[ée]s?|de\s+chiffre\s+d'affaires)/i,
   );
-  if (fundMatch) {
+  if (fundMatch && fundMatch[1]) {
     metrics.push({
       label: "Levée de fonds",
       value: fundMatch[1].trim(),
@@ -962,13 +970,15 @@ export function extractExplicitDeadlineFromText(text: string): string | null {
     const isoMatch = candidateSegment.match(
       /\b(202\d)-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])\b/,
     );
-    if (isoMatch) return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+    if (isoMatch && isoMatch[1] && isoMatch[2] && isoMatch[3]) {
+      return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+    }
 
     // 2. Date textuelle (ex: 30 septembre 2026, 15 octobre 2026)
     const textualMatch = candidateSegment.match(
       /\b([0-2]?\d|3[01])\s+([a-zA-ZÀ-ÿ.]+)\s+(202\d)\b/,
     );
-    if (textualMatch) {
+    if (textualMatch && textualMatch[1] && textualMatch[2] && textualMatch[3]) {
       const day = textualMatch[1].padStart(2, "0");
       const monthStr = textualMatch[2].toLowerCase().replace(/\.$/, "");
       const month = FRENCH_MONTHS_MAP[monthStr];
@@ -980,7 +990,7 @@ export function extractExplicitDeadlineFromText(text: string): string | null {
     const numMatch = candidateSegment.match(
       /\b([0-2]?\d|3[01])[/.-](0[1-9]|1[0-2])[/.-](202\d)\b/,
     );
-    if (numMatch) {
+    if (numMatch && numMatch[1] && numMatch[2] && numMatch[3]) {
       const day = numMatch[1].padStart(2, "0");
       const month = numMatch[2].padStart(2, "0");
       const year = numMatch[3];
@@ -992,7 +1002,7 @@ export function extractExplicitDeadlineFromText(text: string): string | null {
   const directMatch = text.match(
     /candidatures?\s+jusqu['’]au\s+([0-2]?\d|3[01])[/.-](0[1-9]|1[0-2])[/.-](202\d)/i,
   );
-  if (directMatch) {
+  if (directMatch && directMatch[1] && directMatch[2] && directMatch[3]) {
     const day = directMatch[1].padStart(2, "0");
     const month = directMatch[2].padStart(2, "0");
     const year = directMatch[3];

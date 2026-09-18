@@ -150,6 +150,7 @@ export type Contact = {
   id: string;
   // Nom et identité
   nom: string; // Nom d'affichage / complet
+  prenom?: string;
   firstName?: string;
   lastName?: string;
   fullName?: string;
@@ -268,8 +269,11 @@ export function getContactInitials(c: Partial<Contact>): string {
   const name = getContactFullName(c);
   if (!name || name === "Sans nom") return "??";
   const words = name.trim().split(/\s+/).filter(Boolean);
-  if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
-  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+  const first = words[0];
+  const last = words[words.length - 1];
+  if (!first) return "??";
+  if (words.length === 1 || !last) return first.slice(0, 2).toUpperCase();
+  return (first.charAt(0) + last.charAt(0)).toUpperCase();
 }
 
 export function getContactCompany(c: Partial<Contact>): string {
@@ -396,9 +400,12 @@ export function findMatchingContact(
 export function getInitials(c: Partial<Contact>): string {
   const name = getContactFullName(c);
   if (!name) return "??";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const first = parts[0];
+  const last = parts[parts.length - 1];
+  if (!first) return "??";
+  if (parts.length === 1 || !last) return first.slice(0, 2).toUpperCase();
+  return (first.charAt(0) + last.charAt(0)).toUpperCase();
 }
 
 // ---------------------------------------------------------------------------
@@ -735,8 +742,10 @@ export function parseLinkedInCsv(rawCsv: string): Partial<Contact>[] {
   let idxPosition = -1;
 
   for (let r = 0; r < Math.min(rows.length, 15); r++) {
-    const candidateRow = rows[r].map((h) =>
-      h
+    const row = rows[r];
+    if (!row) continue;
+    const candidateRow = row.map((h) =>
+      (h || "")
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
@@ -791,10 +800,11 @@ export function parseLinkedInCsv(rawCsv: string): Partial<Contact>[] {
   }
 
   // Si aucune ligne d'en-tête explicite n'est trouvée, utiliser la ligne 0 par défaut
-  if (headerRowIndex === -1) {
+  if (headerRowIndex === -1 && rows.length > 0) {
     headerRowIndex = 0;
-    const headerRow = rows[0].map((h) =>
-      h
+    const firstRow = rows[0];
+    const headerRow = (firstRow || []).map((h) =>
+      (h || "")
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
@@ -831,6 +841,7 @@ export function parseLinkedInCsv(rawCsv: string): Partial<Contact>[] {
 
   for (let r = headerRowIndex + 1; r < rows.length; r++) {
     const row = rows[r];
+    if (!row) continue;
     const firstName = idxFirstName !== -1 ? row[idxFirstName] || "" : "";
     const lastName = idxLastName !== -1 ? row[idxLastName] || "" : "";
     const url = idxUrl !== -1 ? row[idxUrl] || "" : "";

@@ -1,6 +1,7 @@
 export interface OpportunityCompanyMetric {
   label: string;
   value: string;
+  context?: string;
 }
 
 export interface OpportunityLanguage {

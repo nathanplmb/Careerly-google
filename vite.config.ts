@@ -6,23 +6,8 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import fs from "fs";
 import path from "path";
-import { createLogger } from "vite";
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
-
-const customLogger = createLogger();
-const originalLoggerWarn = customLogger.warn;
-customLogger.warn = (msg, options) => {
-  if (
-    typeof msg === "string" &&
-    (msg.includes("MODULE_LEVEL_DIRECTIVE") ||
-      msg.includes("use client") ||
-      msg.includes("module level directive"))
-  ) {
-    return;
-  }
-  originalLoggerWarn(msg, options);
-};
 
 function syncBuildArtifacts() {
   const rootDir = process.cwd();
@@ -117,25 +102,8 @@ function syncBuildArtifacts() {
 export default defineConfig({
   nitro: {
     preset: "node-server",
-    esbuild: {
-      options: {
-        logOverride: {
-          "directive-use-client": "silent",
-        },
-      },
-    },
-    hooks: {
-      compiled() {
-        try {
-          syncBuildArtifacts();
-        } catch (e) {
-          console.warn("[nitro compiled] syncBuildArtifacts error:", e);
-        }
-      },
-    },
   },
   vite: {
-    customLogger,
     plugins: [
       mcpPlugin(),
       {
@@ -160,16 +128,6 @@ export default defineConfig({
       chunkSizeWarningLimit: 2000,
       rollupOptions: {
         external: ["canvas"],
-        onwarn(warning, defaultHandler) {
-          if (
-            warning.code === "MODULE_LEVEL_DIRECTIVE" ||
-            warning.message?.includes("use client") ||
-            warning.message?.includes("MODULE_LEVEL_DIRECTIVE")
-          ) {
-            return;
-          }
-          defaultHandler(warning);
-        },
         output: {
           manualChunks(id) {
             if (id.includes("pdfjs-dist")) {
