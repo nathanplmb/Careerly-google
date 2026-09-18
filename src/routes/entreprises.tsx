@@ -829,20 +829,34 @@ function EntreprisesPage() {
             return (
               <div className="flex flex-col gap-6 p-5 sm:p-6">
                 {/* 1. Bandeau de synthèse horizontal compact */}
-                <div className="flex flex-wrap items-center gap-x-8 gap-y-2 rounded-2xl border border-white/10 bg-white/5 px-6 py-3 shadow-sm w-fit">
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 shadow-sm w-fit text-xs">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-tight">Opportunités</span>
+                    <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-tight">Opp.</span>
                     <span className="text-sm font-bold text-primary">{opps.length}</span>
+                    <button 
+                      onClick={() => handleAddOpportunityForCompany(selectedEntreprise)}
+                      className="text-primary hover:text-white p-1 rounded hover:bg-white/10 transition-colors"
+                      title="Ajouter une opportunité"
+                    >
+                      <Plus className="size-3.5" />
+                    </button>
                   </div>
-                  <div className="hidden sm:block h-3 w-px bg-white/10" />
+                  <div className="h-3 w-px bg-white/10" />
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-tight">Contacts</span>
                     <span className="text-sm font-bold text-sky-400">{cts.length}</span>
                   </div>
-                  <div className="hidden sm:block h-3 w-px bg-white/10" />
+                  <div className="h-3 w-px bg-white/10" />
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-tight">Notes</span>
                     <span className="text-sm font-bold text-indigo-400">{selectedEntreprise.notes ? 1 : 0}</span>
+                    <button 
+                      onClick={() => setIsEditingNotes(true)}
+                      className="text-indigo-400 hover:text-white p-1 rounded hover:bg-white/10 transition-colors"
+                      title="Modifier les notes"
+                    >
+                      <Pencil className="size-3.5" />
+                    </button>
                   </div>
                 </div>
 
