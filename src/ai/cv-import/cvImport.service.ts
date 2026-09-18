@@ -224,7 +224,7 @@ export function estimateExpectedCounts(
 
   // Langues
   const langMatches = normalizedText.match(
-    /(?:Français|Anglais|Espagnol|Allemand|Italien|Chinois|Arabe|Portugais)\s*[:\-]/gi,
+    /(?:Français|Anglais|Espagnol|Allemand|Italien|Chinois|Arabe|Portugais)\s*[:\\-]/gi,
   );
   const estimatedLangs = langMatches ? langMatches.length : 0;
 

@@ -829,12 +829,18 @@ function EntreprisesPage() {
             return (
               <div className="flex flex-col gap-6 p-5 sm:p-6">
                 {/* 1. Bandeau de synthèse horizontal compact */}
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 shadow-sm w-fit text-xs">
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 shadow-sm w-full text-xs">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-tight">Opp.</span>
-                    <span className="text-sm font-bold text-primary">{opps.length}</span>
-                    <button 
-                      onClick={() => handleAddOpportunityForCompany(selectedEntreprise)}
+                    <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-tight">
+                      Opp.
+                    </span>
+                    <span className="text-sm font-bold text-primary">
+                      {opps.length}
+                    </span>
+                    <button
+                      onClick={() =>
+                        handleAddOpportunityForCompany(selectedEntreprise)
+                      }
                       className="text-primary hover:text-white p-1 rounded hover:bg-white/10 transition-colors"
                       title="Ajouter une opportunité"
                     >
@@ -843,14 +849,22 @@ function EntreprisesPage() {
                   </div>
                   <div className="h-3 w-px bg-white/10" />
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-tight">Contacts</span>
-                    <span className="text-sm font-bold text-sky-400">{cts.length}</span>
+                    <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-tight">
+                      Contacts
+                    </span>
+                    <span className="text-sm font-bold text-sky-400">
+                      {cts.length}
+                    </span>
                   </div>
                   <div className="h-3 w-px bg-white/10" />
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-tight">Notes</span>
-                    <span className="text-sm font-bold text-indigo-400">{selectedEntreprise.notes ? 1 : 0}</span>
-                    <button 
+                    <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-tight">
+                      Notes
+                    </span>
+                    <span className="text-sm font-bold text-indigo-400">
+                      {selectedEntreprise.notes ? 1 : 0}
+                    </span>
+                    <button
                       onClick={() => setIsEditingNotes(true)}
                       className="text-indigo-400 hover:text-white p-1 rounded hover:bg-white/10 transition-colors"
                       title="Modifier les notes"
@@ -959,134 +973,6 @@ function EntreprisesPage() {
                         </div>
                       </div>
                     )}
-
-                  {/* Bloc NOTES PERSONNELLES & OPPORTUNITÉS */}
-                  <div className="grid gap-6 xl:grid-cols-2">
-                    {/* Notes stratégiques */}
-                    <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-6 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]">
-                      <div className="mb-4 flex items-center justify-between gap-2">
-                        <h4 className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
-                          <Pencil className="size-4 text-indigo-400" />
-                          Notes stratégiques
-                        </h4>
-                        {!isEditingNotes ? (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setIsEditingNotes(true)}
-                            className="h-7 text-xs text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-lg"
-                          >
-                            {hasNotes ? "Modifier" : "+ Ajouter"}
-                          </Button>
-                        ) : null}
-                      </div>
-
-                      {isEditingNotes ? (
-                        <div className="space-y-3">
-                          <Textarea
-                            rows={4}
-                            value={notesDraft}
-                            onChange={(e) => setNotesDraft(e.target.value)}
-                            placeholder="Ex: Entreprise en forte croissance IA, contacté lors du forum Neoma, relancer en avril…"
-                            className="text-xs resize-none bg-black/20 border-white/10"
-                          />
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                setNotesDraft(selectedEntreprise.notes || "");
-                                setIsEditingNotes(false);
-                              }}
-                              className="h-7 text-xs hover:bg-white/5 rounded-lg"
-                            >
-                              Annuler
-                            </Button>
-                            <Button
-                              type="button"
-                              size="sm"
-                              onClick={handleSaveNotes}
-                              className="h-7 text-xs rounded-lg bg-primary text-white hover:bg-primary/90"
-                            >
-                              Enregistrer
-                            </Button>
-                          </div>
-                        </div>
-                      ) : hasNotes ? (
-                        <p className="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                          {selectedEntreprise.notes}
-                        </p>
-                      ) : (
-                        <p className="text-xs text-muted-foreground/50 italic">
-                          Aucune note personnelle rattachée.
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Opportunités associées */}
-                    <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-6 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]">
-                      <div className="mb-4 flex items-center justify-between gap-3">
-                        <h4 className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
-                          <Briefcase className="size-4 text-primary" />{" "}
-                          Opportunités ({opps.length})
-                        </h4>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="ghost"
-                          onClick={() =>
-                            handleAddOpportunityForCompany(selectedEntreprise)
-                          }
-                          className="h-7 text-xs text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-lg px-2"
-                        >
-                          + Ajouter
-                        </Button>
-                      </div>
-
-                      {!hasOpps ? (
-                        <p className="text-xs text-muted-foreground/50 italic">
-                          Aucune opportunité active pour le moment.
-                        </p>
-                      ) : (
-                        <div className="space-y-2.5">
-                          {opps.map((opp) => (
-                            <button
-                              key={opp.id}
-                              type="button"
-                              onClick={() => {
-                                setEditingOpp(opp);
-                                setSheetOpen(true);
-                              }}
-                              className="group flex w-full items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 p-3 text-left transition hover:border-white/20 hover:bg-white/10 shadow-sm"
-                            >
-                              <div className="min-w-0">
-                                <p className="truncate text-xs font-bold text-foreground group-hover:text-indigo-300 transition-colors">
-                                  {opp.poste || "Sans titre"}
-                                </p>
-                                <div className="mt-0.5 flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                                  {opp.contractType && (
-                                    <span>{opp.contractType}</span>
-                                  )}
-                                  {opp.lieu && (
-                                    <>
-                                      <span>·</span>
-                                      <span>{opp.lieu}</span>
-                                    </>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-2 shrink-0">
-                                <StatutBadge statut={opp.statut} />
-                                <ChevronRight className="size-3.5 text-muted-foreground/50 group-hover:text-foreground transition-colors" />
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
 
                   {/* Section Contacts (Pleine largeur, 3 colonnes) */}
                   <div className="space-y-5">

@@ -1,1 +1,0 @@
-import{t as e}from"./jsx-dev-runtime-BoQDevNy.js";import{ot as t}from"./index-6HU9uCze.js";var n=e(),r=`/app/applet/src/routes/index.tsx?tsr-split=component`;function i(){return(0,n.jsxDEV)(t,{to:`/opportunites`,replace:!0},void 0,!1,{fileName:r,lineNumber:3,columnNumber:10},this)}export{i as component};
