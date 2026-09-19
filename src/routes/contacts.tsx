@@ -35,6 +35,7 @@ import {
 import { AppShell } from "@/components/AppShell";
 import { ContactSheet } from "@/components/ContactSheet";
 import { ContactImportModal } from "@/components/ContactImportModal";
+import { ContactCard } from "@/components/ContactCard";
 import { CandidatureSheet } from "@/components/CandidatureSheet";
 import { useSession } from "@/hooks/useSession";
 import { useProfil } from "@/hooks/useProfil";
@@ -46,9 +47,12 @@ import {
   getContactFullName,
   getContactCompany,
   getContactJobTitle,
+  getCategoryBadgeStyle,
   TYPES_CONTACT,
+  CATEGORIES_CONTACT,
   SOURCE_LABELS,
   type Contact,
+  type CategoryContact,
   type ContactSource,
 } from "@/lib/contacts";
 import type { Candidature } from "@/lib/candidatures";
@@ -97,6 +101,7 @@ export function ContactsPage() {
   // Filtres
   const [recherche, setRecherche] = useState("");
   const [filtreType, setFiltreType] = useState<string>("tous");
+  const [filtreCategory, setFiltreCategory] = useState<string>("all");
   const [filtreSource, setFiltreSource] = useState<SourceFilter>("all");
   const [filtreRelation, setFiltreRelation] = useState<RelationFilter>("all");
 
@@ -148,51 +153,63 @@ export function ContactsPage() {
   // Liste filtrée
   const liste = useMemo(() => {
     const q = recherche.trim().toLowerCase();
-    return contacts.filter((c) => {
-      // Filtre type
-      if (filtreType !== "tous" && c.type !== filtreType) return false;
+    return contacts
+      .filter((c) => {
+        // Filtre type
+        if (filtreType !== "tous" && c.type !== filtreType) return false;
 
-      // Filtre source
-      if (filtreSource !== "all") {
-        const sources =
-          c.sources && c.sources.length > 0
-            ? c.sources
-            : [c.source || "manual"];
-        if (!sources.includes(filtreSource)) return false;
-      }
+        // Filtre catégorie
+        if (filtreCategory !== "all" && c.category !== filtreCategory)
+          return false;
 
-      // Filtre relation
-      const opps = getOpportunitiesForContact(c, candidatures);
-      if (filtreRelation === "with_opps" && opps.length === 0) return false;
-      if (filtreRelation === "without_opps" && opps.length > 0) return false;
-      if (filtreRelation === "with_company" && !c.companyId && !c.entreprise)
-        return false;
+        // Filtre source
+        if (filtreSource !== "all") {
+          const sources =
+            c.sources && c.sources.length > 0
+              ? c.sources
+              : [c.source || "manual"];
+          if (!sources.includes(filtreSource)) return false;
+        }
 
-      // Recherche texte
-      if (q) {
-        const fullName = getContactFullName(c).toLowerCase();
-        const company = getContactCompany(c).toLowerCase();
-        const job = getContactJobTitle(c).toLowerCase();
-        const email = (c.email || "").toLowerCase();
-        const phone = (c.telephone || "").toLowerCase();
-        const notes = (c.notes || "").toLowerCase();
+        // Filtre relation
+        const opps = getOpportunitiesForContact(c, candidatures);
+        if (filtreRelation === "with_opps" && opps.length === 0) return false;
+        if (filtreRelation === "without_opps" && opps.length > 0) return false;
+        if (filtreRelation === "with_company" && !c.companyId && !c.entreprise)
+          return false;
 
-        return (
-          fullName.includes(q) ||
-          company.includes(q) ||
-          job.includes(q) ||
-          email.includes(q) ||
-          phone.includes(q) ||
-          notes.includes(q)
-        );
-      }
+        // Recherche texte
+        if (q) {
+          const fullName = getContactFullName(c).toLowerCase();
+          const company = getContactCompany(c).toLowerCase();
+          const job = getContactJobTitle(c).toLowerCase();
+          const email = (c.email || "").toLowerCase();
+          const phone = (c.telephone || "").toLowerCase();
+          const notes = (c.notes || "").toLowerCase();
 
-      return true;
-    });
+          return (
+            fullName.includes(q) ||
+            company.includes(q) ||
+            job.includes(q) ||
+            email.includes(q) ||
+            phone.includes(q) ||
+            notes.includes(q)
+          );
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        const scoreA = a.relevanceScore ?? -1;
+        const scoreB = b.relevanceScore ?? -1;
+        if (scoreA !== scoreB) return scoreB - scoreA;
+        return getContactFullName(a).localeCompare(getContactFullName(b));
+      });
   }, [
     contacts,
     recherche,
     filtreType,
+    filtreCategory,
     filtreSource,
     filtreRelation,
     candidatures,
@@ -242,11 +259,19 @@ export function ContactsPage() {
       actions={
         <div className="flex items-center gap-2">
           <Button
+            onClick={() => setImportModalOpen(true)}
+            className="gap-1.5 text-xs h-9 font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm"
+          >
+            <Linkedin className="size-3.5 text-white" /> Importer mes contacts
+            LinkedIn
+          </Button>
+          <Button
             variant="outline"
             onClick={() => setImportModalOpen(true)}
             className="gap-1.5 text-xs h-9 font-medium"
           >
-            <Upload className="size-3.5 text-muted-foreground" /> Importer
+            <Upload className="size-3.5 text-muted-foreground" /> Autre import
+            (vCard)
           </Button>
           <Button
             onClick={handleOpenNew}
@@ -257,58 +282,59 @@ export function ContactsPage() {
         </div>
       }
     >
-      {/* Synthèse réseau épurée style SaaS */}
-      <div className="mb-6 flex flex-wrap items-center gap-3 text-xs font-semibold">
-        <div className="inline-flex items-center gap-2 rounded-full bg-muted/40 px-3.5 py-1.5 text-foreground border border-border/40">
-          <span className="size-2 rounded-full bg-slate-400" />
+      {/* Synthèse réseau épurée style Liquid Glass */}
+      <div className="mb-5 flex flex-wrap items-center gap-2.5 text-xs font-semibold">
+        <div className="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3.5 py-1.5 text-foreground backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.12)]">
+          <span className="size-2 rounded-full bg-slate-400 shadow-[0_0_6px_rgba(148,163,184,0.6)]" />
           <span className="text-muted-foreground font-medium">
             Total Contacts :
           </span>
-          <span>{stats.total}</span>
+          <span className="font-bold">{stats.total}</span>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-full bg-muted/40 px-3.5 py-1.5 text-foreground border border-border/40">
-          <span className="size-2 rounded-full bg-emerald-500" />
+        <div className="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3.5 py-1.5 text-foreground backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.12)]">
+          <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]" />
           <span className="text-muted-foreground font-medium">
             Avec opportunité :
           </span>
-          <span>{stats.withOpps}</span>
+          <span className="font-bold text-emerald-400">{stats.withOpps}</span>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-full bg-white/5 backdrop-blur-md px-3.5 py-1.5 text-foreground border border-white/10 text-xs">
-          <span className="size-2 rounded-full bg-sky-400" />
+        <div className="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3.5 py-1.5 text-foreground backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.12)]">
+          <span className="size-2 rounded-full bg-sky-400 shadow-[0_0_6px_rgba(56,189,248,0.8)]" />
           <span className="text-muted-foreground font-medium">
             Rattachés Entreprises :
           </span>
-          <span className="font-semibold">{stats.withCompany}</span>
+          <span className="font-bold text-sky-300">{stats.withCompany}</span>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-full bg-white/5 backdrop-blur-md px-3.5 py-1.5 text-foreground border border-white/10 text-xs">
-          <span className="size-2 rounded-full bg-amber-400" />
+        <div className="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 px-3.5 py-1.5 text-foreground backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.12)]">
+          <span className="size-2 rounded-full bg-indigo-400 shadow-[0_0_6px_rgba(129,140,248,0.8)]" />
           <span className="text-muted-foreground font-medium">
             Imports Réseau :
           </span>
-          <span className="font-semibold">
+          <span className="font-bold text-indigo-300">
             {stats.fromPhone + stats.fromLinkedin} ({stats.fromPhone} tél. /{" "}
             {stats.fromLinkedin} in)
           </span>
         </div>
       </div>
 
-      {/* Barre de recherche et filtres */}
-      <div className="mb-6 space-y-3">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
+      {/* Barre de recherche et filtres - Panneau Verre Liquide */}
+      <section className="glass-panel mb-6 flex flex-col gap-3.5 p-3.5 sm:p-4 shadow-md">
+        <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
+          <div className="relative flex-1 min-w-[240px]">
             <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
+            <input
+              type="text"
               value={recherche}
               onChange={(e) => setRecherche(e.target.value)}
               placeholder="Rechercher par nom, entreprise, poste, email, notes..."
-              className="pl-10 h-10 text-xs"
+              className="h-9.5 w-full rounded-xl bg-white/5 pl-9 pr-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:bg-white/10 focus:ring-2 focus:ring-primary/20 backdrop-blur-md transition-all shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)]"
             />
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <Select value={filtreType} onValueChange={setFiltreType}>
-              <SelectTrigger className="w-40 sm:w-44 h-10 text-xs">
-                <SelectValue placeholder="Type" />
+              <SelectTrigger className="w-36 sm:w-40 h-9.5 text-xs rounded-xl bg-white/5 border-white/10 backdrop-blur-md">
+                <SelectValue placeholder="Rôle" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="tous" className="text-xs">
@@ -322,11 +348,35 @@ export function ContactsPage() {
               </SelectContent>
             </Select>
 
+            <Select value={filtreCategory} onValueChange={setFiltreCategory}>
+              <SelectTrigger className="w-40 sm:w-48 h-9.5 text-xs rounded-xl bg-white/5 border-white/10 backdrop-blur-md">
+                <SelectValue placeholder="Catégorie IA" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" className="text-xs">
+                  Toutes catégories IA
+                </SelectItem>
+                {CATEGORIES_CONTACT.map((cat) => {
+                  const style = getCategoryBadgeStyle(cat);
+                  return (
+                    <SelectItem key={cat} value={cat} className="text-xs">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`size-2 rounded-full shrink-0 ${style.dotClass}`}
+                        />
+                        <span>{cat}</span>
+                      </div>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+
             <Select
               value={filtreSource}
               onValueChange={(v) => setFiltreSource(v as SourceFilter)}
             >
-              <SelectTrigger className="w-36 sm:w-40 h-10 text-xs">
+              <SelectTrigger className="w-36 sm:w-40 h-9.5 text-xs rounded-xl bg-white/5 border-white/10 backdrop-blur-md">
                 <SelectValue placeholder="Source" />
               </SelectTrigger>
               <SelectContent>
@@ -352,7 +402,7 @@ export function ContactsPage() {
               value={filtreRelation}
               onValueChange={(v) => setFiltreRelation(v as RelationFilter)}
             >
-              <SelectTrigger className="w-40 sm:w-44 h-10 text-xs">
+              <SelectTrigger className="w-36 sm:w-40 h-9.5 text-xs rounded-xl bg-white/5 border-white/10 backdrop-blur-md">
                 <SelectValue placeholder="Liaison" />
               </SelectTrigger>
               <SelectContent>
@@ -371,37 +421,38 @@ export function ContactsPage() {
               </SelectContent>
             </Select>
 
-            <div className="flex items-center gap-1 border border-white/10 bg-black/20 backdrop-blur-md rounded-xl p-1 h-10 shrink-0">
+            {/* Selecteur de vue Grid / Table Liquid Glass */}
+            <div className="flex items-center gap-0.5 rounded-xl bg-black/25 dark:bg-black/30 backdrop-blur-xl p-1 select-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]">
               <button
                 type="button"
                 onClick={() => handleSetViewMode("grid")}
                 aria-label="Vue grille"
                 className={cn(
-                  "grid size-8 place-items-center rounded-lg transition-all cursor-pointer",
+                  "grid size-7.5 place-items-center rounded-lg transition-all cursor-pointer",
                   viewMode === "grid"
-                    ? "bg-primary text-white shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-white/10",
+                    ? "bg-white/15 dark:bg-white/15 text-foreground font-semibold shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                <LayoutGrid className="size-4" />
+                <LayoutGrid className="size-3.5" />
               </button>
               <button
                 type="button"
                 onClick={() => handleSetViewMode("table")}
                 aria-label="Vue tableau"
                 className={cn(
-                  "grid size-8 place-items-center rounded-lg transition-all cursor-pointer",
+                  "grid size-7.5 place-items-center rounded-lg transition-all cursor-pointer",
                   viewMode === "table"
-                    ? "bg-primary text-white shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-white/10",
+                    ? "bg-white/15 dark:bg-white/15 text-foreground font-semibold shadow-[0_2px_8px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.2)]"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                <List className="size-4" />
+                <List className="size-3.5" />
               </button>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* État de chargement */}
       {contactsLoading ? (
@@ -458,6 +509,7 @@ export function ContactsPage() {
               <thead>
                 <tr className="border-b border-border/50 bg-muted/20 text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
                   <th className="py-3 px-4">Contact</th>
+                  <th className="py-3 px-4">Pertinence</th>
                   <th className="py-3 px-4">Rôle / Type</th>
                   <th className="py-3 px-4">Entreprise & Poste</th>
                   <th className="py-3 px-4">Opportunités liées</th>
@@ -510,28 +562,55 @@ export function ContactsPage() {
                         </div>
                       </td>
                       <td className="py-3.5 px-4 whitespace-nowrap">
-                        <div className="flex flex-col gap-1 items-start">
-                          <span className="rounded-full border border-border/60 bg-muted/40 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                            {c.type}
+                        {c.relevanceScore !== undefined ? (
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold border backdrop-blur-md ${
+                              c.relevanceScore >= 80
+                                ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+                                : c.relevanceScore >= 60
+                                  ? "bg-sky-500/15 text-sky-300 border-sky-500/30"
+                                  : "bg-slate-500/15 text-slate-300 border-slate-500/30"
+                            }`}
+                          >
+                            ⚡ {c.relevanceScore}%
                           </span>
+                        ) : (
+                          <span className="text-[11px] text-muted-foreground/60">
+                            —
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <div className="flex flex-col gap-1 items-start">
+                          {c.category ? (
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold border backdrop-blur-md ${getCategoryBadgeStyle(c.category).fullClass}`}
+                            >
+                              <Sparkles className="size-2.5 opacity-80" />
+                              {c.category}
+                            </span>
+                          ) : (
+                            <span className="rounded-full border border-border/60 bg-muted/40 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                              {c.type}
+                            </span>
+                          )}
                           <div className="flex items-center gap-1">
-                            {sources.map((src) => (
-                              <span
-                                key={src}
-                                className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground"
-                                title={`Source: ${SOURCE_LABELS[src as keyof typeof SOURCE_LABELS] || src}`}
-                              >
-                                {src === "phone" && (
-                                  <Smartphone className="size-3 text-emerald-500" />
-                                )}
-                                {src === "linkedin" && (
-                                  <Linkedin className="size-3 text-[#0A66C2]" />
-                                )}
-                                {src === "opportunity" && (
-                                  <Briefcase className="size-3 text-muted-foreground" />
-                                )}
-                              </span>
-                            ))}
+                            {sources
+                              .filter((s) => s !== "linkedin")
+                              .map((src) => (
+                                <span
+                                  key={src}
+                                  className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground"
+                                  title={`Source: ${SOURCE_LABELS[src as keyof typeof SOURCE_LABELS] || src}`}
+                                >
+                                  {src === "phone" && (
+                                    <Smartphone className="size-3 text-emerald-500" />
+                                  )}
+                                  {src === "opportunity" && (
+                                    <Briefcase className="size-3 text-muted-foreground" />
+                                  )}
+                                </span>
+                              ))}
                           </div>
                         </div>
                       </td>
@@ -614,186 +693,18 @@ export function ContactsPage() {
           </div>
         </div>
       ) : (
-        /* Grille des cartes de contact */
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {liste.map((c, i) => {
-            const fullName = getContactFullName(c);
-            const company = getContactCompany(c);
-            const jobTitle = getContactJobTitle(c);
-            const initials = getInitials(c);
-            const opps = getOpportunitiesForContact(c, candidatures);
-
-            const sources =
-              c.sources && c.sources.length > 0
-                ? c.sources
-                : [c.source || "manual"];
-
-            return (
-              <div
-                key={c.id}
-                className="glass-card-interactive group relative flex flex-col justify-between p-4.5"
-              >
-                <div>
-                  {/* Haut de carte */}
-                  <div className="flex items-start justify-between gap-3">
-                    <button
-                      type="button"
-                      onClick={() => handleOpenContact(c)}
-                      className="flex items-start gap-3 min-w-0 text-left flex-1 cursor-pointer"
-                    >
-                      <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-white/10 text-foreground font-semibold text-sm border border-white/15 backdrop-blur-md shadow-xs">
-                        {initials}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-semibold text-sm text-foreground group-hover:text-primary transition-colors">
-                          {fullName || "Sans nom"}
-                        </p>
-                        <p className="truncate text-xs text-muted-foreground mt-0.5">
-                          {jobTitle || "Poste non précisé"}
-                        </p>
-                        {company && (
-                          <span className="mt-1.5 inline-flex items-center gap-1 rounded-lg bg-white/5 border border-white/10 px-2 py-0.5 text-[11px] font-medium text-foreground backdrop-blur-md">
-                            <Building2 className="size-3 text-muted-foreground" />
-                            {company}
-                          </span>
-                        )}
-                      </div>
-                    </button>
-
-                    <div className="flex flex-col items-end gap-1.5 shrink-0">
-                      <span className="rounded-full border border-white/10 bg-white/5 backdrop-blur-md px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-                        {c.type}
-                      </span>
-
-                      {/* Pill source */}
-                      {sources.map((src) => (
-                        <span
-                          key={src}
-                          className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] text-muted-foreground"
-                          title={`Source: ${SOURCE_LABELS[src as keyof typeof SOURCE_LABELS] || src}`}
-                        >
-                          {src === "phone" && (
-                            <Smartphone className="size-3 text-emerald-500" />
-                          )}
-                          {src === "linkedin" && (
-                            <Linkedin className="size-3 text-[#0A66C2]" />
-                          )}
-                          {src === "opportunity" && (
-                            <Briefcase className="size-3 text-primary" />
-                          )}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Coordonnées rapides */}
-                  <div className="mt-3.5 space-y-1.5 text-xs text-muted-foreground">
-                    {c.email && (
-                      <a
-                        href={`mailto:${c.email}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex items-center gap-2 truncate hover:text-foreground transition-colors"
-                      >
-                        <Mail className="size-3.5 text-muted-foreground/80 shrink-0" />
-                        <span className="truncate">{c.email}</span>
-                      </a>
-                    )}
-                    {c.telephone && (
-                      <a
-                        href={`tel:${c.telephone}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex items-center gap-2 truncate hover:text-foreground transition-colors"
-                      >
-                        <Phone className="size-3.5 text-muted-foreground/80 shrink-0" />
-                        <span>{c.telephone}</span>
-                      </a>
-                    )}
-                    {c.linkedin && (
-                      <a
-                        href={
-                          c.linkedin.startsWith("http")
-                            ? c.linkedin
-                            : `https://${c.linkedin}`
-                        }
-                        target="_blank"
-                        rel="noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-2 truncate text-[#0A66C2] hover:underline"
-                      >
-                        <Linkedin className="size-3.5 shrink-0" />
-                        <span className="truncate">Profil LinkedIn</span>
-                        <ExternalLink className="size-2.5" />
-                      </a>
-                    )}
-                  </div>
-
-                  {/* Opportunités rattachées */}
-                  {opps.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-border/50">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
-                        <Briefcase className="size-3 text-muted-foreground" />
-                        {opps.length} opportunité{opps.length > 1 ? "s" : ""}{" "}
-                        liée{opps.length > 1 ? "s" : ""} :
-                      </p>
-                      <div className="space-y-1">
-                        {opps.slice(0, 2).map((opp) => (
-                          <button
-                            key={opp.id}
-                            type="button"
-                            onClick={() => handleOpenOpportunity(opp.id)}
-                            className="w-full flex items-center justify-between gap-2 rounded-lg bg-muted/40 hover:bg-muted/70 px-2 py-1 text-left text-[11px] transition-colors"
-                          >
-                            <span className="truncate font-medium text-foreground">
-                              {opp.poste || "Offre"}
-                            </span>
-                            <span className="shrink-0 text-[10px] text-muted-foreground">
-                              {opp.currentStage || opp.statut}
-                            </span>
-                          </button>
-                        ))}
-                        {opps.length > 2 && (
-                          <button
-                            type="button"
-                            onClick={() => handleOpenContact(c)}
-                            className="text-[10px] text-muted-foreground hover:text-foreground hover:underline block pt-0.5"
-                          >
-                            +{opps.length - 2} autre(s) opportunité(s)...
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Prochaine action si présente */}
-                  {c.prochaineAction && (
-                    <div className="mt-3 rounded-lg border border-border bg-muted/40 p-2 text-[11px] text-foreground">
-                      <strong className="font-semibold">Action : </strong>
-                      {c.prochaineAction}
-                      {c.dateProchaineAction
-                        ? ` (${c.dateProchaineAction})`
-                        : ""}
-                    </div>
-                  )}
-                </div>
-
-                {/* Bas de carte */}
-                <div className="mt-4 pt-2 flex items-center justify-between border-t border-border/40 text-xs">
-                  <span className="text-[11px] text-muted-foreground">
-                    {c.historique?.length || 0} échange
-                    {c.historique?.length > 1 ? "s" : ""}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleOpenContact(c)}
-                    className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground font-semibold"
-                  >
-                    Ouvrir la fiche
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
+        /* Grille des cartes de contact (max 3 par ligne pour lisibilité optimale) */
+        <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+          {liste.map((c) => (
+            <ContactCard
+              key={c.id}
+              contact={c}
+              candidatures={candidatures}
+              onOpenDetails={handleOpenContact}
+              onOpenMessageIa={handleOpenContact}
+              onOpenOpportunity={handleOpenOpportunity}
+            />
+          ))}
         </div>
       )}
 
@@ -815,6 +726,8 @@ export function ContactsPage() {
         open={importModalOpen}
         onOpenChange={setImportModalOpen}
         existingContacts={contacts}
+        userSchool={profil?.ecole || profil?.formation}
+        userTargetSector={profil?.posteCible || profil?.metierCible}
         onImportComplete={async (contactsToImport, resolutions) => {
           return await batchImportContacts(contactsToImport, resolutions);
         }}

@@ -16,6 +16,7 @@ import {
   saveEntreprisesLocal,
   shouldKeepEntrepriseAfterOpportunityDeleted,
   syncEntrepriseFromOpportunity,
+  syncEntrepriseFromContact,
   type Entreprise,
 } from "@/lib/entreprises";
 import type { Candidature } from "@/lib/candidatures";
@@ -136,11 +137,11 @@ export function useEntreprises() {
     (e: Entreprise, contacts: Contact[]): Contact[] => {
       return contacts.filter((ct) => {
         if (ct.candidatureId && ct.candidatureId === e.id) return true;
+        if ((ct as unknown as { companyId?: string }).companyId === e.id)
+          return true;
         if (ct.entreprise) {
-          return (
-            normalizeCompanyName(ct.entreprise) === e.normalizedName ||
-            ct.entreprise.trim().toLowerCase() === e.nom.trim().toLowerCase()
-          );
+          const match = findMatchingEntreprise({ nom: ct.entreprise }, [e]);
+          if (match) return true;
         }
         return false;
       });
@@ -150,7 +151,7 @@ export function useEntreprises() {
 
   /**
    * Synchronisation automatique intelligente :
-   * - Pour chaque opportunité, s'assure qu'une entreprise existe et est enrichie.
+   * - Pour chaque opportunité ET chaque contact réseau, s'assure qu'une entreprise existe et est enrichie.
    * - Rattache `companyId` si absent.
    * - Ne supprime jamais les données manuelles utilisateur.
    */
@@ -167,6 +168,7 @@ export function useEntreprises() {
       const toUpsert: Entreprise[] = [];
       let anyChanged = false;
 
+      // 1. Synchronisation à partir des opportunités
       for (const opp of candidatures) {
         const oppNom = opp.companyName || opp.company || opp.entreprise || "";
         if (!oppNom.trim()) continue;
@@ -194,6 +196,29 @@ export function useEntreprises() {
             ...opp,
             companyId: entreprise.id,
           });
+        }
+      }
+
+      // 2. Synchronisation à partir des contacts (LinkedIn ou manuels)
+      for (const ct of contacts) {
+        const compName = ct.entreprise?.trim();
+        if (!compName) continue;
+
+        const res = syncEntrepriseFromContact(ct, currentList);
+        if (!res) continue;
+
+        const { entreprise, isNew, hasChanged } = res;
+
+        if (isNew) {
+          currentList = [entreprise, ...currentList];
+          anyChanged = true;
+          toUpsert.push(entreprise);
+        } else if (hasChanged) {
+          currentList = currentList.map((item) =>
+            item.id === entreprise.id ? entreprise : item,
+          );
+          anyChanged = true;
+          toUpsert.push(entreprise);
         }
       }
 

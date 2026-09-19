@@ -92,18 +92,20 @@ export function ChatMessageItem({
             </span>
           )}
           {formattedTime && (
-            <span className="text-[10px] text-muted-foreground/70">{formattedTime}</span>
+            <span className="text-[10px] text-muted-foreground/70">
+              {formattedTime}
+            </span>
           )}
         </div>
 
         <div
           className={cn(
-            "relative rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-xs backdrop-blur-xl transition-all",
+            "relative rounded-2xl px-4.5 py-3.5 text-sm leading-relaxed transition-all",
             isUser
-              ? "bg-white/12 border border-white/20 text-foreground rounded-tr-xs"
+              ? "bg-gradient-to-b from-[#EC0040]/90 to-[#D81A45]/95 text-white border border-white/30 shadow-[0_8px_25px_rgba(216,26,69,0.35),inset_0_1px_1px_rgba(255,255,255,0.4)] backdrop-blur-2xl rounded-tr-xs"
               : message.isError
-                ? "bg-red-950/30 border border-red-500/30 text-red-200 rounded-tl-xs"
-                : "bg-white/5 border border-white/10 text-foreground rounded-tl-xs",
+                ? "bg-red-950/40 border border-red-500/35 text-red-100 rounded-tl-xs backdrop-blur-2xl shadow-md"
+                : "glass-card border-white/14 text-foreground rounded-tl-xs shadow-[0_8px_25px_rgba(0,0,0,0.35),inset_0_1px_1px_rgba(255,255,255,0.2)]",
           )}
         >
           {isUser ? (

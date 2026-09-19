@@ -13,7 +13,13 @@ describe("Chat Context Normalization", () => {
   it("normalizes competences from string with commas, semicolons, and bullets into string[]", () => {
     const raw = "Marketing, Finance; Négociation \n• Python \n• SQL";
     const res = normalizeStringArray(raw);
-    expect(res).toEqual(["Marketing", "Finance", "Négociation", "Python", "SQL"]);
+    expect(res).toEqual([
+      "Marketing",
+      "Finance",
+      "Négociation",
+      "Python",
+      "SQL",
+    ]);
     expect(Array.isArray(res)).toBe(true);
   });
 
@@ -63,7 +69,12 @@ describe("Chat Context Normalization", () => {
 
     for (const personaId of personas) {
       const payload = {
-        messages: [{ role: "user" as const, content: "Quelle fourchette de salaire demander ?" }],
+        messages: [
+          {
+            role: "user" as const,
+            content: "Quelle fourchette de salaire demander ?",
+          },
+        ],
         modelId: "gemini-3.5-flash" as const,
         personaId,
         candidateContext: normalized,

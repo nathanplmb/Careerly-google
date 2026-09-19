@@ -19,8 +19,6 @@ import {
   Sparkles,
   Trash2,
   User,
-  UserCheck,
-  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "motion/react";
@@ -746,108 +744,58 @@ function AuthPage() {
   };
 
   return (
-    <div className="aurora-bg flex min-h-screen items-center justify-center bg-background px-4 py-8 md:p-12">
-      <div className="w-full max-w-4xl">
+    <div className="aurora-bg relative flex min-h-screen items-center justify-center bg-background px-4 py-10 sm:px-6">
+      {/* Lueur d'ambiance liquide d'arrière-plan */}
+      <div className="pointer-events-none absolute -top-32 left-1/2 -translate-x-1/2 size-96 rounded-full bg-primary/8 blur-[120px] saturate-50" />
+      <div className="pointer-events-none absolute bottom-12 right-1/4 size-80 rounded-full bg-indigo-500/6 blur-[130px] saturate-50" />
+
+      <div className="relative z-10 w-full max-w-lg">
         {/* En-tête de navigation */}
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-4 flex items-center justify-between px-1">
           <Link
             to="/opportunites"
-            className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted/60 hover:text-foreground"
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur-xl transition hover:bg-white/10 hover:text-foreground"
           >
-            <ArrowLeft className="size-4" /> Retour à l'application
+            <ArrowLeft className="size-3.5" /> Retour à l'application
           </Link>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <ShieldCheck className="size-4 text-emerald-500" />
+          <div className="flex items-center gap-1.5 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-[11px] font-medium text-emerald-400 backdrop-blur-md">
+            <ShieldCheck className="size-3.5 text-emerald-400" />
             <span className="hidden sm:inline">
               Connexion sécurisée & chiffrée
             </span>
+            <span className="sm:hidden">Sécurisé</span>
           </div>
         </div>
 
-        {/* Carte principale en 2 colonnes sur grand écran - Liquid Glass */}
-        <div className="grid overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-[0_24px_64px_-12px_rgba(0,0,0,0.6)] backdrop-blur-3xl lg:grid-cols-12">
-          {/* Colonne gauche : Panneau de marque & Présentation */}
-          <div className="relative flex flex-col justify-between overflow-hidden bg-white/5 p-8 lg:col-span-5 lg:p-10">
-            <div className="relative z-10 space-y-6">
-              <Logo className="h-10" />
-
-              <div>
-                <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/20 px-3 py-1 text-xs font-semibold text-primary backdrop-blur-md">
-                  <Sparkles className="size-3.5 text-primary" /> Espace Candidat & IA
-                </div>
-                <h2 className="mt-3 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                  Votre copilote pour décrocher votre stage.
-                </h2>
-                <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-                  Centralisez vos candidatures, synchronisez vos relances et
-                  laissez l'IA auditer votre CV et structurer vos offres.
-                </p>
-              </div>
-
-              {/* Arguments clés */}
-              <div className="space-y-3 pt-2">
-                <div className="flex items-start gap-3 text-xs text-foreground/90">
-                  <div className="flex size-7 shrink-0 items-center justify-center rounded-xl bg-white/10 text-primary backdrop-blur-md">
-                    <Zap className="size-4" />
-                  </div>
-                  <div>
-                    <span className="font-semibold">
-                      Import instantané d'offres :
-                    </span>{" "}
-                    Léa extrait le poste, les contacts et génère une synthèse.
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 text-xs text-foreground/90">
-                  <div className="flex size-7 shrink-0 items-center justify-center rounded-xl bg-white/10 text-primary backdrop-blur-md">
-                    <UserCheck className="size-4" />
-                  </div>
-                  <div>
-                    <span className="font-semibold">
-                      Audit de CV & Matching :
-                    </span>{" "}
-                    Détectez vos points forts et lacunes par rapport au poste.
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-3 text-xs text-foreground/90">
-                  <div className="flex size-7 shrink-0 items-center justify-center rounded-xl bg-white/10 text-primary backdrop-blur-md">
-                    <Lock className="size-4" />
-                  </div>
-                  <div>
-                    <span className="font-semibold">
-                      Sauvegarde multi-appareils :
-                    </span>{" "}
-                    Retrouvez vos fiches et contacts en toute sécurité.
-                  </div>
-                </div>
+        {/* Carte principale Liquid Glass centrée */}
+        <div className="relative overflow-hidden rounded-3xl border border-white/15 bg-white/[0.08] p-6 shadow-[0_24px_64px_-12px_rgba(0,0,0,0.65),inset_0_1px_0_0_rgba(255,255,255,0.22)] backdrop-blur-3xl sm:p-8">
+          {/* Logo & Titre dynamique */}
+          <div className="mb-6 text-center">
+            <div className="flex justify-center mb-3">
+              <div className="relative flex items-center justify-center">
+                <div className="absolute inset-0 rounded-2xl bg-primary/25 blur-xl" />
+                <Logo className="relative h-10 w-auto" />
               </div>
             </div>
 
-            {/* Témoignage / Garantie - Verre Léger */}
-            <div className="relative z-10 mt-8 rounded-2xl bg-white/5 p-4 backdrop-blur-xl">
-              <div className="flex items-center gap-2.5">
-                <div className="flex size-8 items-center justify-center rounded-full bg-primary/20 font-semibold text-primary text-xs">
-                  CP
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-foreground">
-                    Clara P. • NEOMA PGE
-                  </p>
-                  <p className="text-[11px] text-muted-foreground">
-                    « NACORA m'a permis d'organiser 45 candidatures et d'avoir 6
-                    entretiens en 3 semaines. »
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Éléments visuels de fond */}
-            <div className="pointer-events-none absolute -bottom-24 -left-24 size-72 rounded-full bg-primary/20 blur-3xl" />
+            <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+              {mode === "signin"
+                ? "Connexion"
+                : mode === "signup"
+                  ? "Créer un compte"
+                  : "Mot de passe oublié"}
+            </h1>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {mode === "signin"
+                ? "Accédez à votre espace et pilotez vos candidatures"
+                : mode === "signup"
+                  ? "Rejoignez NACORA pour suivre et propulser vos candidatures"
+                  : "Entrez votre adresse e-mail pour recevoir le lien de réinitialisation"}
+            </p>
           </div>
 
-          {/* Colonne droite : Formulaires & Actions */}
-          <div className="p-6 sm:p-8 lg:col-span-7 lg:p-10 bg-black/20">
+          {/* Formulaires & Actions */}
+          <div>
             {/* Si un email de confirmation a été envoyé */}
             {sentEmailVerification ? (
               <motion.div

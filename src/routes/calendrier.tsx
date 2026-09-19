@@ -209,7 +209,9 @@ function CalendrierPage() {
 
           <div className="grid grid-cols-7 gap-1.5 text-center text-[11px] font-bold text-muted-foreground">
             {JOURS.map((j, i) => (
-              <span key={i} className="py-1">{j}</span>
+              <span key={i} className="py-1">
+                {j}
+              </span>
             ))}
           </div>
 
@@ -239,10 +241,12 @@ function CalendrierPage() {
                     }}
                     className="flex aspect-square w-full flex-col items-center justify-center gap-1 sm:hidden cursor-pointer"
                   >
-                    <span className={cn(
-                      "text-[11px] leading-none font-bold",
-                      d === today ? "text-primary" : "text-muted-foreground"
-                    )}>
+                    <span
+                      className={cn(
+                        "text-[11px] leading-none font-bold",
+                        d === today ? "text-primary" : "text-muted-foreground",
+                      )}
+                    >
                       {jour}
                     </span>
                     <span className="flex items-center gap-0.5">
@@ -260,10 +264,14 @@ function CalendrierPage() {
 
                   {/* Desktop / tablette */}
                   <div className="hidden sm:block">
-                    <span className={cn(
-                      "text-[11px] font-bold px-1",
-                      d === today ? "text-primary font-extrabold" : "text-muted-foreground"
-                    )}>
+                    <span
+                      className={cn(
+                        "text-[11px] font-bold px-1",
+                        d === today
+                          ? "text-primary font-extrabold"
+                          : "text-muted-foreground",
+                      )}
+                    >
                       {jour}
                     </span>
                     <div className="mt-1 flex flex-col gap-1">

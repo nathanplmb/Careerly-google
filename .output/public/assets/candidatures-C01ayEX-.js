@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-DREnUpxT.js";import{ot as t}from"./index-CibxS8ZU.js";var n=e(),r=()=>(0,n.jsx)(t,{to:`/opportunites`,replace:!0});export{r as component};

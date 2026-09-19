@@ -1,16 +1,13 @@
 import { i as __require, t as __commonJSMin } from "../_runtime.mjs";
-import { I as globalthis_default, L as init_globalthis } from "./@firebase/app+[...].mjs";
-import { setImmediate } from "node:timers";
 //#region node_modules/mammoth/mammoth.browser.js
 var require_mammoth_browser = /* @__PURE__ */ __commonJSMin(((exports, module) => {
-	init_globalthis();
 	(function(f) {
 		if (typeof exports === "object" && typeof module !== "undefined") module.exports = f();
 		else if (typeof define === "function" && define.amd) define([], f);
 		else {
 			var g;
 			if (typeof window !== "undefined") g = window;
-			else if (typeof globalthis_default !== "undefined") g = globalthis_default;
+			else if (typeof global !== "undefined") g = global;
 			else if (typeof self !== "undefined") g = self;
 			else g = this;
 			g.mammoth = f();
@@ -9147,7 +9144,7 @@ var require_mammoth_browser = /* @__PURE__ */ __commonJSMin(((exports, module) =
 					};
 					else schedule = noAsyncScheduler;
 					module$75.exports = schedule;
-				}).call(this, require("_process"), typeof globalthis_default !== "undefined" ? globalthis_default : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {});
+				}).call(this, require("_process"), typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {});
 			}, {
 				"./util": 82,
 				"_process": 101
@@ -9969,7 +9966,7 @@ var require_mammoth_browser = /* @__PURE__ */ __commonJSMin(((exports, module) =
 						ret.lastLineError = e;
 					}
 					module$82.exports = ret;
-				}).call(this, require("_process"), typeof globalthis_default !== "undefined" ? globalthis_default : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {});
+				}).call(this, require("_process"), typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {});
 			}, {
 				"./es5": 59,
 				"_process": 101
@@ -11098,7 +11095,7 @@ var require_mammoth_browser = /* @__PURE__ */ __commonJSMin(((exports, module) =
 					function isnan(val) {
 						return val !== val;
 					}
-				}).call(this, typeof globalthis_default !== "undefined" ? globalthis_default : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {});
+				}).call(this, typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {});
 			}, {
 				"base64-js": 47,
 				"ieee754": 86,
@@ -21679,7 +21676,7 @@ while (i === a[++n] && i === a[++n] && i === a[++n] && i === a[++n] && i === a[+
 							}, {}]
 						}, {}, [10])(10);
 					});
-				}).call(this, typeof globalthis_default !== "undefined" ? globalthis_default : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {}, require("buffer").Buffer);
+				}).call(this, typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {}, require("buffer").Buffer);
 			}, { "buffer": 83 }],
 			89: [function(require, module$89, exports$89) {
 				exports$89.Parser = require("./lib/parser").Parser;
@@ -23896,7 +23893,7 @@ while (i === a[++n] && i === a[++n] && i === a[++n] && i === a[++n] && i === a[+
 						_._ = _;
 						return _;
 					}));
-				}).call(this, typeof globalthis_default !== "undefined" ? globalthis_default : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {});
+				}).call(this, typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {});
 			}, {}],
 			103: [function(require, module$103, exports$104) {
 				(function() {

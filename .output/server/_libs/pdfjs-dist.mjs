@@ -1,6 +1,4 @@
 import { i as __require, t as __commonJSMin } from "../_runtime.mjs";
-import processModule from "node:process";
-import { Buffer } from "node:buffer";
 //#region node_modules/pdfjs-dist/build/pdf.js
 var require_pdf = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	/**
@@ -61,7 +59,7 @@ var require_pdf = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 					exports$1.unreachable = unreachable;
 					exports$1.utf8StringToString = utf8StringToString;
 					exports$1.warn = warn;
-					exports$1.isNodeJS = typeof processModule === "object" && processModule + "" === "[object process]" && !processModule.versions.nw && !(processModule.versions.electron && processModule.type && processModule.type !== "browser");
+					exports$1.isNodeJS = typeof process === "object" && process + "" === "[object process]" && !process.versions.nw && !(process.versions.electron && process.type && process.type !== "browser");
 					exports$1.IDENTITY_MATRIX = [
 						1,
 						0,
@@ -5423,7 +5421,7 @@ var require_pdf = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 					var _util = __w_pdfjs_require__(1);
 					const fetchData = function(url) {
 						return new Promise((resolve, reject) => {
-							__require("node:fs").readFile(url, (error, data) => {
+							__require("fs").readFile(url, (error, data) => {
 								if (error || !data) {
 									reject(new Error(error));
 									return;
@@ -9424,7 +9422,7 @@ var require_pdf = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 					var _network_utils = __w_pdfjs_require__(20);
 					const fileUriRegex = /^file:\/\/\/[a-zA-Z]:\//;
 					function parseUrl(sourceUrl) {
-						const url = __require("node:url");
+						const url = __require("url");
 						const parsedUrl = url.parse(sourceUrl);
 						if (parsedUrl.protocol === "file:" || parsedUrl.host) return parsedUrl;
 						if (/^[a-z]:[/\\]/i.test(sourceUrl)) return url.parse(`file:///${sourceUrl}`);
@@ -9644,10 +9642,10 @@ var require_pdf = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 							};
 							this._request = null;
 							if (this._url.protocol === "http:") {
-								const http = __require("node:http");
+								const http = __require("http");
 								this._request = http.request(createRequestOptions(this._url, stream.httpHeaders), handleResponse);
 							} else {
-								const https = __require("node:https");
+								const https = __require("https");
 								this._request = https.request(createRequestOptions(this._url, stream.httpHeaders), handleResponse);
 							}
 							this._request.on("error", (reason) => {
@@ -9677,10 +9675,10 @@ var require_pdf = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 							};
 							this._request = null;
 							if (this._url.protocol === "http:") {
-								const http = __require("node:http");
+								const http = __require("http");
 								this._request = http.request(createRequestOptions(this._url, this._httpHeaders), handleResponse);
 							} else {
-								const https = __require("node:https");
+								const https = __require("https");
 								this._request = https.request(createRequestOptions(this._url, this._httpHeaders), handleResponse);
 							}
 							this._request.on("error", (reason) => {
@@ -9694,7 +9692,7 @@ var require_pdf = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 							super(stream);
 							let path = decodeURIComponent(this._url.path);
 							if (fileUriRegex.test(this._url.href)) path = path.replace(/^\//, "");
-							const fs = __require("node:fs");
+							const fs = __require("fs");
 							fs.lstat(path, (error, stat) => {
 								if (error) {
 									if (error.code === "ENOENT") error = new _util.MissingPDFException(`Missing PDF "${path}".`);
@@ -9713,7 +9711,7 @@ var require_pdf = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 							super(stream);
 							let path = decodeURIComponent(this._url.path);
 							if (fileUriRegex.test(this._url.href)) path = path.replace(/^\//, "");
-							const fs = __require("node:fs");
+							const fs = __require("fs");
 							this._setReadableStream(fs.createReadStream(path, {
 								start,
 								end: end - 1
@@ -9818,8 +9816,8 @@ var require_pdf = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 						function deflateSync(literals) {
 							if (!_util.isNodeJS) return deflateSyncUncompressed(literals);
 							try {
-								const input = parseInt(processModule.versions.node) >= 8 ? literals : Buffer.from(literals);
-								const output = __require("node:zlib").deflateSync(input, { level: 9 });
+								const input = parseInt(process.versions.node) >= 8 ? literals : Buffer.from(literals);
+								const output = __require("zlib").deflateSync(input, { level: 9 });
 								return output instanceof Uint8Array ? output : new Uint8Array(output);
 							} catch (e) {
 								(0, _util.warn)("Not compressing PNG because zlib.deflateSync is unavailable: " + e);

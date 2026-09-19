@@ -1255,6 +1255,19 @@ var Heart = createLucideIcon("heart", [["path", {
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
+var House = createLucideIcon("house", [["path", {
+	d: "M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8",
+	key: "5wwlr5"
+}], ["path", {
+	d: "M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",
+	key: "r6nss1"
+}]]);
+/**
+* @license lucide-react v0.575.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
 var Info = createLucideIcon("info", [
 	["circle", {
 		cx: "12",
@@ -2135,6 +2148,22 @@ var Table = createLucideIcon("table", [
 * This source code is licensed under the ISC license.
 * See the LICENSE file in the root directory of this source tree.
 */
+var Tag = createLucideIcon("tag", [["path", {
+	d: "M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z",
+	key: "vktsd0"
+}], ["circle", {
+	cx: "7.5",
+	cy: "7.5",
+	r: ".5",
+	fill: "currentColor",
+	key: "kqv944"
+}]]);
+/**
+* @license lucide-react v0.575.0 - ISC
+*
+* This source code is licensed under the ISC license.
+* See the LICENSE file in the root directory of this source tree.
+*/
 var Target = createLucideIcon("target", [
 	["circle", {
 		cx: "12",
@@ -2420,4 +2449,4 @@ var Zap = createLucideIcon("zap", [["path", {
 	key: "1xq2db"
 }]]);
 //#endregion
-export { KeyRound as $, PhoneCall as A, Circle as At, LogOut as B, CalendarDays as Bt, Search as C, Cpu as Ct, RefreshCw as D, CloudUpload as Dt, RotateCcw as E, Coins as Et, PanelLeftClose as F, ChevronLeft as Ft, ListOrdered as G, Brain as Gt, Lock as H, Building as Ht, MessageSquare as I, ChevronDown as It, Lightbulb as J, Award as Jt, Linkedin as K, Bot as Kt, Menu as L, Check as Lt, Pen as M, CircleAlert as Mt, PenLine as N, ChevronUp as Nt, Plus as O, Clock as Ot, PanelLeftOpen as P, ChevronRight as Pt, Languages as Q, MapPin as R, ChartColumn as Rt, Send as S, DollarSign as St, Save as T, Compass as Tt, LoaderCircle as U, Building2 as Ut, LogIn as V, CalendarClock as Vt, List as W, Briefcase as Wt, LayoutDashboard as X, ArrowLeft as Xt, LayoutGrid as Y, ArrowRight as Yt, Layers as Z, Smartphone as _, EyeOff as _t, Users as a, GraduationCap as at, ShieldCheck as b, Earth as bt, UserPlus as c, GitFork as ct, TriangleAlert as d, FingerprintPattern as dt, Kanban as et, TrendingUp as f, FileText as ft, Sparkles as g, Eye as gt, Table as h, FileCode as ht, WandSparkles as i, GripVertical as it, Pencil as j, CircleCheck as jt, Phone as k, ClipboardType as kt, UserCheck as l, Funnel as lt, Target as m, FilePen as mt, X as n, Heart as nt, User as o, Globe as ot, Trash2 as p, FileSpreadsheet as pt, Link2 as q, Bell as qt, Wrench as r, HeartHandshake as rt, UserRound as s, Github as st, Zap as t, Info as tt, Upload as u, FolderDot as ut, SlidersVertical as v, ExternalLink as vt, ScanLine as w, Copy as wt, Settings as x, Download as xt, SlidersHorizontal as y, Euro as yt, Mail as z, Calendar as zt };
+export { Languages as $, Phone as A, Clock as At, Mail as B, ChartColumn as Bt, Send as C, Download as Ct, RotateCcw as D, Compass as Dt, Save as E, Copy as Et, PanelLeftOpen as F, ChevronUp as Ft, List as G, Building2 as Gt, LogIn as H, CalendarDays as Ht, PanelLeftClose as I, ChevronRight as It, Link2 as J, Bot as Jt, ListOrdered as K, Briefcase as Kt, MessageSquare as L, ChevronLeft as Lt, Pencil as M, Circle as Mt, Pen as N, CircleCheck as Nt, RefreshCw as O, Coins as Ot, PenLine as P, CircleAlert as Pt, Layers as Q, ArrowLeft as Qt, Menu as R, ChevronDown as Rt, Settings as S, Earth as St, ScanLine as T, Cpu as Tt, Lock as U, CalendarClock as Ut, LogOut as V, Calendar as Vt, LoaderCircle as W, Building as Wt, LayoutGrid as X, Award as Xt, Lightbulb as Y, Bell as Yt, LayoutDashboard as Z, ArrowRight as Zt, Sparkles as _, FileCode as _t, Users as a, HeartHandshake as at, SlidersHorizontal as b, ExternalLink as bt, UserPlus as c, Globe as ct, TriangleAlert as d, Funnel as dt, KeyRound as et, TrendingUp as f, FolderDot as ft, Table as g, FilePen as gt, Tag as h, FileSpreadsheet as ht, WandSparkles as i, Heart as it, PhoneCall as j, ClipboardType as jt, Plus as k, CloudUpload as kt, UserCheck as l, Github as lt, Target as m, FileText as mt, X as n, Info as nt, User as o, GripVertical as ot, Trash2 as p, FingerprintPattern as pt, Linkedin as q, Brain as qt, Wrench as r, House as rt, UserRound as s, GraduationCap as st, Zap as t, Kanban as tt, Upload as u, GitFork as ut, Smartphone as v, Eye as vt, Search as w, DollarSign as wt, ShieldCheck as x, Euro as xt, SlidersVertical as y, EyeOff as yt, MapPin as z, Check as zt };

@@ -7,7 +7,11 @@ import {
   query,
   writeBatch,
 } from "firebase/firestore";
-import { db, isFirebaseConfigured } from "@/integrations/firebase/client";
+import { db, isFirebaseConfigured, auth } from "@/integrations/firebase/client";
+import {
+  handleFirestoreError,
+  OperationType,
+} from "@/integrations/firebase/errors";
 import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
 import {
   emptyContact,
@@ -199,7 +203,12 @@ function toRow(c: Contact, userId: string) {
 }
 
 export async function fetchContacts(userId?: string): Promise<Contact[]> {
-  if (isFirebaseConfigured() && userId) {
+  if (
+    isFirebaseConfigured() &&
+    userId &&
+    auth.currentUser &&
+    auth.currentUser.uid === userId
+  ) {
     try {
       const colRef = collection(db, "users", userId, "contacts");
       const snap = await getDocs(query(colRef));
@@ -210,6 +219,7 @@ export async function fetchContacts(userId?: string): Promise<Contact[]> {
       return list;
     } catch (e) {
       console.warn("Firestore fetchContacts error:", e);
+      handleFirestoreError(e, OperationType.GET, `users/${userId}/contacts`);
     }
   }
 
@@ -231,13 +241,23 @@ export async function upsertContact(
 ): Promise<Contact> {
   const row = toRow(c, userId);
 
-  if (isFirebaseConfigured() && userId) {
+  if (
+    isFirebaseConfigured() &&
+    userId &&
+    auth.currentUser &&
+    auth.currentUser.uid === userId
+  ) {
     try {
       const docRef = doc(db, "users", userId, "contacts", row.id);
       await setDoc(docRef, row, { merge: true });
       return toContact(row as unknown as Row);
     } catch (e) {
       console.warn("Firestore upsertContact error:", e);
+      handleFirestoreError(
+        e,
+        OperationType.WRITE,
+        `users/${userId}/contacts/${row.id}`,
+      );
     }
   }
 
@@ -259,7 +279,12 @@ export async function batchUpsertContacts(
   userId: string,
 ): Promise<Contact[]> {
   if (!contactsList.length) return [];
-  if (isFirebaseConfigured() && userId) {
+  if (
+    isFirebaseConfigured() &&
+    userId &&
+    auth.currentUser &&
+    auth.currentUser.uid === userId
+  ) {
     try {
       const CHUNK_SIZE = 250;
       for (let i = 0; i < contactsList.length; i += CHUNK_SIZE) {
@@ -275,6 +300,7 @@ export async function batchUpsertContacts(
       return contactsList;
     } catch (e) {
       console.warn("Firestore batchUpsertContacts error:", e);
+      handleFirestoreError(e, OperationType.WRITE, `users/${userId}/contacts`);
     }
   }
 
@@ -291,13 +317,23 @@ export async function batchUpsertContacts(
 }
 
 export async function deleteContact(id: string, userId?: string) {
-  if (isFirebaseConfigured() && userId) {
+  if (
+    isFirebaseConfigured() &&
+    userId &&
+    auth.currentUser &&
+    auth.currentUser.uid === userId
+  ) {
     try {
       const docRef = doc(db, "users", userId, "contacts", id);
       await deleteDoc(docRef);
       return;
     } catch (e) {
       console.warn("Firestore deleteContact error:", e);
+      handleFirestoreError(
+        e,
+        OperationType.DELETE,
+        `users/${userId}/contacts/${id}`,
+      );
     }
   }
 

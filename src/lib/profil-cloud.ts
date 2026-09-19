@@ -1,5 +1,9 @@
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db, isFirebaseConfigured } from "@/integrations/firebase/client";
+import { db, isFirebaseConfigured, auth } from "@/integrations/firebase/client";
+import {
+  handleFirestoreError,
+  OperationType,
+} from "@/integrations/firebase/errors";
 import { supabase, isSupabaseConfigured } from "@/integrations/supabase/client";
 import {
   emptyProfil,
@@ -155,7 +159,12 @@ function sanitizeForFirestore<T>(data: T): T {
 }
 
 export async function fetchProfil(userId?: string): Promise<Profil | null> {
-  if (isFirebaseConfigured() && userId) {
+  if (
+    isFirebaseConfigured() &&
+    userId &&
+    auth.currentUser &&
+    auth.currentUser.uid === userId
+  ) {
     try {
       const snap = await getDoc(doc(db, "profils", userId));
       if (snap.exists()) {
@@ -163,6 +172,7 @@ export async function fetchProfil(userId?: string): Promise<Profil | null> {
       }
     } catch (e) {
       console.warn("Firestore fetchProfil error:", e);
+      handleFirestoreError(e, OperationType.GET, `profils/${userId}`);
     }
   }
 
@@ -185,12 +195,18 @@ export async function saveProfilCloud(
   const rawRowData = toRow(p, userId);
   const rowData = sanitizeForFirestore(rawRowData);
 
-  if (isFirebaseConfigured()) {
+  if (
+    isFirebaseConfigured() &&
+    userId &&
+    auth.currentUser &&
+    auth.currentUser.uid === userId
+  ) {
     try {
       await setDoc(doc(db, "profils", userId), rowData, { merge: true });
       return toProfil(rowData as Row);
     } catch (e) {
       console.error("Firestore saveProfilCloud error:", e);
+      handleFirestoreError(e, OperationType.WRITE, `profils/${userId}`);
     }
   }
 

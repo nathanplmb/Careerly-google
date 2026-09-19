@@ -8,6 +8,7 @@
     "build": "cross-env NODE_OPTIONS=--max-old-space-size=8192 vite build && node scripts/postbuild.js",
     "build:dev": "cross-env NODE_OPTIONS=--max-old-space-size=8192 vite build --mode development",
     "preview": "vite preview",
+    "start": "node .output/server/index.mjs",
     "lint": "eslint .",
     "format": "prettier --write ."
   },

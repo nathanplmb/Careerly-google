@@ -23,7 +23,7 @@ export function TagListEditor({
   items,
   onChange,
   placeholder = "Ajouter...",
-  badgeClassName = "bg-primary/10 text-primary border-primary/20",
+  badgeClassName = "bg-primary/15 text-primary",
   emptyText = "Non renseigné",
   isEditing = true,
 }: TagListEditorProps) {
@@ -50,7 +50,7 @@ export function TagListEditor({
         </label>
       </div>
 
-      <div className="flex flex-wrap gap-1.5 min-h-[32px] p-2.5 rounded-xl bg-[#080A11] border border-slate-800/80">
+      <div className="flex flex-wrap gap-1.5 min-h-[32px] p-2.5 rounded-xl bg-white/5 backdrop-blur-md">
         {items.length === 0 ? (
           <span className="text-xs text-slate-400 italic self-center px-1">
             {emptyText}
@@ -60,7 +60,7 @@ export function TagListEditor({
             <Badge
               key={idx}
               variant="outline"
-              className={`text-xs py-1 px-2.5 flex items-center gap-1.5 font-medium transition-all ${badgeClassName}`}
+              className={`text-xs py-1 px-2.5 flex items-center gap-1.5 font-medium border-none shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] transition-all ${badgeClassName}`}
             >
               <span className="text-slate-100">{item}</span>
               {isEditing && (
@@ -90,7 +90,7 @@ export function TagListEditor({
               }
             }}
             placeholder={placeholder}
-            className="h-8 text-xs bg-[#05060A] text-slate-100 placeholder:text-slate-400 border-slate-700/80 rounded-lg"
+            className="h-8 text-xs bg-white/5 text-slate-100 placeholder:text-slate-400 border-none rounded-lg backdrop-blur-md"
           />
           <Button
             type="button"
@@ -98,7 +98,7 @@ export function TagListEditor({
             variant="outline"
             onClick={handleAdd}
             disabled={!inputVal.trim()}
-            className="h-8 px-2.5 text-xs font-bold border-slate-700 text-slate-200 hover:bg-slate-800"
+            className="h-8 px-2.5 text-xs font-bold border-none bg-white/10 text-slate-200 hover:bg-white/15"
           >
             <Plus className="size-3.5 mr-1" /> Ajouter
           </Button>

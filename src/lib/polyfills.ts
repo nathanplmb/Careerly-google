@@ -66,6 +66,27 @@ export function initPolyfills(): void {
     gAny["global"] = globalScope;
   }
 
+  // Polyfill AsyncLocalStorage for client environments (TanStack Start storage context)
+  const START_STORAGE_KEY = Symbol.for("tanstack-start:start-storage-context");
+  if (!gAny[START_STORAGE_KEY]) {
+    class ClientAsyncLocalStorage<T = unknown> {
+      private store: T | undefined = undefined;
+      getStore(): T | undefined {
+        return this.store;
+      }
+      run<R>(store: T, fn: () => R): R {
+        const prev = this.store;
+        this.store = store;
+        try {
+          return fn();
+        } finally {
+          this.store = prev;
+        }
+      }
+    }
+    gAny[START_STORAGE_KEY] = new ClientAsyncLocalStorage();
+  }
+
   if (typeof Symbol !== "undefined" && !Symbol.asyncIterator) {
     (Symbol as unknown as { asyncIterator: symbol }).asyncIterator = Symbol.for(
       "Symbol.asyncIterator",

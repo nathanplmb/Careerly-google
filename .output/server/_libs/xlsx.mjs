@@ -1,6 +1,4 @@
 import { r as __exportAll } from "../_runtime.mjs";
-import processModule from "node:process";
-import { Buffer } from "node:buffer";
 //#region node_modules/xlsx/xlsx.mjs
 var xlsx_exports = /* @__PURE__ */ __exportAll({
 	CFB: () => CFB,
@@ -136,7 +134,7 @@ function Base64_decode(input) {
 	return o;
 }
 var has_buf = /*#__PURE__*/ (function() {
-	return typeof Buffer !== "undefined" && typeof processModule !== "undefined" && typeof processModule.versions !== "undefined" && !!processModule.versions.node;
+	return typeof Buffer !== "undefined" && typeof process !== "undefined" && typeof process.versions !== "undefined" && !!process.versions.node;
 })();
 var Buffer_from = /*#__PURE__*/ (function() {
 	if (typeof Buffer !== "undefined") {

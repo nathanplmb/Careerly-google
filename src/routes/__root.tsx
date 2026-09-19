@@ -10,6 +10,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
+import { ContactImportProvider } from "@/context/ContactImportContext";
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
@@ -149,7 +150,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       ],
       scripts: [
         {
-          children: `try{if(typeof window!=="undefined"){window.process=window.process||{env:{NODE_ENV:"development",TSS_ROUTER_BASEPATH:""}};window.global=window.global||window;}}catch(e){}`,
+          children: `(function(){try{if(typeof window!=="undefined"){window.process=window.process||{env:{NODE_ENV:"development",TSS_ROUTER_BASEPATH:""}};window.global=window.global||window;var sym=Symbol.for("tanstack-start:start-storage-context");if(!window[sym]){var ALS=function(){this.store=undefined;};ALS.prototype.getStore=function(){return this.store;};ALS.prototype.run=function(s,cb){var prev=this.store;this.store=s;try{return cb();}finally{this.store=prev;}};window[sym]=new ALS();}var isModuleError=function(msg){if(!msg||typeof msg!=="string")return false;return msg.indexOf("Failed to fetch dynamically imported module")!==-1||msg.indexOf("Importing a module script failed")!==-1||msg.indexOf("error loading dynamically imported module")!==-1||msg.indexOf("Unable to preload CSS")!==-1;};var reloadOnModuleError=function(msg){if(!isModuleError(msg))return;var key="tss_chunk_reload_time";var last=sessionStorage.getItem(key);var now=Date.now();if(!last||(now-Number(last))>8000){sessionStorage.setItem(key,String(now));console.warn("[App Recovery] Dynamic module fetch issue detected during warmup. Reloading...",msg);setTimeout(function(){window.location.reload();},400);}};window.addEventListener("error",function(e){if(e&&e.message)reloadOnModuleError(e.message);});window.addEventListener("unhandledrejection",function(e){var reason=e&&e.reason;var msg=(reason&&reason.message)||(typeof reason==="string"?reason:"");if(msg)reloadOnModuleError(msg);});window.addEventListener("vite:preloadError",function(){reloadOnModuleError("Failed to fetch dynamically imported module");});}}catch(e){}})();`,
         },
       ],
     }),
@@ -166,7 +167,7 @@ function RootShell({ children }: { children: ReactNode }) {
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `try{if(typeof window!=="undefined"){window.process=window.process||{env:{NODE_ENV:"development",TSS_ROUTER_BASEPATH:""}};window.global=window.global||window;}}catch(e){}`,
+            __html: `(function(){try{if(typeof window!=="undefined"){window.process=window.process||{env:{NODE_ENV:"development",TSS_ROUTER_BASEPATH:""}};window.global=window.global||window;var sym=Symbol.for("tanstack-start:start-storage-context");if(!window[sym]){var ALS=function(){this.store=undefined;};ALS.prototype.getStore=function(){return this.store;};ALS.prototype.run=function(s,cb){var prev=this.store;this.store=s;try{return cb();}finally{this.store=prev;}};window[sym]=new ALS();}var isModuleError=function(msg){if(!msg||typeof msg!=="string")return false;return msg.indexOf("Failed to fetch dynamically imported module")!==-1||msg.indexOf("Importing a module script failed")!==-1||msg.indexOf("error loading dynamically imported module")!==-1||msg.indexOf("Unable to preload CSS")!==-1;};var reloadOnModuleError=function(msg){if(!isModuleError(msg))return;var key="tss_chunk_reload_time";var last=sessionStorage.getItem(key);var now=Date.now();if(!last||(now-Number(last))>8000){sessionStorage.setItem(key,String(now));console.warn("[App Recovery] Dynamic module fetch issue detected during warmup. Reloading...",msg);setTimeout(function(){window.location.reload();},400);}};window.addEventListener("error",function(e){if(e&&e.message)reloadOnModuleError(e.message);});window.addEventListener("unhandledrejection",function(e){var reason=e&&e.reason;var msg=(reason&&reason.message)||(typeof reason==="string"?reason:"");if(msg)reloadOnModuleError(msg);});window.addEventListener("vite:preloadError",function(){reloadOnModuleError("Failed to fetch dynamically imported module");});}}catch(e){}})();`,
           }}
         />
         <HeadContent />
@@ -257,9 +258,11 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
-      <Toaster />
+      <ContactImportProvider>
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <Outlet />
+        <Toaster />
+      </ContactImportProvider>
     </QueryClientProvider>
   );
 }

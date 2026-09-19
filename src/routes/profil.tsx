@@ -366,7 +366,9 @@ function ProfilPage() {
               }`}
             >
               <div className="flex items-center gap-3.5">
-                <div className={`p-2.5 rounded-xl border backdrop-blur-md shadow-xs ${c.colorClass}`}>
+                <div
+                  className={`p-2.5 rounded-xl border backdrop-blur-md shadow-xs ${c.colorClass}`}
+                >
                   <c.icon className="size-4 shrink-0" />
                 </div>
                 <div className="min-w-0">

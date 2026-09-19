@@ -13,7 +13,10 @@ import {
   Users,
 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
+import { ContactImportModal } from "@/components/ContactImportModal";
 import { Button } from "@/components/ui/button";
+import { useContacts } from "@/hooks/useContacts";
+import { Sparkles, ArrowRight } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -74,9 +77,20 @@ const CLE_LETTRES = "careerly.lettres";
 function ImportPage() {
   const { user } = useSession();
   const { items, save } = useCandidatures();
+  const { contacts, batchImportContacts } = useContacts();
+  const [linkedinModalOpen, setLinkedinModalOpen] = useState(false);
 
   return (
     <AppShell title="Importer vos données">
+      <ContactImportModal
+        open={linkedinModalOpen}
+        onOpenChange={setLinkedinModalOpen}
+        existingContacts={contacts}
+        onImportComplete={async (incoming, resolutions) => {
+          return await batchImportContacts(incoming, resolutions);
+        }}
+      />
+
       <Tabs defaultValue="tableur" className="w-full">
         <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
           <TabsList className="w-max">
@@ -134,7 +148,48 @@ function ImportPage() {
           />
         </TabsContent>
 
-        <TabsContent value="contacts" className="mt-4">
+        <TabsContent value="contacts" className="mt-4 space-y-6">
+          {/* Hero Banner LinkedIn Contact Import */}
+          <div className="rounded-2xl bg-gradient-to-br from-indigo-950/60 via-slate-900/80 to-background border border-indigo-500/20 p-6 shadow-xl relative overflow-hidden backdrop-blur-xl">
+            <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+              <Linkedin className="size-48 text-indigo-400" />
+            </div>
+
+            <div className="relative z-10 max-w-2xl space-y-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-xs font-semibold text-indigo-400">
+                <Sparkles className="size-3.5" />
+                Import LinkedIn IA Native
+              </div>
+
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                Importer mes contacts LinkedIn
+              </h2>
+
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                Glissez votre fichier de connexions LinkedIn (
+                <code>Connections.csv</code>) ou votre carnet vCard. L'IA NACORA
+                categorisera automatiquement vos contacts (RH, Alumni,
+                Professionnels ciblés), normalisera leurs postes et leurs
+                entreprises, et fusionnera les doublons sans perte.
+              </p>
+
+              <div className="pt-2 flex flex-wrap items-center gap-3">
+                <Button
+                  onClick={() => setLinkedinModalOpen(true)}
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs h-10 px-5 rounded-xl shadow-lg gap-2"
+                >
+                  <Linkedin className="size-4" />
+                  Importer mes contacts LinkedIn
+                  <ArrowRight className="size-3.5" />
+                </Button>
+
+                <span className="text-xs text-slate-400">
+                  Total actuel : <strong>{contacts.length}</strong> contact(s)
+                </span>
+              </div>
+            </div>
+          </div>
+
           {!user ? (
             <p className="glass-card p-5 text-sm text-muted-foreground leading-relaxed">
               Connectez-vous pour importer votre carnet de contacts : il est
@@ -363,7 +418,10 @@ function ImportTableur({
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {champs.map((c) => (
-                <div key={c.cle} className="min-w-0 rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-md">
+                <div
+                  key={c.cle}
+                  className="min-w-0 rounded-xl border border-white/10 bg-white/5 p-3 backdrop-blur-md"
+                >
                   <label className="text-xs font-semibold text-foreground">
                     {c.label}
                     {c.requis && <span className="text-primary"> *</span>}

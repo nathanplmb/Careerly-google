@@ -366,15 +366,15 @@ export function ChatContainer({
 
   return (
     <TooltipProvider>
-      <div className="flex h-[calc(100vh-140px)] min-h-[550px] w-full overflow-hidden rounded-3xl border border-white/10 bg-white/5 backdrop-blur-3xl shadow-[0_24px_64px_-12px_rgba(0,0,0,0.6)]">
+      <div className="glass-panel-elevated flex h-[calc(100vh-140px)] min-h-[550px] w-full overflow-hidden rounded-3xl border-white/15 shadow-[0_24px_64px_-12px_rgba(0,0,0,0.7),inset_0_1px_1px_0_rgba(255,255,255,0.25)]">
         {/* Sessions Sidebar */}
         <aside
           className={cn(
-            "flex flex-col border-r border-white/10 bg-white/5 backdrop-blur-2xl transition-all duration-300 shrink-0",
+            "flex flex-col border-r border-white/12 bg-white/[0.03] backdrop-blur-2xl transition-all duration-300 shrink-0",
             sidebarOpen ? "w-64 sm:w-72" : "w-0 overflow-hidden border-r-0",
           )}
         >
-          <div className="flex h-14 items-center justify-between border-b border-white/10 px-3.5 bg-white/5">
+          <div className="flex h-14 items-center justify-between border-b border-white/10 px-3.5 bg-white/[0.04] backdrop-blur-md">
             <div className="flex items-center gap-2">
               <MessageSquare className="size-4 text-muted-foreground" />
               <span className="text-xs font-bold uppercase tracking-wider text-foreground">
@@ -450,7 +450,9 @@ export function ChatContainer({
           <div className="border-t border-white/10 p-3 bg-white/5">
             <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
               <Sparkles className="size-3.5 text-primary shrink-0" />
-              <span className="truncate font-medium">Propulsé par Google Gemini</span>
+              <span className="truncate font-medium">
+                Propulsé par Google Gemini
+              </span>
             </div>
           </div>
         </aside>
@@ -458,7 +460,7 @@ export function ChatContainer({
         {/* Main Chat Thread */}
         <div className="flex flex-1 min-w-0 flex-col bg-transparent">
           {/* Chat Header Bar */}
-          <header className="flex h-14 shrink-0 items-center justify-between border-b border-white/10 px-3 sm:px-5 bg-white/5 backdrop-blur-2xl">
+          <header className="flex h-14 shrink-0 items-center justify-between border-b border-white/12 px-3 sm:px-5 bg-white/[0.04] backdrop-blur-2xl">
             <div className="flex items-center gap-2 min-w-0">
               <Button
                 variant="ghost"
@@ -607,7 +609,7 @@ export function ChatContainer({
           </div>
 
           {/* Bottom Chat Input Bar */}
-          <div className="border-t border-white/10 p-3 sm:p-4 bg-white/5 backdrop-blur-2xl">
+          <div className="border-t border-white/12 p-3 sm:p-4 bg-white/[0.03] backdrop-blur-2xl">
             <div className="mx-auto max-w-4xl">
               {/* Quick suggestion chips above input if there are messages */}
               {currentSession &&
@@ -622,7 +624,7 @@ export function ChatContainer({
                         key={idx}
                         type="button"
                         onClick={() => handleSendMessage(s)}
-                        className="shrink-0 rounded-full bg-white/8 backdrop-blur-md px-3 py-1 text-[11px] text-muted-foreground hover:bg-white/15 hover:text-foreground transition-all cursor-pointer"
+                        className="shrink-0 rounded-full bg-white/8 border border-white/10 backdrop-blur-md px-3 py-1 text-[11px] text-muted-foreground hover:bg-white/15 hover:text-foreground transition-all cursor-pointer shadow-xs"
                       >
                         {s.slice(0, 32)}...
                       </button>
@@ -630,7 +632,7 @@ export function ChatContainer({
                   </div>
                 )}
 
-              <div className="relative flex items-end gap-2 rounded-2xl bg-white/5 backdrop-blur-xl px-3 py-2 shadow-xs focus-within:bg-white/10 transition-all">
+              <div className="relative flex items-end gap-2 rounded-2xl border border-white/14 bg-white/6 backdrop-blur-2xl px-3.5 py-2 shadow-[inset_0_1px_3px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.12)] focus-within:border-primary/60 focus-within:bg-white/10 transition-all">
                 <Textarea
                   ref={textareaRef}
                   value={inputMessage}

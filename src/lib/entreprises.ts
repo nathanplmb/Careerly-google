@@ -213,8 +213,42 @@ export function emptyEntreprise(nom?: string): Entreprise {
 }
 
 /**
+ * Crée ou identifie une fiche entreprise depuis les données d'un contact réseau
+ * (import LinkedIn ou ajout manuel).
+ */
+export function syncEntrepriseFromContact(
+  contact: Contact,
+  entreprises: Entreprise[],
+): { entreprise: Entreprise; isNew: boolean; hasChanged: boolean } | null {
+  const compName = contact.entreprise?.trim();
+  if (!compName) return null;
+
+  const existing = findMatchingEntreprise(
+    {
+      companyId: contact.candidatureId,
+      nom: compName,
+    },
+    entreprises,
+  );
+
+  if (!existing) {
+    const newEnt: Entreprise = {
+      ...emptyEntreprise(compName),
+      // Si le contact a des coordonnées de société ou un lien utile, on peut s'en servir sans écraser
+      linkedin:
+        contact.linkedin && !contact.linkedin.includes("/in/")
+          ? contact.linkedin
+          : "",
+    };
+    return { entreprise: newEnt, isNew: true, hasChanged: true };
+  }
+
+  return { entreprise: existing, isNew: false, hasChanged: false };
+}
+
+/**
  * Crée ou enrichit intelligemment une fiche entreprise depuis les données
- * d'une opportunité, tout en respectant strictement la règle :
+ * d'une opportunité, tout en respectant strictly la règle :
  * DONNÉES UTILISATEUR > DONNÉES IA.
  */
 export function syncEntrepriseFromOpportunity(
@@ -399,11 +433,10 @@ export function hasPersistentData(
   const hasContacts = contacts.some((ct) => {
     if (ct.candidatureId && ct.candidatureId === entreprise.id) return true;
     if (ct.entreprise) {
-      return (
-        normalizeCompanyName(ct.entreprise) === entreprise.normalizedName ||
-        ct.entreprise.trim().toLowerCase() ===
-          entreprise.nom.trim().toLowerCase()
-      );
+      const match = findMatchingEntreprise({ nom: ct.entreprise }, [
+        entreprise,
+      ]);
+      if (match) return true;
     }
     return false;
   });

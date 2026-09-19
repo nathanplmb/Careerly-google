@@ -1,7 +1,7 @@
 import { c as registerVersion } from "./@firebase/app+[...].mjs";
 import "./firebase__auth.mjs";
 import "./@firebase/firestore+[...].mjs";
-//#region node_modules/firebase/app/dist/esm/index.esm.js
+//#region node_modules/firebase/app/dist/index.mjs
 /**
 * @license
 * Copyright 2020 Google LLC

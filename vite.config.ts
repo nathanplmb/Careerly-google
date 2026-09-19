@@ -8,6 +8,9 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
 
 export default defineConfig({
+  nitro: {
+    preset: "node-server",
+  },
   vite: {
     plugins: [mcpPlugin()],
     define: {
@@ -34,7 +37,23 @@ export default defineConfig({
       },
     },
     optimizeDeps: {
-      exclude: ["canvas"],
+      include: [
+        "react",
+        "react-dom",
+        "react-dom/client",
+        "react/jsx-runtime",
+        "react/jsx-dev-runtime",
+        "@tanstack/react-query",
+        "@tanstack/react-router",
+        "lucide-react",
+        "clsx",
+        "tailwind-merge",
+        "class-variance-authority",
+        "sonner",
+        "zod",
+        "date-fns",
+      ],
+      exclude: ["canvas", "@tanstack/react-start"],
     },
   },
   tanstackStart: {
